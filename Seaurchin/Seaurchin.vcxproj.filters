@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="AngelScript">
+      <UniqueIdentifier>{87ea7fd2-c3b6-46dd-8e22-9281aba4e9b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boost">
+      <UniqueIdentifier>{3149afbf-5633-4bd8-97ed-0f1421ebed85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DxLib">
+      <UniqueIdentifier>{ae2ec05a-0be6-454c-8a8e-79924e08525e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="スクリプトインターフェース">
+      <UniqueIdentifier>{8b6e28ee-af99-44cd-9454-890bb3e76d5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="スクリプトインターフェース\ヘッダー">
+      <UniqueIdentifier>{5947b999-6516-4134-9da7-3da41c057943}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="スクリプトインターフェース\ソース">
+      <UniqueIdentifier>{f4a99222-86f3-49f4-9cbe-666a599a5e2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ビルトインScene">
+      <UniqueIdentifier>{4746231b-3d1e-4fad-8c89-7f368eb8ce63}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring.cpp">
+      <Filter>AngelScript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring_utils.cpp">
+      <Filter>AngelScript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\AngelScript\add_on\scriptbuilder\scriptbuilder.cpp">
+      <Filter>AngelScript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\AngelScript\add_on\scriptmath\scriptmath.cpp">
+      <Filter>AngelScript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\AngelScript\add_on\scriptmath\scriptmathcomplex.cpp">
+      <Filter>AngelScript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\AngelScript\add_on\scriptarray\scriptarray.cpp">
+      <Filter>AngelScript</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Setting.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Execution.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneDebug.cpp">
+      <Filter>ビルトインScene</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Main.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\DXLib\include\DxCompileConfig.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\DXLib\include\DxDataType.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\DXLib\include\DxDataTypeWin.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\DXLib\include\DxFunctionWin.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\DXLib\include\DxLib.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring.h">
+      <Filter>AngelScript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\AngelScript\add_on\scriptbuilder\scriptbuilder.h">
+      <Filter>AngelScript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\AngelScript\add_on\scriptmath\scriptmath.h">
+      <Filter>AngelScript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\AngelScript\add_on\scriptmath\scriptmathcomplex.h">
+      <Filter>AngelScript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\AngelScript\add_on\scriptarray\scriptarray.h">
+      <Filter>AngelScript</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Setting.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Execution.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneDebug.h">
+      <Filter>ビルトインScene</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
