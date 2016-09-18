@@ -16,7 +16,7 @@ void _InitializeDebugFeature()
 
 void _TerminateDebugFeature()
 {
-
+    FreeConsole();
 }
 
 void _WriteDebugConsoleA(LPCSTR string)
@@ -31,5 +31,5 @@ void _WriteDebugConsoleW(LPCWSTR string)
 
 void Debug_ReleaseFunction(...)
 {
-    FreeConsole();
+    
 }

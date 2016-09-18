@@ -1,4 +1,5 @@
 #include "Setting.h"
+#include "Config.h"
 #include "Debug.h"
 
 using namespace std;
@@ -13,6 +14,11 @@ void InitializeSetting(HMODULE hModule)
     GetModuleFileName(hModule, directory, MAX_PATH);
     PathRemoveFileSpec(directory);
     RootDirectory = directory;
+}
+
+const string SettingGetRootDirectory()
+{
+    return RootDirectory;
 }
 
 void SettingLoadSetting()

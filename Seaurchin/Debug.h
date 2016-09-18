@@ -24,7 +24,9 @@
 
 #else // _DEBUGÅAÅ´ÇÕReleaseéû
 
-#define WriteDebugConsoleT Debug_ReleaseFunction
+#define WriteDebugConsole Debug_ReleaseFunction
+#define InitializeDebugFeature Debug_ReleaseFunction
+#define TerminateDebugFeature Debug_ReleaseFunction
 
 #endif // _DEBUG
 

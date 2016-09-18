@@ -10,12 +10,11 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#define ROOT_FILE(dir, fn) (dir + "/" + fn)
-
-#define SU_SETTING_FILE "config.json"
-
 //Settingモジュール初期化
 void InitializeSetting(HMODULE hModule);
+
+//ルートを取得
+const std::string SettingGetRootDirectory();
 
 //設定を読み込む なければ先に書き出す
 void SettingLoadSetting();

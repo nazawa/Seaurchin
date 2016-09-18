@@ -98,6 +98,9 @@
       <AdditionalDependencies>shlwapi.lib;angelscriptd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)Resources" "$(TargetDir)Data" /I /E /D /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -137,6 +140,9 @@
       <AdditionalDependencies>shlwapi.lib;angelscript.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)Resources" "$(TargetDir)Data" /I /E /D /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -167,7 +173,11 @@
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring_utils.cpp" />
     <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="Execution.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneDebug.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Setting.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -183,7 +193,11 @@
     <ClInclude Include="..\..\..\DXLib\include\DxLib.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="Execution.h" />
     <ClInclude Include="Main.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneDebug.h" />
+    <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Setting.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
