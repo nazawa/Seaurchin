@@ -7,23 +7,60 @@
 #include <memory>
 #include <algorithm>
 
+#include "Config.h"
 #include "Scene.h"
+
+enum WaitType
+{
+    Frame,
+    Time,
+};
+
+typedef struct
+{
+    WaitType type;
+    union
+    {
+        double time;
+        int64_t frames;
+    };
+} CoroutineWait;
 
 class ScriptScene : public Scene
 {
-private:
+protected:
+    asIScriptContext *context;
     asIScriptObject *sceneObject;
     asITypeInfo *sceneType;
-    bool finished;
 
 public:
     ScriptScene(asIScriptObject *scene);
     ~ScriptScene();
 
-    virtual void Initialize();
+    void Initialize() override;
 
     void Tick(double delta) override;
     void Draw() override;
     bool IsDead() override;
 
 };
+
+class ScriptCoroutineScene : public ScriptScene
+{
+    typedef ScriptScene base;
+protected:
+    asIScriptContext *runningContext;
+    CoroutineWait wait;
+    bool finished = false;
+
+public:
+    ScriptCoroutineScene(asIScriptObject *scene);
+    
+    void Tick(double delta) override;
+    void Initialize() override;
+    bool IsDead() override;
+
+};
+
+void ScriptSceneYieldTime(double time);
+void ScriptSceneYieldFrames(int64_t frames);

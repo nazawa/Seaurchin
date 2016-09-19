@@ -45,6 +45,7 @@ void Initialize()
     ExecutionEnumerateSkins();
     ExecutionExecute();
     ExecutionAddScene(shared_ptr<Scene>(new SceneDebug()));
+    
 }
 
 void Run()

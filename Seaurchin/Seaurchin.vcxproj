@@ -183,6 +183,7 @@
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ScriptScene.cpp" />
     <ClCompile Include="Setting.cpp" />
+    <ClCompile Include="Sprite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptarray\scriptarray.h" />
@@ -196,6 +197,7 @@
     <ClInclude Include="..\..\..\DXLib\include\DxFunctionWin.h" />
     <ClInclude Include="..\..\..\DXLib\include\DxLib.h" />
     <ClInclude Include="AngelScriptManager.h" />
+    <ClInclude Include="as_smart_ptr_wrapper.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="DxLibResouce.h" />
@@ -207,6 +209,7 @@
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ScriptScene.h" />
     <ClInclude Include="Setting.h" />
+    <ClInclude Include="Sprite.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -87,6 +87,9 @@
     <ClCompile Include="Interfaces.cpp">
       <Filter>スクリプトインターフェース\ソース</Filter>
     </ClCompile>
+    <ClCompile Include="Sprite.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -154,6 +157,12 @@
     </ClInclude>
     <ClInclude Include="Interfaces.h">
       <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="as_smart_ptr_wrapper.h">
+      <Filter>AngelScript</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

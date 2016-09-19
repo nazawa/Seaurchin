@@ -68,6 +68,28 @@ shared_ptr<SceneManager> ExecutionGetManager()
     return manager;
 }
 
+shared_ptr<ScriptScene> ExecutionCreateSceneFromScriptType(asITypeInfo *type)
+{
+    shared_ptr<ScriptScene> ret;
+    if (angelscript->CheckImplementation(type, SU_IF_COSCENE))
+    {
+        auto obj = angelscript->InstantiateObject(type);
+        return shared_ptr<ScriptScene>(new ScriptCoroutineScene(obj));
+    }
+    else if (angelscript->CheckImplementation(type, SU_IF_SCENE))  //最後
+    {
+        auto obj = angelscript->InstantiateObject(type);
+        return shared_ptr<ScriptScene>(new ScriptScene(obj));
+    }
+    else
+    {
+        ostringstream err;
+        err << "Type '" << type->GetName() << "' Doesn't Implement any Scene Interface!\n" << endl;
+        WriteDebugConsole(err.str().c_str());
+        return nullptr;
+    }
+}
+
 void ExecutionStartSystemMenu()
 {
     using namespace boost;
@@ -82,5 +104,31 @@ void ExecutionStartSystemMenu()
 
     angelscript->StartBuildModule("SystemMenu", [](auto inc, auto from, auto sb) { return true; });
     angelscript->LoadFile(sysmf.string().c_str());
-    angelscript->FinishBuildModule();
+    if (!angelscript->FinishBuildModule())
+    {
+        WriteDebugConsole("Can't Comple System Menu!\n");
+        return;
+    }
+    auto mod = angelscript->GetLastModule();
+    
+    //エントリポイント検索
+    int cnt = mod->GetObjectTypeCount();
+    asITypeInfo *type = nullptr;
+    for (int i = 0; i < cnt; i++)
+    {
+        auto cti = mod->GetObjectTypeByIndex(i);
+        if (!angelscript->CheckMetaData(cti, "EntryPoint")) continue;
+        type = cti;
+        type->AddRef();
+        break;
+    }
+    if (!type)
+    {
+        WriteDebugConsole("Entry Point Not Found!\n");
+        return;
+    }
+
+    ExecutionAddScene(ExecutionCreateSceneFromScriptType(type));
+
+    type->Release();
 }

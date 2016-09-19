@@ -46,4 +46,5 @@ void SceneManager::Draw()
 void SceneManager::AddScene(std::shared_ptr<Scene> scene)
 {
     Scenes.push_back(scene);
+    scene->Initialize();
 }

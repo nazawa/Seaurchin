@@ -12,6 +12,7 @@ public:
     inline void SetIndex(int i) { index = i; }
     inline int GetIndex() { return index; }
 
+    virtual void Initialize();
     virtual void Tick(double delta);
     virtual void Draw();
     virtual bool IsDead();

@@ -11,6 +11,12 @@ AngelScript::AngelScript()
     RegisterStdStringUtils(engine);
     engine->SetMessageCallback(asMETHOD(AngelScript, ScriptMessageCallback), this, asCALL_THISCALL);
 
+    //Script Interface
+    InterfacesRegisterGlobalFunction(engine);
+    InterfacesRegisterScene(engine);
+    InterfacesRegisterSprite(engine);
+    InterfaceRegisterSceneFunction(engine);
+
     sharedContext = engine->CreateContext();
     builder.SetIncludeCallback(ScriptIncludeCallback, this);
 }
@@ -39,13 +45,21 @@ bool AngelScript::IncludeFile(std::string include, std::string from)
 
 bool AngelScript::FinishBuildModule()
 {
-    return builder.BuildModule() > 0;
+    return builder.BuildModule() >= 0;
 }
 
 bool AngelScript::CheckMetaData(asITypeInfo *type, std::string meta)
 {
     auto df = builder.GetMetadataStringForType(type->GetTypeId());
     return df == meta;
+}
+
+asIScriptObject * AngelScript::InstantiateObject(asITypeInfo * type)
+{
+    auto factory = type->GetFactoryByIndex(0);
+    sharedContext->Prepare(factory);
+    sharedContext->Execute();
+    return *(asIScriptObject**)sharedContext->GetAddressOfReturnValue();
 }
 
 void AngelScript::ScriptMessageCallback(const asSMessageInfo * message)

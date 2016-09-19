@@ -29,6 +29,6 @@ public:
     void Draw();
 
     void AddScene(std::shared_ptr<Scene> scene);
-
+    inline int GetSceneCount() { return Scenes.size(); }
     
 };

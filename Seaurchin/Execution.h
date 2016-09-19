@@ -12,6 +12,9 @@
 #include <boost/xpressive/xpressive.hpp>
 
 #include "SceneManager.h"
+#include "Scene.h"
+#include "ScriptScene.h"
+#include "Interfaces.h"
 
 //ƒXƒLƒ“‚Ì—ñ‹“ •K{
 void ExecutionEnumerateSkins();
@@ -26,3 +29,4 @@ void ExecutionDraw();
 void ExecutionAddScene(std::shared_ptr<Scene> scene);
 std::shared_ptr<SceneManager> ExecutionGetManager();
 void ExecutionStartSystemMenu();
+std::shared_ptr<ScriptScene> ExecutionCreateSceneFromScriptType(asITypeInfo *type);
