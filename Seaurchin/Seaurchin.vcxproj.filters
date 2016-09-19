@@ -75,6 +75,18 @@
     <ClCompile Include="SceneDebug.cpp">
       <Filter>ビルトインScene</Filter>
     </ClCompile>
+    <ClCompile Include="DxLibResouce.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptScene.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
+    <ClCompile Include="AngelScriptManager.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
+    <ClCompile Include="Interfaces.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -130,6 +142,18 @@
     </ClInclude>
     <ClInclude Include="SceneDebug.h">
       <Filter>ビルトインScene</Filter>
+    </ClInclude>
+    <ClInclude Include="DxLibResouce.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptScene.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="AngelScriptManager.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="Interfaces.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

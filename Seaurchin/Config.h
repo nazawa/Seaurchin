@@ -10,6 +10,7 @@
 #define SU_SKIN_DIR "Skins"
 #define SU_SCRIPT_DIR "Scripts"
 #define SU_SKIN_MAIN_FILE "Skin.as"
+#define SU_SYSTEM_MENU_FILE "System.as"
 
 #define SU_RES_WIDTH 1280
 #define SU_RES_HEIGHT 720

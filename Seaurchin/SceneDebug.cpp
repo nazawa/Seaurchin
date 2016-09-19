@@ -25,6 +25,6 @@ void SceneDebug::Draw()
 
 bool SceneDebug::IsDead()
 {
-    return fps >= 4600.0;
+    return false;
 }
 

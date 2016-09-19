@@ -25,3 +25,4 @@ void ExecutionDraw();
 
 void ExecutionAddScene(std::shared_ptr<Scene> scene);
 std::shared_ptr<SceneManager> ExecutionGetManager();
+void ExecutionStartSystemMenu();

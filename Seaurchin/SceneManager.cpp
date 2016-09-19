@@ -9,18 +9,15 @@ SceneManager
 
 using namespace std;
 
-SceneManager::SceneManager()
+SceneManager::SceneManager(shared_ptr<AngelScript> script)
 {
-    ScriptEngine = asCreateScriptEngine();
-    RegisterScriptMath(ScriptEngine);
-    RegisterScriptArray(ScriptEngine, true);
-    RegisterStdString(ScriptEngine);
-    RegisterStdStringUtils(ScriptEngine);
+    ScriptInterface = script;
+    
 }
 
 SceneManager::~SceneManager()
 {
-    ScriptEngine->Release();
+    
 }
 
 void SceneManager::Tick(double delta)

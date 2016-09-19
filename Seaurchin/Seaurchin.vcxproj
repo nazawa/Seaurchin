@@ -172,12 +172,16 @@
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptmath\scriptmathcomplex.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring_utils.cpp" />
+    <ClCompile Include="AngelScriptManager.cpp" />
     <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="DxLibResouce.cpp" />
     <ClCompile Include="Execution.cpp" />
+    <ClCompile Include="Interfaces.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneDebug.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="ScriptScene.cpp" />
     <ClCompile Include="Setting.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -191,13 +195,17 @@
     <ClInclude Include="..\..\..\DXLib\include\DxDataTypeWin.h" />
     <ClInclude Include="..\..\..\DXLib\include\DxFunctionWin.h" />
     <ClInclude Include="..\..\..\DXLib\include\DxLib.h" />
+    <ClInclude Include="AngelScriptManager.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="DxLibResouce.h" />
     <ClInclude Include="Execution.h" />
+    <ClInclude Include="Interfaces.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneDebug.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="ScriptScene.h" />
     <ClInclude Include="Setting.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

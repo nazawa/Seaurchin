@@ -3,9 +3,11 @@
 #include "Debug.h"
 #include "Setting.h"
 #include "SceneManager.h"
+#include "AngelScriptManager.h"
 
 using namespace std;
 shared_ptr<SceneManager> manager;
+shared_ptr<AngelScript> angelscript;
 
 static bool ExecutionCheckSkinStructure(boost::filesystem::path name);
 
@@ -37,7 +39,9 @@ static bool ExecutionCheckSkinStructure(boost::filesystem::path name)
 
 void ExecutionExecute()
 {
-    manager = shared_ptr<SceneManager>(new SceneManager());
+    angelscript = shared_ptr<AngelScript>(new AngelScript());
+    manager = shared_ptr<SceneManager>(new SceneManager(angelscript));
+    ExecutionStartSystemMenu();
 }
 
 //Tick
@@ -54,7 +58,7 @@ void ExecutionDraw()
     ScreenFlip();
 }
 
-void ExecutionAddScene(std::shared_ptr<Scene> scene)
+void ExecutionAddScene(shared_ptr<Scene> scene)
 {
     manager->AddScene(scene);
 }
@@ -62,4 +66,21 @@ void ExecutionAddScene(std::shared_ptr<Scene> scene)
 shared_ptr<SceneManager> ExecutionGetManager()
 {
     return manager;
+}
+
+void ExecutionStartSystemMenu()
+{
+    using namespace boost;
+    using namespace boost::filesystem;
+
+    path sysmf = SettingGetRootDirectory() / SU_DATA_DIR / SU_SCRIPT_DIR / SU_SYSTEM_MENU_FILE;
+    if (!exists(sysmf))
+    {
+        WriteDebugConsole("System Menu Script Not Found!\n");
+        return;
+    }
+
+    angelscript->StartBuildModule("SystemMenu", [](auto inc, auto from, auto sb) { return true; });
+    angelscript->LoadFile(sysmf.string().c_str());
+    angelscript->FinishBuildModule();
 }

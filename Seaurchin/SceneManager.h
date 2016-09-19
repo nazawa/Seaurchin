@@ -13,19 +13,22 @@
 #include <algorithm>
 
 #include "Scene.h"
+#include "AngelScriptManager.h"
 
 class SceneManager final
 {
 private:
-    asIScriptEngine *ScriptEngine;
+    std::shared_ptr<AngelScript> ScriptInterface;
     std::vector<std::shared_ptr<Scene>> Scenes;
 
 public:
-    SceneManager();
+    SceneManager(std::shared_ptr<AngelScript> script);
     ~SceneManager();
 
     void Tick(double delta);
     void Draw();
 
     void AddScene(std::shared_ptr<Scene> scene);
+
+    
 };
