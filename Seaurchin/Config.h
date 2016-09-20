@@ -7,6 +7,7 @@
 #define SU_APP_VERSION "0.01"
 #define SU_SETTING_FILE "config.json"
 #define SU_DATA_DIR "Data"
+#define SU_IMAGE_DIR "Images"
 #define SU_SKIN_DIR "Skins"
 #define SU_SCRIPT_DIR "Scripts"
 #define SU_SKIN_MAIN_FILE "Skin.as"

@@ -1,10 +1,5 @@
 #pragma once
 
-#include <Windows.h>
-#include <stdio.h>
-#include <string>
-#include <sstream>
-#include <ios>
 
 #include "Config.h"
 
@@ -23,12 +18,15 @@
 #define TerminateDebugFeature _TerminateDebugFeature
 #define WriteDebugConsoleU _WriteDebugConsoleU
 
+#define ASSERT_CALL WriteDebugConsole((string(__func__) + " Called!\n").c_str())
+
 #else // _DEBUGÅAÅ´ÇÕReleaseéû
 
 #define WriteDebugConsole Debug_ReleaseFunction
 #define InitializeDebugFeature Debug_ReleaseFunction
 #define TerminateDebugFeature Debug_ReleaseFunction
 #define WriteDebugConsoleU Debug_ReleaseFunction
+#define ASSERT_CALL
 
 #endif // _DEBUG
 

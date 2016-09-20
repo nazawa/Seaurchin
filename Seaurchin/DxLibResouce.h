@@ -1,18 +1,8 @@
 #pragma once
 
-#include <Windows.h>
-#include <DxLib.h>
-#include <angelscript.h>
-
-#include <string>
-#include <functional>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <memory>
 
 #include "Config.h"
+#include "Debug.h"
 
 class DxLibResource
 {
@@ -33,7 +23,7 @@ protected:
     int size;
 
 private:
-    VirtualFont(std::string name, int size);
+    VirtualFont(int h, std::string name, int size);
 
 public:
     ~VirtualFont();
@@ -42,4 +32,18 @@ public:
 
     inline std::string GetName() { return fontName; }
     inline int GetSize() { return size; }
+    void DrawRaw(const std::string &str, double x, double y);
+};
+
+class Image : public DxLibResource
+{
+protected:
+    int width = -1;
+    int height = -1;
+private:
+    Image(int handle);
+
+public:
+    ~Image();
+    static std::shared_ptr<Image> LoadFromFile(std::string fileName);
 };

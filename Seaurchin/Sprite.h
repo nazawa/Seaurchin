@@ -1,17 +1,7 @@
 #pragma once
 
-#include <Windows.h>
-#include <DxLib.h>
-#include <angelscript.h>
 
-#include <string>
-#include <functional>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <memory>
-
+#include "DxLibResouce.h"
 #include "Config.h"
 #include "Debug.h"
 
@@ -40,17 +30,21 @@ public:
     int ZIndex;
 
     Sprite();
+    Sprite(int number);
     ~Sprite();
 
-    void Tick(float delta);
-    void Draw();
+    virtual void Tick(float delta);
+    virtual void Draw();
 };
 
 class ImageSprite : public Sprite
 {
-
+public:
+    std::shared_ptr<Image> Source;
+    void Draw() override;
 };
 
 void SpriteCtorTransform2D(void *memory);
 void SpriteDtorTransform2D(void *memory);
-Sprite* SpriteFactorySprite();
+std::shared_ptr<Sprite> SpriteFactorySprite(int number);
+std::shared_ptr<ImageSprite> SpriteFactoryImageSprite();

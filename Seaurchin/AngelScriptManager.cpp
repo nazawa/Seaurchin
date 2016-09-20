@@ -12,9 +12,9 @@ AngelScript::AngelScript()
     engine->SetMessageCallback(asMETHOD(AngelScript, ScriptMessageCallback), this, asCALL_THISCALL);
 
     //Script Interface
-    InterfacesRegisterGlobalFunction(engine);
-    InterfacesRegisterScene(engine);
     InterfacesRegisterSprite(engine);
+    InterfacesRegisterScene(engine);
+    InterfacesRegisterGlobalFunction(engine);
     InterfaceRegisterSceneFunction(engine);
 
     sharedContext = engine->CreateContext();

@@ -1,11 +1,5 @@
 #pragma once
 
-#include <Windows.h>
-#include <DxLib.h>
-#include <angelscript.h>
-#include <vector>
-#include <memory>
-#include <algorithm>
 
 #include "Config.h"
 #include "Scene.h"

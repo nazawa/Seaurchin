@@ -31,11 +31,17 @@ void ScriptScene::Initialize()
 void ScriptScene::Tick(double delta)
 {
     auto func = sceneType->GetMethodByDecl("void Tick(double)");
-
+    context->Prepare(func);
+    context->SetObject(sceneObject);
+    context->Execute();
 }
 
 void ScriptScene::Draw()
 {
+    auto func = sceneType->GetMethodByDecl("void Draw()");
+    context->Prepare(func);
+    context->SetObject(sceneObject);
+    context->Execute();
 }
 
 bool ScriptScene::IsDead()

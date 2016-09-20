@@ -1,20 +1,5 @@
 #pragma once
 
-#include <Windows.h>
-#include <DxLib.h>
-#include <angelscript.h>
-#include <scriptbuilder\scriptbuilder.h>
-#include <scriptarray\scriptarray.h>
-#include <scriptmath\scriptmath.h>
-#include <scriptmath\scriptmathcomplex.h>
-#include <scriptstdstring\scriptstdstring.h>
-#include <vector>
-#include <memory>
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <algorithm>
-#include <functional>
 
 #include "Debug.h"
 #include "Interfaces.h"

@@ -16,7 +16,7 @@ void InterfacesRegisterScene(asIScriptEngine *engine)
 void InterfacesRegisterSprite(asIScriptEngine *engine)
 {
     //Transform2D
-    engine->RegisterObjectType(SU_IF_TF2D, sizeof(Transform2D), asOBJ_VALUE);
+    engine->RegisterObjectType(SU_IF_TF2D, sizeof(Transform2D), asOBJ_VALUE | asOBJ_APP_CLASS_CD);
     engine->RegisterObjectBehaviour(SU_IF_TF2D, asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(SpriteCtorTransform2D), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour(SU_IF_TF2D, asBEHAVE_DESTRUCT, "void f()", asFUNCTION(SpriteDtorTransform2D), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectProperty(SU_IF_TF2D, "double X", asOFFSET(Transform2D, X));
@@ -27,15 +27,36 @@ void InterfacesRegisterSprite(asIScriptEngine *engine)
     engine->RegisterObjectProperty(SU_IF_TF2D, "double ScaleX", asOFFSET(Transform2D, ScaleX));
     engine->RegisterObjectProperty(SU_IF_TF2D, "double ScaleY", asOFFSET(Transform2D, ScaleY));
 
-    InterfacesRegisterSharedClass<Sprite>(engine, SU_IF_SPRITE);
-    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_TF2D " get_Transform() const", GETTER(Sprite, Transform), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(SU_IF_SPRITE, "void set_Transform(const " SU_IF_TF2D ")", SETTER(Sprite, Transform), asCALL_CDECL_OBJFIRST);
+    //Image
+    InterfacesRegisterSharedClass<Image>(engine, SU_IF_IMAGE);
 
+    //VirtualFont
+    InterfacesRegisterSharedClass<VirtualFont>(engine, SU_IF_VFONT);
+    //engine->RegisterObjectMethod(SU_IF_VFONT, "void DrawRaw(const string & in, double, double)", CALLER(VirtualFont, DrawRaw), asCALL_CDECL_OBJFIRST);
+
+    //Sprite
+    InterfacesRegisterSharedClass<Sprite>(engine, SU_IF_SPRITE);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_TF2D "& get_Transform() const", REF_GETTER(Sprite, Transform), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, "void set_Transform(const " SU_IF_TF2D "& in)", REF_SETTER(Sprite, Transform), asCALL_CDECL_OBJFIRST);
+
+
+    //ImageSprite
+    InterfacesRegisterSharedClass<ImageSprite>(engine, SU_IF_IMGSPRITE);
+    engine->RegisterObjectMethod(SU_IF_IMGSPRITE, SU_IF_TF2D "& get_Transform() const", REF_GETTER(ImageSprite, Transform), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(SU_IF_IMGSPRITE, "void set_Transform(const " SU_IF_TF2D "& in)", REF_SETTER(ImageSprite, Transform), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(SU_IF_IMGSPRITE, SU_IF_IMAGE " get_Source() const", GETTER(ImageSprite, Source), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(SU_IF_IMGSPRITE, "void set_Source(const " SU_IF_IMAGE ")", SETTER(ImageSprite, Source), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(SU_IF_IMGSPRITE, "void Draw()", CALLER(ImageSprite, Draw), asCALL_CDECL_OBJFIRST);
 }
 
 void InterfacesRegisterGlobalFunction(asIScriptEngine *engine)
 {
     engine->RegisterGlobalFunction("void WriteDebugConsole(const string &in)", asFUNCTION(WriteDebugConsoleU), asCALL_CDECL);
+    engine->RegisterGlobalFunction(SU_IF_VFONT " CreateVirtualFont(const string & in, int)", asFUNCTION(CreateVirtualFont), asCALL_CDECL);
+    engine->RegisterGlobalFunction(SU_IF_IMAGE " LoadSystemImage(const string &in)", asFUNCTION(LoadSystemImage), asCALL_CDECL);
+    engine->RegisterGlobalFunction(SU_IF_SPRITE " CreateSprite(int)", asFUNCTION(SpriteFactorySprite), asCALL_CDECL);
+    engine->RegisterGlobalFunction(SU_IF_IMGSPRITE " CreateImageSprite()", asFUNCTION(SpriteFactoryImageSprite), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void DrawRawString(" SU_IF_VFONT ", const string & in, double, double)", asFUNCTION(DrawRawString), asCALL_CDECL);
 }
 
 void InterfaceRegisterSceneFunction(asIScriptEngine *engine)
@@ -46,5 +67,5 @@ void InterfaceRegisterSceneFunction(asIScriptEngine *engine)
 
 void InterfacesRegisterDrawFunction(asIScriptEngine *engine)
 {
-    
+
 }

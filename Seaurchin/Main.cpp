@@ -1,7 +1,7 @@
 #include "Main.h"
 #include "Debug.h"
 #include "Setting.h"
-#include "Execution.h"
+#include "ExecutionManager.h"
 #include "SceneDebug.h"
 
 using namespace std;
@@ -11,6 +11,8 @@ void PreInitialize(HINSTANCE hInstance);
 void Initialize();
 void Run();
 void Terminate();
+
+ExecutionManager Manager;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -42,9 +44,9 @@ void Initialize()
     WriteDebugConsole(TEXT("DxLib_Init\n"));
 
     SettingLoadSetting();
-    ExecutionEnumerateSkins();
-    ExecutionExecute();
-    ExecutionAddScene(shared_ptr<Scene>(new SceneDebug()));
+    Manager.EnumerateSkins();
+    Manager.InitializeExecution();
+    Manager.AddScene(shared_ptr<Scene>(new SceneDebug()));
     
 }
 
@@ -57,8 +59,8 @@ void Run()
         pstart = start;
         start = high_resolution_clock::now();
         float delta = duration_cast<nanoseconds>(start - pstart).count() / 1000000000.0;
-        ExecutionTick(delta);
-        ExecutionDraw();
+        Manager.Tick(delta);
+        Manager.Draw();
     }
 }
 
