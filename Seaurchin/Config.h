@@ -7,9 +7,17 @@
 #define SU_APP_VERSION "0.01"
 #define SU_SETTING_FILE "config.json"
 #define SU_DATA_DIR "Data"
+#define SU_IMAGE_DIR "Images"
 #define SU_SKIN_DIR "Skins"
 #define SU_SCRIPT_DIR "Scripts"
 #define SU_SKIN_MAIN_FILE "Skin.as"
+#define SU_SYSTEM_MENU_FILE "System.as"
+
+#define SU_FONT_SYSTEM "‚l‚r ƒSƒVƒbƒN"
 
 #define SU_RES_WIDTH 1280
 #define SU_RES_HEIGHT 720
+
+//AngelScript‚ÌUserData—p
+#define SU_UDTYPE_SCENE 100
+#define SU_UDTYPE_WAIT 101

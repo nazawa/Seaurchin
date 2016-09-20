@@ -13,6 +13,10 @@ Scene::~Scene()
 {
 }
 
+void Scene::Initialize()
+{
+}
+
 void Scene::Tick(double delta)
 {
 }

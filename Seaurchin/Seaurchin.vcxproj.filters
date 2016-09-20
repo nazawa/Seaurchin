@@ -63,17 +63,35 @@
     <ClCompile Include="Setting.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Execution.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneManager.cpp">
-      <Filter>スクリプトインターフェース\ソース</Filter>
-    </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>スクリプトインターフェース\ソース</Filter>
     </ClCompile>
     <ClCompile Include="SceneDebug.cpp">
       <Filter>ビルトインScene</Filter>
+    </ClCompile>
+    <ClCompile Include="DxLibResouce.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptScene.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
+    <ClCompile Include="AngelScriptManager.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
+    <ClCompile Include="Interfaces.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
+    <ClCompile Include="PrecompiledHeader.cpp">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemFunction.cpp">
+      <Filter>スクリプトインターフェース\ソース</Filter>
+    </ClCompile>
+    <ClCompile Include="ExecutionManager.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,17 +137,38 @@
     <ClInclude Include="Setting.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Execution.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneManager.h">
-      <Filter>スクリプトインターフェース\ヘッダー</Filter>
-    </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>スクリプトインターフェース\ヘッダー</Filter>
     </ClInclude>
     <ClInclude Include="SceneDebug.h">
       <Filter>ビルトインScene</Filter>
+    </ClInclude>
+    <ClInclude Include="DxLibResouce.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptScene.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="AngelScriptManager.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="Interfaces.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="as_smart_ptr_wrapper.h">
+      <Filter>AngelScript</Filter>
+    </ClInclude>
+    <ClInclude Include="PrecompiledHeader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemFunction.h">
+      <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="ExecutionManager.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,15 +1,5 @@
 #pragma once
 
-#include <Windows.h>
-#include <Shlwapi.h>
-
-#include <stdio.h>
-
-#include <ios>
-#include <string>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-
 //Settingƒ‚ƒWƒ…[ƒ‹‰Šú‰»
 void InitializeSetting(HMODULE hModule);
 
