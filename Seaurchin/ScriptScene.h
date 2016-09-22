@@ -58,3 +58,5 @@ public:
 
 void ScriptSceneYieldTime(double time);
 void ScriptSceneYieldFrames(int64_t frames);
+bool ScriptSceneIsKeyHeld(int keynum);
+bool ScriptSceneIsKeyTriggered(int keynum);

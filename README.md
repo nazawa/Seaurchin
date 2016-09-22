@@ -3,10 +3,11 @@ Chunithm Simulator
 
 ## 仕様ライブラリとか
 * DXライブラリ
-* Effekseer
 * AngelScript
 * Boost
 * FreeType
+* libpng
+* LZMA SDK
 
 # ライセンス
 本体はMIT License

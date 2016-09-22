@@ -44,7 +44,23 @@ public:
     void Draw() override;
 };
 
+class TextSprite : public Sprite
+{
+private:
+    int handle;
+    std::shared_ptr<RenderTarget> cache;
+
+public:
+    std::shared_ptr<Font> Font;
+    std::string Text;           //UTF-8èÛë‘
+
+    void Draw() override;
+    void Refresh();
+    void SetText(const std::string& str);
+};
+
 void SpriteCtorTransform2D(void *memory);
 void SpriteDtorTransform2D(void *memory);
 std::shared_ptr<Sprite> SpriteFactorySprite(int number);
 std::shared_ptr<ImageSprite> SpriteFactoryImageSprite();
+std::shared_ptr<TextSprite> SpriteFactoryTextSprite();

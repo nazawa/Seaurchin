@@ -8,10 +8,14 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
+#include <cassert>
+#include <cstring>
+#include <cmath>
 
 //C++ Standard
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <vector>
 #include <memory>
@@ -20,6 +24,9 @@
 #include <chrono>
 #include <ios>
 #include <map>
+#include <utility>
+#include <limits>
+#include <unordered_map>
 
 //Boost
 #include <boost/property_tree/ptree.hpp>
@@ -38,3 +45,9 @@
 #include <scriptmath\scriptmathcomplex.h>
 #include <scriptstdstring\scriptstdstring.h>
 #include "as_smart_ptr_wrapper.h"
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+#include <zlib.h>
+#include <png.h>

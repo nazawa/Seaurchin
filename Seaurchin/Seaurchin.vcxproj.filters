@@ -16,9 +16,6 @@
     <Filter Include="AngelScript">
       <UniqueIdentifier>{87ea7fd2-c3b6-46dd-8e22-9281aba4e9b2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Boost">
-      <UniqueIdentifier>{3149afbf-5633-4bd8-97ed-0f1421ebed85}</UniqueIdentifier>
-    </Filter>
     <Filter Include="DxLib">
       <UniqueIdentifier>{ae2ec05a-0be6-454c-8a8e-79924e08525e}</UniqueIdentifier>
     </Filter>
@@ -33,6 +30,9 @@
     </Filter>
     <Filter Include="ビルトインScene">
       <UniqueIdentifier>{4746231b-3d1e-4fad-8c89-7f368eb8ce63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="その他">
+      <UniqueIdentifier>{3149afbf-5633-4bd8-97ed-0f1421ebed85}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

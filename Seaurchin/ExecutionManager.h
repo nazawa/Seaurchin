@@ -5,19 +5,14 @@
 #include "ScriptScene.h"
 #include "Interfaces.h"
 
-typedef struct
-{
-    char Current[256];
-    char Last[256];
-    char Trigger[256];
-} KeyState;
-
 class ExecutionManager final
 {
 private:
     std::shared_ptr<AngelScript> ScriptInterface;
     std::vector<std::shared_ptr<Scene>> Scenes;
-    KeyState SharedKeyState;
+
+    std::shared_ptr<SharedInfo> Shared;
+    std::shared_ptr<KeyState> SharedKeyState;
 
 public:
     ExecutionManager();

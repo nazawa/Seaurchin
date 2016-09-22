@@ -1,5 +1,7 @@
 #include "ScriptScene.h"
 
+static void ScriptSceneWarnOutOf(std::string type, asIScriptContext *ctx);
+
 ScriptScene::ScriptScene(asIScriptObject *scene)
 {
     sceneObject = scene;
@@ -91,16 +93,21 @@ bool ScriptCoroutineScene::IsDead()
 }
 
 // Scene用メソッド
+static void ScriptSceneWarnOutOf(std::string type, asIScriptContext *ctx)
+{
+    const char *secn;
+    int col, row;
+    row = ctx->GetLineNumber(0, &col, &secn);
+    ctx->GetEngine()->WriteMessage(secn, row, col, asEMsgType::asMSGTYPE_WARNING, ("You can call Yield Function only from " + type + "!").c_str());
+}
+
 void ScriptSceneYieldTime(double time)
 {
     auto ctx = asGetActiveContext();
     auto pcw = (CoroutineWait*)ctx->GetUserData(SU_UDTYPE_WAIT);
     if (!pcw)
     {
-        const char *secn;
-        int col, row;
-        row = ctx->GetLineNumber(0, &col, &secn);
-        ctx->GetEngine()->WriteMessage(secn, row, col, asEMsgType::asMSGTYPE_WARNING, "You can call Yield Function only from Coroutine Function!");
+        ScriptSceneWarnOutOf("Coroutine Function", ctx);
         return;
     }
     pcw->type = WaitType::Time;
@@ -114,13 +121,34 @@ void ScriptSceneYieldFrames(int64_t frames)
     auto pcw = (CoroutineWait*)ctx->GetUserData(SU_UDTYPE_WAIT);
     if (!pcw)
     {
-        const char *secn;
-        int col, row;
-        row = ctx->GetLineNumber(0, &col, &secn);
-        ctx->GetEngine()->WriteMessage(secn, row, col, asEMsgType::asMSGTYPE_WARNING, "You can call Yield Function only from Coroutine Function!");
+        ScriptSceneWarnOutOf("Coroutine Function", ctx);
         return;
     }
     pcw->type = WaitType::Frame;
     pcw->frames = frames;
     ctx->Suspend();
+}
+
+bool ScriptSceneIsKeyHeld(int keynum)
+{
+    auto ctx = asGetActiveContext();
+    auto psc = (Scene*)ctx->GetUserData(SU_UDTYPE_SCENE);
+    if (!psc)
+    {
+        ScriptSceneWarnOutOf("Scene Class", ctx);
+        return false;
+    }
+    return psc->GetSharedInfo()->Key->Current[keynum];
+}
+
+bool ScriptSceneIsKeyTriggered(int keynum)
+{
+    auto ctx = asGetActiveContext();
+    auto psc = (Scene*)ctx->GetUserData(SU_UDTYPE_SCENE);
+    if (!psc)
+    {
+        ScriptSceneWarnOutOf("Scene Class", ctx);
+        return false;
+    }
+    return psc->GetSharedInfo()->Key->Trigger[keynum];
 }

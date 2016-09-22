@@ -12,6 +12,7 @@ AngelScript::AngelScript()
     engine->SetMessageCallback(asMETHOD(AngelScript, ScriptMessageCallback), this, asCALL_THISCALL);
 
     //Script Interface
+    InterfacesRegisterEnum(engine);
     InterfacesRegisterSprite(engine);
     InterfacesRegisterScene(engine);
     InterfacesRegisterGlobalFunction(engine);

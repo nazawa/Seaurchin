@@ -7,12 +7,15 @@
 #include "ScriptScene.h"
 #include "SystemFunction.h"
 
+#define SU_IF_KEY "Key"
 #define SU_IF_SCENE "Scene"
 #define SU_IF_COSCENE "CoroutineScene"
 #define SU_IF_TF2D "Transform2D"
 #define SU_IF_IMAGE "Image"
+#define SU_IF_FONT "Font"
 #define SU_IF_VFONT "VirtualFont"
 #define SU_IF_SPRITE "Sprite"
+#define SU_IF_TXTSPRITE "TextSprite"
 #define SU_IF_IMGSPRITE "ImageSprite"
 
 //Helpers from as_smart_ptr_wrapper
@@ -53,5 +56,6 @@ void InterfacesRegisterSharedClass(asIScriptEngine *engine, std::string classnam
 
 void InterfacesRegisterScene(asIScriptEngine *engine);
 void InterfacesRegisterSprite(asIScriptEngine *engine);
+void InterfacesRegisterEnum(asIScriptEngine *engine);
 void InterfacesRegisterGlobalFunction(asIScriptEngine *engine);
 void InterfaceRegisterSceneFunction(asIScriptEngine *engine);

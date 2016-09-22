@@ -59,3 +59,35 @@ void ImageSprite::Draw()
         Transform.Angle,
         Source->GetHandle(), TRUE);
 }
+
+// TextSprite ----------------------------
+
+void TextSprite::Draw()
+{
+    DrawRotaGraph3F(
+        Transform.X, Transform.Y,
+        Transform.OriginX, Transform.OriginY,
+        Transform.ScaleX, Transform.ScaleY,
+        Transform.Angle,
+        cache->GetHandle(), TRUE);
+}
+
+void TextSprite::Refresh()
+{
+    int w = Font->DrawRawUTF8(Text, INT_MIN, 0);
+    cache = RenderTarget::Create(w, Font->GetSize());
+    BEGIN_DRAW_TRANSACTION(cache->GetHandle());
+    Font->DrawRawUTF8(Text, 0, 0);
+    FINISH_DRAW_TRANSACTION;
+}
+
+void TextSprite::SetText(const std::string & str)
+{
+    Text = str;
+    Refresh();
+}
+
+std::shared_ptr<TextSprite> SpriteFactoryTextSprite()
+{
+    return std::shared_ptr<TextSprite>(new TextSprite());
+}

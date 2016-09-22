@@ -9,6 +9,10 @@ using namespace std;
 ExecutionManager::ExecutionManager()
 {
     ScriptInterface = shared_ptr<AngelScript>(new AngelScript());
+
+    Shared = shared_ptr<SharedInfo>(new SharedInfo());
+    SharedKeyState = shared_ptr<KeyState>(new KeyState());
+    Shared->Key = SharedKeyState;
 }
 
 void ExecutionManager::EnumerateSkins()
@@ -35,9 +39,9 @@ void ExecutionManager::InitializeExecution()
 //Tick
 void ExecutionManager::Tick(double delta)
 {
-    memcpy_s(SharedKeyState.Last, 256, SharedKeyState.Current, 256);
-    GetHitKeyStateAll(SharedKeyState.Current);
-    for (int i = 0; i < 256; i++) SharedKeyState.Trigger[i] = !SharedKeyState.Last[i] && SharedKeyState.Current[i];
+    memcpy_s(SharedKeyState->Last, 256, SharedKeyState->Current, 256);
+    GetHitKeyStateAll(SharedKeyState->Current);
+    for (int i = 0; i < 256; i++) SharedKeyState->Trigger[i] = !SharedKeyState->Last[i] && SharedKeyState->Current[i];
 
     sort(Scenes.begin(), Scenes.end(), [](shared_ptr<Scene> sa, shared_ptr<Scene> sb) { return sa->GetIndex() < sb->GetIndex(); });
     auto i = Scenes.begin();
@@ -66,6 +70,7 @@ void ExecutionManager::Draw()
 void ExecutionManager::AddScene(shared_ptr<Scene> scene)
 {
     Scenes.push_back(scene);
+    scene->SetSharedInfo(Shared);
     scene->Initialize();
 }
 

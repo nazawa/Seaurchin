@@ -9,6 +9,8 @@
 #define SU_DATA_DIR "Data"
 #define SU_IMAGE_DIR "Images"
 #define SU_SKIN_DIR "Skins"
+#define SU_FONT_DIR "Fonts"
+#define SU_CACHE_DIR "Cache"
 #define SU_SCRIPT_DIR "Scripts"
 #define SU_SKIN_MAIN_FILE "Skin.as"
 #define SU_SYSTEM_MENU_FILE "System.as"

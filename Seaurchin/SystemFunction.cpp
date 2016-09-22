@@ -25,9 +25,20 @@ shared_ptr<Image> LoadSystemImage(const string & file)
     return Image::LoadFromFile(p.string());
 }
 
+std::shared_ptr<Font> LoadSystemFont(const std::string & file)
+{
+    path p = SettingGetRootDirectory() / SU_DATA_DIR / SU_FONT_DIR / (ConvertUTF8ToShiftJis(file) + ".sif");
+    return Font::LoadFromFile(p.string());
+}
+
 shared_ptr<VirtualFont> CreateVirtualFont(const string & name, int size)
 {
     return VirtualFont::Create(name, size);
+}
+
+void CreateImageFont(const std::string & fileName, const std::string & saveName, int size)
+{
+    Font::CreateAndSave(fileName, saveName, size, 1024, 1024);
 }
 
 void DrawRawString(shared_ptr<VirtualFont> font, const string &str, double x, double y)
