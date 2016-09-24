@@ -1,6 +1,6 @@
 #include "ScriptScene.h"
 
-static void ScriptSceneWarnOutOf(std::string type, asIScriptContext *ctx);
+using namespace std;
 
 ScriptScene::ScriptScene(asIScriptObject *scene)
 {
@@ -33,6 +33,7 @@ void ScriptScene::Initialize()
 void ScriptScene::Tick(double delta)
 {
     auto func = sceneType->GetMethodByDecl("void Tick(double)");
+    manager.Tick(delta);
     context->Prepare(func);
     context->SetObject(sceneObject);
     context->Execute();
@@ -63,6 +64,9 @@ ScriptCoroutineScene::ScriptCoroutineScene(asIScriptObject *scene) : ScriptScene
 
 void ScriptCoroutineScene::Tick(double delta)
 {
+    manager.Tick(delta);
+
+    //Run()
     switch (wait.type)
     {
     case WaitType::Frame:
@@ -74,7 +78,6 @@ void ScriptCoroutineScene::Tick(double delta)
         if (wait.time > 0.0) return;
         break;
     }
-
     auto result = runningContext->Execute();
     if (result != asEXECUTION_SUSPENDED) finished = true;
 }
@@ -93,7 +96,7 @@ bool ScriptCoroutineScene::IsDead()
 }
 
 // Scene用メソッド
-static void ScriptSceneWarnOutOf(std::string type, asIScriptContext *ctx)
+static void ScriptSceneWarnOutOf(string type, asIScriptContext *ctx)
 {
     const char *secn;
     int col, row;
@@ -151,4 +154,16 @@ bool ScriptSceneIsKeyTriggered(int keynum)
         return false;
     }
     return psc->GetSharedInfo()->Key->Trigger[keynum];
+}
+
+void ScriptSceneAddMove(shared_ptr<Sprite> sprite, const string &move)
+{
+    auto ctx = asGetActiveContext();
+    auto psc = static_cast<Scene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
+    if (!psc)
+    {
+        ScriptSceneWarnOutOf("Scene Class", ctx);
+        return;
+    }
+    psc->AddMove(sprite, move);
 }

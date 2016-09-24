@@ -82,11 +82,13 @@ void InterfaceRegisterSceneFunction(asIScriptEngine *engine)
     engine->RegisterGlobalFunction("void YieldFrame(int64)", asFUNCTION(ScriptSceneYieldFrames), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool IsKeyHeld(int)", asFUNCTION(ScriptSceneIsKeyHeld), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool IsKeyTriggered(int)", asFUNCTION(ScriptSceneIsKeyTriggered), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void AddMove(" SU_IF_IMGSPRITE ", const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void AddMove(" SU_IF_TXTSPRITE ", const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);
 }
 
 void InterfacesRegisterDrawFunction(asIScriptEngine *engine)
 {
-
+    
 }
 
 void InterfacesRegisterEnum(asIScriptEngine * engine)
@@ -95,7 +97,6 @@ void InterfacesRegisterEnum(asIScriptEngine * engine)
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_BACK", KEY_INPUT_BACK);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_TAB", KEY_INPUT_TAB);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_RETURN", KEY_INPUT_RETURN);
-
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_LSHIFT", KEY_INPUT_LSHIFT);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_RSHIFT", KEY_INPUT_RSHIFT);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_LCONTROL", KEY_INPUT_LCONTROL);
@@ -112,7 +113,6 @@ void InterfacesRegisterEnum(asIScriptEngine * engine)
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_DOWN", KEY_INPUT_DOWN);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_INSERT", KEY_INPUT_INSERT);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_DELETE", KEY_INPUT_DELETE);
-
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_MINUS", KEY_INPUT_MINUS);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_YEN", KEY_INPUT_YEN);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_PREVTRACK", KEY_INPUT_PREVTRACK);
@@ -138,7 +138,6 @@ void InterfacesRegisterEnum(asIScriptEngine * engine)
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_PAUSE", KEY_INPUT_PAUSE);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_LWIN", KEY_INPUT_LWIN);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_RWIN", KEY_INPUT_RWIN);
-
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_NUMLOCK", KEY_INPUT_NUMLOCK);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_NUMPAD0", KEY_INPUT_NUMPAD0);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_NUMPAD1", KEY_INPUT_NUMPAD1);
@@ -156,7 +155,6 @@ void InterfacesRegisterEnum(asIScriptEngine * engine)
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_DECIMAL", KEY_INPUT_DECIMAL);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_DIVIDE", KEY_INPUT_DIVIDE);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_NUMPADENTER", KEY_INPUT_NUMPADENTER);
-
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_F1", KEY_INPUT_F1);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_F2", KEY_INPUT_F2);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_F3", KEY_INPUT_F3);
@@ -169,7 +167,6 @@ void InterfacesRegisterEnum(asIScriptEngine * engine)
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_F10", KEY_INPUT_F10);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_F11", KEY_INPUT_F11);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_F12", KEY_INPUT_F12);
-
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_A", KEY_INPUT_A);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_B", KEY_INPUT_B);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_C", KEY_INPUT_C);
@@ -196,7 +193,6 @@ void InterfacesRegisterEnum(asIScriptEngine * engine)
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_X", KEY_INPUT_X);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_Y", KEY_INPUT_Y);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_Z", KEY_INPUT_Z);
-
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_0", KEY_INPUT_0);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_1", KEY_INPUT_1);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_2", KEY_INPUT_2);

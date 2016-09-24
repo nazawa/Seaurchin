@@ -50,12 +50,12 @@ Image::~Image()
 
 std::shared_ptr<Image> Image::LoadFromFile(std::string fileName)
 {
-    return std::shared_ptr<Image>(new Image(LoadGraph(fileName.c_str())));
+    return shared_ptr<Image>(new Image(LoadGraph(fileName.c_str())));
 }
 
 std::shared_ptr<Image> Image::LoadFromMemory(void * buffer, int size)
 {
-    return std::shared_ptr<Image>(new Image(CreateGraphFromMem(buffer, size)));
+    return shared_ptr<Image>(new Image(CreateGraphFromMem(buffer, size)));
 }
 
 // Font ------------------------------

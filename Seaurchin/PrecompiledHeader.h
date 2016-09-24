@@ -5,6 +5,7 @@
 #include <Shlwapi.h>
 
 //C Runtime
+#define _USE_MATH_DEFINES
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
@@ -27,13 +28,19 @@
 #include <utility>
 #include <limits>
 #include <unordered_map>
+#include <forward_list>
+#include <list>
+#include <tuple>
 
 //Boost
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/crc.hpp>
 
 //Libraries
 #include <DxLib.h>

@@ -86,7 +86,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_SCL_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>C:\Programming\DXLib\include;C:\Programming\AngelScript\angelscript\include;C:\Programming\AngelScript\add_on;C:\Programming\Boost\include\boost-1_61;C:\Programming\FreeType\include;C:\Programming\libpng\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -127,7 +127,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_SCL_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>C:\Programming\DXLib\include;C:\Programming\AngelScript\angelscript\include;C:\Programming\AngelScript\add_on;C:\Programming\Boost\include\boost-1_61;C:\Programming\FreeType\include;C:\Programming\libpng\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -177,6 +177,7 @@
     <ClCompile Include="AngelScriptManager.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="DxLibResouce.cpp" />
+    <ClCompile Include="Easing.cpp" />
     <ClCompile Include="ExecutionManager.cpp" />
     <ClCompile Include="Interfaces.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -191,6 +192,7 @@
     <ClCompile Include="ScriptScene.cpp" />
     <ClCompile Include="Setting.cpp" />
     <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="SystemFunction.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -209,6 +211,7 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="DxLibResouce.h" />
+    <ClInclude Include="Easing.h" />
     <ClInclude Include="ExecutionManager.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="Main.h" />
@@ -218,6 +221,7 @@
     <ClInclude Include="ScriptScene.h" />
     <ClInclude Include="Setting.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="SystemFunction.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

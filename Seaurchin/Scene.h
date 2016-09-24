@@ -1,4 +1,6 @@
 #pragma once
+#include "Sprite.h"
+#include "SpriteManager.h"
 
 typedef struct
 {
@@ -17,6 +19,7 @@ class Scene
 protected:
     int index;
     std::shared_ptr<SharedInfo> sharedInfo;
+    SpriteManager manager;
 
 public:
     Scene();
@@ -31,4 +34,5 @@ public:
     virtual void Tick(double delta);
     virtual void Draw();
     virtual bool IsDead();
+    virtual void AddMove(std::shared_ptr<Sprite> sprite, const std::string &move);
 };

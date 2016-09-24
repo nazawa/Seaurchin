@@ -56,7 +56,9 @@ public:
 
 };
 
+void ScriptSceneWarnOutOf(std::string type, asIScriptContext *ctx);
 void ScriptSceneYieldTime(double time);
 void ScriptSceneYieldFrames(int64_t frames);
 bool ScriptSceneIsKeyHeld(int keynum);
 bool ScriptSceneIsKeyTriggered(int keynum);
+void ScriptSceneAddMove(std::shared_ptr<Sprite> sprite, const std::string &move);
