@@ -42,6 +42,7 @@ public:
     //true•Ô‚¹‚Îˆí‚Å‚à’†’i‚Å‚«‚é
 
     static bool ActionMoveTo(std::shared_ptr<Sprite> target, Mover &mover, double delta);
+    static bool ActionMoveBy(std::shared_ptr<Sprite> target, Mover &mover, double delta);
 };
 
 //http://iorate.hatenablog.com/entry/20110115/1295108835

@@ -164,7 +164,7 @@ void Font::CreateAndSave(std::string name, std::string save, int size, int texWi
     WriteDebugConsole(ss.str().c_str());
 
     //‘‚«‚İŠJn
-    path sfn = SettingGetRootDirectory() / SU_DATA_DIR / SU_FONT_DIR / (save + ".sif");
+    path sfn = Setting::GetRootDirectory() / SU_DATA_DIR / SU_FONT_DIR / (save + ".sif");
     fontstream.open(sfn.string(), ios::out | ios::trunc | ios::binary);
     fontstream.seekp(sizeof(FontDataHeader));
 
@@ -208,7 +208,7 @@ void Font::CreateAndSave(std::string name, std::string save, int size, int texWi
             //æ‚ÉŒ»s‚Ì‚ğ•Û‘¶‚·‚é
             ss.str("");
             ss << "FontOutput" << imgidx << ".png";
-            auto ffp = SettingGetRootDirectory() / SU_DATA_DIR / SU_CACHE_DIR / ss.str();
+            auto ffp = Setting::GetRootDirectory() / SU_DATA_DIR / SU_CACHE_DIR / ss.str();
             SaveFontTexture(bitmap, texWidth, texHeight, ffp.string().c_str());
             delete[] bitmap;
             bitmap = new uint8_t[texWidth * texHeight * 2];
@@ -248,7 +248,7 @@ void Font::CreateAndSave(std::string name, std::string save, int size, int texWi
 
     ss.str("");
     ss << "FontOutput" << imgidx << ".png";
-    auto ffp = SettingGetRootDirectory() / SU_DATA_DIR / SU_CACHE_DIR / ss.str();
+    auto ffp = Setting::GetRootDirectory() / SU_DATA_DIR / SU_CACHE_DIR / ss.str();
     SaveFontTexture(bitmap, texWidth, texHeight, ffp.string().c_str());
     delete[] bitmap;
     imgidx++;
@@ -266,7 +266,7 @@ void Font::CreateAndSave(std::string name, std::string save, int size, int texWi
         std::ifstream fif;
         ss.str("");
         ss << "FontOutput" << i << ".png";
-        ffp = SettingGetRootDirectory() / SU_DATA_DIR / SU_CACHE_DIR / ss.str();
+        ffp = Setting::GetRootDirectory() / SU_DATA_DIR / SU_CACHE_DIR / ss.str();
         fif.open(ffp.string(), ios::binary | ios::in);
         int fsize = fif.seekg(0, ios::end).tellg();
 

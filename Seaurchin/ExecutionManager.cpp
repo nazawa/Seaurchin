@@ -21,7 +21,7 @@ void ExecutionManager::EnumerateSkins()
     using namespace boost::filesystem;
     using namespace boost::xpressive;
 
-    path sepath = SettingGetRootDirectory() / SU_DATA_DIR / SU_SKIN_DIR;
+    path sepath = Setting::GetRootDirectory() / SU_DATA_DIR / SU_SKIN_DIR;
 
     for (const auto& fdata : make_iterator_range(directory_iterator(sepath), {}))
     {
@@ -101,7 +101,7 @@ void ExecutionManager::StartSystemMenu()
     using namespace boost;
     using namespace boost::filesystem;
 
-    path sysmf = SettingGetRootDirectory() / SU_DATA_DIR / SU_SCRIPT_DIR / SU_SYSTEM_MENU_FILE;
+    path sysmf = Setting::GetRootDirectory() / SU_DATA_DIR / SU_SCRIPT_DIR / SU_SYSTEM_MENU_FILE;
     if (!exists(sysmf))
     {
         WriteDebugConsole("System Menu Script Not Found!\n");

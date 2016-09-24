@@ -13,6 +13,7 @@ void Run();
 void Terminate();
 
 ExecutionManager Manager;
+Setting setting;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -28,7 +29,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 void PreInitialize(HINSTANCE hInstance)
 {
     InitializeDebugFeature();
-    InitializeSetting(hInstance);
+    setting = Setting(hInstance);
     ChangeWindowMode(TRUE);
     SetMainWindowText(SU_APP_NAME " " SU_APP_VERSION);
     SetAlwaysRunFlag(TRUE);
@@ -43,7 +44,7 @@ void Initialize()
 
     WriteDebugConsole(TEXT("DxLib_Init\n"));
 
-    SettingLoadSetting();
+    setting.Load(SU_SETTING_FILE);
     Manager.EnumerateSkins();
     Manager.InitializeExecution();
     Manager.AddScene(shared_ptr<Scene>(new SceneDebug()));
@@ -67,5 +68,6 @@ void Run()
 void Terminate()
 {
     TerminateDebugFeature();
+    setting.Save();
     DxLib_End();
 }

@@ -27,14 +27,14 @@ static int CALLBACK FontEnumerationProc(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *
 
 shared_ptr<Image> LoadSystemImage(const string & file)
 {
-    path p = SettingGetRootDirectory() / SU_DATA_DIR / SU_IMAGE_DIR / ConvertUTF8ToShiftJis(file);
+    path p = Setting::GetRootDirectory() / SU_DATA_DIR / SU_IMAGE_DIR / ConvertUTF8ToShiftJis(file);
     return Image::LoadFromFile(p.string());
 }
 
 std::shared_ptr<Font> LoadSystemFont(const std::string & file)
 {
     EnumerateInstalledFonts();
-    path p = SettingGetRootDirectory() / SU_DATA_DIR / SU_FONT_DIR / (ConvertUTF8ToShiftJis(file) + ".sif");
+    path p = Setting::GetRootDirectory() / SU_DATA_DIR / SU_FONT_DIR / (ConvertUTF8ToShiftJis(file) + ".sif");
     return Font::LoadFromFile(p.string());
 }
 
