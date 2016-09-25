@@ -18,13 +18,15 @@ void InterfacesRegisterScene(asIScriptEngine *engine)
     engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Initialize()");
     engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Run()");
     engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Draw()");
-    
-    InterfacesRegisterSharedClass<SkinHolder>(engine, SU_IF_SKIN);
-    engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadImage(const string &in, const string &in)", CALLER(SkinHolder, LoadSkinImage), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadFont(const string &in, const string &in)", CALLER(SkinHolder, LoadSkinFont), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_IMAGE " GetImage(const string &in)", CALLER(SkinHolder, GetSkinImage), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_FONT " GetFont(const string &in)", CALLER(SkinHolder, GetSkinFont), asCALL_CDECL_OBJFIRST);
-    
+
+    engine->RegisterObjectType(SU_IF_SKIN, 0, asOBJ_REF);
+    engine->RegisterObjectBehaviour(SU_IF_SKIN, asBEHAVE_ADDREF, "void f()", asMETHOD(SkinHolder, AddRef), asCALL_THISCALL);
+    engine->RegisterObjectBehaviour(SU_IF_SKIN, asBEHAVE_RELEASE, "void f()", asMETHOD(SkinHolder, Release), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadImage(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinImage), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadFont(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinFont), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_IMAGE " GetImage(const string &in)", asMETHOD(SkinHolder, GetSkinImage), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_FONT " GetFont(const string &in)", asMETHOD(SkinHolder, GetSkinFont), asCALL_THISCALL);
+
 }
 
 void InterfacesRegisterSprite(asIScriptEngine *engine)

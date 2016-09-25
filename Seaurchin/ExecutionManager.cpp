@@ -210,6 +210,14 @@ SkinHolder::~SkinHolder()
 
 }
 
+void SkinHolder::AddRef()
+{
+}
+
+void SkinHolder::Release()
+{
+}
+
 void SkinHolder::Initialize()
 {
     auto si = Manager->GetScriptInterface();
@@ -222,9 +230,29 @@ void SkinHolder::Initialize()
     });
     si->LoadFile((SkinRoot / SU_SKIN_MAIN_FILE).string().c_str());
     si->FinishBuildModule();
+
     auto mod = si->GetLastModule();
     int fc = mod->GetFunctionCount();
+    asIScriptFunction *ep = nullptr;
+    for (asUINT i = 0; i < fc; i++)
+    {
+        auto func = mod->GetFunctionByIndex(i);
+        if (!si->CheckMetaData(func, "EntryPoint")) continue;
+        ep = func;
+        break;
+    }
+    if (!ep)
+    {
+        WriteDebugConsole("Entry Point Not Found!\n");
+        mod->Discard();
+        return;
+    }
 
+    auto ctx = si->GetEngine()->CreateContext();
+    ctx->Prepare(ep);
+    ctx->SetArgObject(0, this);
+    ctx->Execute();
+    ctx->Release();
     mod->Discard();
 }
 

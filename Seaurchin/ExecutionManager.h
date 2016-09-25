@@ -24,6 +24,9 @@ private:
 public:
     SkinHolder(std::string name, ExecutionManager *manager);
     ~SkinHolder();
+    void AddRef();
+    void Release();
+
     void Initialize();
     void LoadSkinImage(const std::string &key, const std::string &filename);
     void LoadSkinFont(const std::string &key, const std::string &filename);

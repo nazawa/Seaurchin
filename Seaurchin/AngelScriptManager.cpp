@@ -51,6 +51,12 @@ bool AngelScript::CheckMetaData(asITypeInfo *type, std::string meta)
     return df == meta;
 }
 
+bool AngelScript::CheckMetaData(asIScriptFunction *func, std::string meta)
+{
+    auto df = builder.GetMetadataStringForFunc(func);
+    return df == meta;
+}
+
 asIScriptObject * AngelScript::InstantiateObject(asITypeInfo * type)
 {
     auto factory = type->GetFactoryByIndex(0);

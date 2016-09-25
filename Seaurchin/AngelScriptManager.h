@@ -36,6 +36,10 @@ public:
 
     //特定クラスにメタデータが付与されてるか
     bool CheckMetaData(asITypeInfo *type, std::string meta);
+    
+    //特定グロ関に(ry
+    bool CheckMetaData(asIScriptFunction *type, std::string meta);
+
 
     //実装をチェック
     inline bool CheckImplementation(asITypeInfo *type, std::string name)
