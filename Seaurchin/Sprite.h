@@ -31,7 +31,7 @@ public:
 
     Sprite();
     Sprite(int number);
-    ~Sprite();
+    virtual ~Sprite();
 
     virtual void Tick(float delta);
     virtual void Draw();

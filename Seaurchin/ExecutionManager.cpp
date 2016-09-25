@@ -12,10 +12,11 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
 {
     ScriptInterface = shared_ptr<AngelScript>(new AngelScript());
     InterfacesRegisterEnum(ScriptInterface->GetEngine());
-    InterfacesRegisterSprite(ScriptInterface->GetEngine());
+    InterfacesRegisterResource(ScriptInterface->GetEngine());
+    InterfacesRegisterObject(ScriptInterface->GetEngine());
     InterfacesRegisterScene(ScriptInterface->GetEngine());
-    InterfacesRegisterGlobalFunction(ScriptInterface->GetEngine());
     InterfacesRegisterSceneFunction(ScriptInterface->GetEngine());
+    InterfacesRegisterGlobalFunction(ScriptInterface->GetEngine());
 
     SharedSetting = setting;
     SharedKeyState = shared_ptr<KeyState>(new KeyState());
@@ -130,6 +131,7 @@ void ExecutionManager::Tick(double delta)
             i++;
         }
     }
+    ScriptInterface->GetEngine()->GarbageCollect(asGC_ONE_STEP);
 }
 
 //Draw
@@ -299,8 +301,14 @@ void SkinHolder::ExecuteSkinScript(string file)
     }
 
     auto obj = si->InstantiateObject(type);
+    auto s = Manager->CreateSceneFromScriptObject(obj);
+    if (!s)
+    {
+        WriteDebugConsole("Entry Point Not Found!\n");
+        return;
+    }
     obj->SetUserData(this, SU_UDTYPE_SKIN);
-    Manager->AddScene(Manager->CreateSceneFromScriptObject(obj));
+    Manager->AddScene(s);
     type->Release();
 }
 

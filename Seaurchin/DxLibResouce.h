@@ -10,7 +10,7 @@ protected:
 
 public:
     DxLibResource();
-    ~DxLibResource();
+    virtual ~DxLibResource();
 
     virtual inline int GetHandle() { return handle; }
 };

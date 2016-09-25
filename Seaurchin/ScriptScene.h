@@ -18,6 +18,15 @@ typedef struct
     };
 } CoroutineWait;
 
+typedef struct
+{
+    void *object;
+    asIScriptContext *context;
+    asITypeInfo *type;
+    asIScriptFunction *function;
+    CoroutineWait wait;
+} Coroutine;
+
 class ScriptScene : public Scene
 {
     typedef Scene base;
@@ -48,6 +57,8 @@ protected:
 
 public:
     ScriptCoroutineScene(asIScriptObject *scene);
+    ~ScriptCoroutineScene();
+    std::list<Coroutine> coroutines;
     
     void Tick(double delta) override;
     void Initialize() override;
@@ -62,3 +73,4 @@ bool ScriptSceneIsKeyHeld(int keynum);
 bool ScriptSceneIsKeyTriggered(int keynum);
 void ScriptSceneAddMove(std::shared_ptr<Sprite> sprite, const std::string &move);
 void ScriptSceneAddScene(asIScriptObject *sceneObject);
+void ScriptSceneRunCoroutine(asIScriptFunction *cofunc);

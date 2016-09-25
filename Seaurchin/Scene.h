@@ -21,7 +21,7 @@ protected:
 
 public:
     Scene();
-    ~Scene();
+    virtual ~Scene();
 
     inline void SetIndex(int i) { index = i; }
     inline int GetIndex() { return index; }

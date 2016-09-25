@@ -4,6 +4,7 @@
 #define SU_IF_SKIN "Skin"
 #define SU_IF_SCENE "Scene"
 #define SU_IF_COSCENE "CoroutineScene"
+#define SU_IF_COROUTINE "Coroutine"
 #define SU_IF_TF2D "Transform2D"
 
 #define SU_IF_IMAGE "Image"
@@ -51,7 +52,9 @@ void InterfacesRegisterSharedClass(asIScriptEngine *engine, std::string classnam
 }
 
 void InterfacesRegisterScene(asIScriptEngine *engine);
-void InterfacesRegisterSprite(asIScriptEngine *engine);
 void InterfacesRegisterEnum(asIScriptEngine *engine);
+void InterfacesRegisterResource(asIScriptEngine *engine);
+void InterfacesRegisterObject(asIScriptEngine *engine);
+
 void InterfacesRegisterGlobalFunction(asIScriptEngine *engine);
 void InterfacesRegisterSceneFunction(asIScriptEngine *engine);
