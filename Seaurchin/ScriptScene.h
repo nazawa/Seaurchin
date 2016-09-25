@@ -1,7 +1,5 @@
 #pragma once
 
-
-#include "Config.h"
 #include "Scene.h"
 
 enum WaitType
@@ -22,6 +20,7 @@ typedef struct
 
 class ScriptScene : public Scene
 {
+    typedef Scene base;
 protected:
     asIScriptContext *context;
     asIScriptObject *sceneObject;
@@ -56,5 +55,10 @@ public:
 
 };
 
+void ScriptSceneWarnOutOf(std::string type, asIScriptContext *ctx);
 void ScriptSceneYieldTime(double time);
 void ScriptSceneYieldFrames(int64_t frames);
+bool ScriptSceneIsKeyHeld(int keynum);
+bool ScriptSceneIsKeyTriggered(int keynum);
+void ScriptSceneAddMove(std::shared_ptr<Sprite> sprite, const std::string &move);
+void ScriptSceneAddScene(asIScriptObject *sceneObject);

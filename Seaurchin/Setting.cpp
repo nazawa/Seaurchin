@@ -4,65 +4,39 @@
 
 using namespace std;
 using namespace boost::property_tree;
+using namespace boost::filesystem;
 
-string RootDirectory;
-ptree SettingTree;
+std::string Setting::RootDirectory = "";
 
-void InitializeSetting(HMODULE hModule)
+Setting::Setting(HMODULE hModule)
 {
+    if (RootDirectory != "") return;
     TCHAR directory[MAX_PATH];
     GetModuleFileName(hModule, directory, MAX_PATH);
     PathRemoveFileSpec(directory);
     RootDirectory = directory;
 }
 
-const string SettingGetRootDirectory()
+Setting::Setting()
+{
+
+}
+
+void Setting::Load(string filename)
+{
+    file = filename;
+    if (!exists(RootDirectory / file)) Save();
+    read_json((RootDirectory / file).string(), SettingTree);
+    WriteDebugConsole("Setting File Loaded.\n");
+}
+
+const std::string Setting::GetRootDirectory()
 {
     return RootDirectory;
 }
 
-void SettingLoadSetting()
+void Setting::Save() const
 {
-    if (!PathFileExists(ROOT_FILE(RootDirectory, SU_SETTING_FILE).c_str())) SettingSaveSetting();
-    read_json(ROOT_FILE(RootDirectory, SU_SETTING_FILE), SettingTree);
-    WriteDebugConsole("Setting File Loaded.\n");
-}
-
-void SettingSaveSetting()
-{
-    write_json(ROOT_FILE(RootDirectory, SU_SETTING_FILE), SettingTree);
+    write_json((RootDirectory / file).string(), SettingTree);
     WriteDebugConsole("Setting File Saved.\n");
-}
-
-int SettingReadIntegerValue(std::string group, std::string key, int default)
-{
-    auto value = SettingTree.get_optional<int>(group + "." + key);
-    return value ? value.get() :  (SettingTree.put(group + "." + key, default), default);
-}
-
-double SettingReadFloatValue(std::string group, std::string key, double default)
-{
-    auto value = SettingTree.get_optional<double>(group + "." + key);
-    return value ? value.get() : (SettingTree.put(group + "." + key, default), default);
-}
-
-std::string SettingReadStringValue(std::string group, std::string key, std::string default)
-{
-    auto value = SettingTree.get_optional<string>(group + "." + key);
-    return value ? value.get() : (SettingTree.put(group + "." + key, default), default);
-}
-
-void SettingWriteIntegerValue(std::string group, std::string key, int value)
-{
-    SettingTree.put(group + "." + key, value);
-}
-
-void SettingWriteFloatValue(std::string group, std::string key, double value)
-{
-    SettingTree.put(group + "." + key, value);
-}
-
-void SettingWriteStringValue(std::string group, std::string key, std::string value)
-{
-    SettingTree.put(group + "." + key, value);
 }

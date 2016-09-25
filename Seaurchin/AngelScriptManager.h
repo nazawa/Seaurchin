@@ -1,10 +1,5 @@
 #pragma once
 
-
-#include "Debug.h"
-#include "Interfaces.h"
-#include "ScriptScene.h"
-
 typedef std::function<bool(std::string, std::string, CScriptBuilder*)> IncludeCallback;
 
 class AngelScript
@@ -26,6 +21,8 @@ public:
 
     //新しくModuleする
     void StartBuildModule(std::string name, IncludeCallback callback);
+
+    inline asIScriptModule* GetExistModule(std::string name) { return engine->GetModule(name.c_str()); }
     
     //ファイル読み込み
     void LoadFile(std::string filename);
@@ -41,6 +38,10 @@ public:
 
     //特定クラスにメタデータが付与されてるか
     bool CheckMetaData(asITypeInfo *type, std::string meta);
+    
+    //特定グロ関に(ry
+    bool CheckMetaData(asIScriptFunction *type, std::string meta);
+
 
     //実装をチェック
     inline bool CheckImplementation(asITypeInfo *type, std::string name)

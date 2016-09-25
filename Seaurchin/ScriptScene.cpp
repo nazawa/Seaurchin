@@ -1,5 +1,12 @@
 #include "ScriptScene.h"
 
+#include "Config.h"
+#include "ExecutionManager.h"
+#include "Misc.h"
+
+using namespace std;
+using namespace boost::filesystem;
+
 ScriptScene::ScriptScene(asIScriptObject *scene)
 {
     sceneObject = scene;
@@ -31,6 +38,7 @@ void ScriptScene::Initialize()
 void ScriptScene::Tick(double delta)
 {
     auto func = sceneType->GetMethodByDecl("void Tick(double)");
+    spmanager.Tick(delta);
     context->Prepare(func);
     context->SetObject(sceneObject);
     context->Execute();
@@ -49,7 +57,7 @@ bool ScriptScene::IsDead()
     return false;
 }
 
-ScriptCoroutineScene::ScriptCoroutineScene(asIScriptObject *scene) : ScriptScene(scene)
+ScriptCoroutineScene::ScriptCoroutineScene(asIScriptObject *scene) : base(scene)
 {
     auto eng = sceneObject->GetEngine();
     runningContext = eng->CreateContext();
@@ -61,6 +69,9 @@ ScriptCoroutineScene::ScriptCoroutineScene(asIScriptObject *scene) : ScriptScene
 
 void ScriptCoroutineScene::Tick(double delta)
 {
+    spmanager.Tick(delta);
+
+    //Run()
     switch (wait.type)
     {
     case WaitType::Frame:
@@ -72,7 +83,6 @@ void ScriptCoroutineScene::Tick(double delta)
         if (wait.time > 0.0) return;
         break;
     }
-
     auto result = runningContext->Execute();
     if (result != asEXECUTION_SUSPENDED) finished = true;
 }
@@ -91,16 +101,14 @@ bool ScriptCoroutineScene::IsDead()
 }
 
 // Scene用メソッド
+
 void ScriptSceneYieldTime(double time)
 {
     auto ctx = asGetActiveContext();
     auto pcw = (CoroutineWait*)ctx->GetUserData(SU_UDTYPE_WAIT);
     if (!pcw)
     {
-        const char *secn;
-        int col, row;
-        row = ctx->GetLineNumber(0, &col, &secn);
-        ctx->GetEngine()->WriteMessage(secn, row, col, asEMsgType::asMSGTYPE_WARNING, "You can call Yield Function only from Coroutine Function!");
+        ScriptSceneWarnOutOf("Coroutine Function", ctx);
         return;
     }
     pcw->type = WaitType::Time;
@@ -114,13 +122,58 @@ void ScriptSceneYieldFrames(int64_t frames)
     auto pcw = (CoroutineWait*)ctx->GetUserData(SU_UDTYPE_WAIT);
     if (!pcw)
     {
-        const char *secn;
-        int col, row;
-        row = ctx->GetLineNumber(0, &col, &secn);
-        ctx->GetEngine()->WriteMessage(secn, row, col, asEMsgType::asMSGTYPE_WARNING, "You can call Yield Function only from Coroutine Function!");
+        ScriptSceneWarnOutOf("Coroutine Function", ctx);
         return;
     }
     pcw->type = WaitType::Frame;
     pcw->frames = frames;
     ctx->Suspend();
+}
+
+bool ScriptSceneIsKeyHeld(int keynum)
+{
+    auto ctx = asGetActiveContext();
+    auto psc = (Scene*)ctx->GetUserData(SU_UDTYPE_SCENE);
+    if (!psc)
+    {
+        ScriptSceneWarnOutOf("Scene Class", ctx);
+        return false;
+    }
+    return psc->GetManager()->GetKeyState()->Current[keynum];
+}
+
+bool ScriptSceneIsKeyTriggered(int keynum)
+{
+    auto ctx = asGetActiveContext();
+    auto psc = (Scene*)ctx->GetUserData(SU_UDTYPE_SCENE);
+    if (!psc)
+    {
+        ScriptSceneWarnOutOf("Scene Class", ctx);
+        return false;
+    }
+    return  psc->GetManager()->GetKeyState()->Trigger[keynum];
+}
+
+void ScriptSceneAddMove(shared_ptr<Sprite> sprite, const string &move)
+{
+    auto ctx = asGetActiveContext();
+    auto psc = static_cast<Scene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
+    if (!psc)
+    {
+        ScriptSceneWarnOutOf("Scene Class", ctx);
+        return;
+    }
+    psc->GetSpriteManager()->AddMove(sprite, move);
+}
+
+void ScriptSceneAddScene(asIScriptObject *sceneObject)
+{
+    auto ctx = asGetActiveContext();
+    auto psc = static_cast<Scene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
+    if (!psc)
+    {
+        ScriptSceneWarnOutOf("Scene Class", ctx);
+        return;
+    }
+    psc->GetManager()->CreateSceneFromScriptObject(sceneObject);
 }

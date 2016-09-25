@@ -12,7 +12,9 @@ void Initialize();
 void Run();
 void Terminate();
 
-ExecutionManager Manager;
+shared_ptr<Setting> setting;
+unique_ptr<ExecutionManager> manager;
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -27,8 +29,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 void PreInitialize(HINSTANCE hInstance)
 {
+    setting = shared_ptr<Setting>(new Setting(hInstance));
+    manager = unique_ptr<ExecutionManager>(new ExecutionManager(setting));
+
     InitializeDebugFeature();
-    InitializeSetting(hInstance);
     ChangeWindowMode(TRUE);
     SetMainWindowText(SU_APP_NAME " " SU_APP_VERSION);
     SetAlwaysRunFlag(TRUE);
@@ -43,10 +47,10 @@ void Initialize()
 
     WriteDebugConsole(TEXT("DxLib_Init\n"));
 
-    SettingLoadSetting();
-    Manager.EnumerateSkins();
-    Manager.InitializeExecution();
-    Manager.AddScene(shared_ptr<Scene>(new SceneDebug()));
+    setting->Load(SU_SETTING_FILE);
+    manager->EnumerateSkins();
+    manager->ExecuteSkin();
+    manager->AddScene(shared_ptr<Scene>(new SceneDebug()));
     
 }
 
@@ -59,13 +63,14 @@ void Run()
         pstart = start;
         start = high_resolution_clock::now();
         float delta = duration_cast<nanoseconds>(start - pstart).count() / 1000000000.0;
-        Manager.Tick(delta);
-        Manager.Draw();
+        manager->Tick(delta);
+        manager->Draw();
     }
 }
 
 void Terminate()
 {
     TerminateDebugFeature();
+    setting->Save();
     DxLib_End();
 }

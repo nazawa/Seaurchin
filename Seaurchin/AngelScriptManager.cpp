@@ -1,4 +1,5 @@
 #include "AngelScriptManager.h"
+#include "Debug.h"
 
 static int ScriptIncludeCallback(const char *include, const char *from, CScriptBuilder *builder, void *userParam);
 
@@ -12,10 +13,6 @@ AngelScript::AngelScript()
     engine->SetMessageCallback(asMETHOD(AngelScript, ScriptMessageCallback), this, asCALL_THISCALL);
 
     //Script Interface
-    InterfacesRegisterSprite(engine);
-    InterfacesRegisterScene(engine);
-    InterfacesRegisterGlobalFunction(engine);
-    InterfaceRegisterSceneFunction(engine);
 
     sharedContext = engine->CreateContext();
     builder.SetIncludeCallback(ScriptIncludeCallback, this);
@@ -51,6 +48,12 @@ bool AngelScript::FinishBuildModule()
 bool AngelScript::CheckMetaData(asITypeInfo *type, std::string meta)
 {
     auto df = builder.GetMetadataStringForType(type->GetTypeId());
+    return df == meta;
+}
+
+bool AngelScript::CheckMetaData(asIScriptFunction *func, std::string meta)
+{
+    auto df = builder.GetMetadataStringForFunc(func);
     return df == meta;
 }
 
