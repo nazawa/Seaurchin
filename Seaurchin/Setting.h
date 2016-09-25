@@ -1,5 +1,8 @@
 #pragma once
 
+#define SU_SETTING_GENERAL "General"
+#define SU_SETTING_SKIN "Skin"
+
 class Setting final
 {
 private:
@@ -14,4 +17,17 @@ public:
     inline void Reload() { Load(file); }
     void Save() const;
     static const std::string GetRootDirectory();
+
+    template<typename T>
+    T ReadValue(std::string group, std::string key, T defValue)
+    {
+        boost::optional<T> v = SettingTree.get_optional<T>(group + "." + key);
+        return v ? v.get() : (WriteValue(group, key, defValue), defValue);
+    }
+
+    template<typename T>
+    void WriteValue(std::string group, std::string key, T value)
+    {
+        SettingTree.put<T>(group + "." + key, value);
+    }
 };

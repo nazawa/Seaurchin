@@ -99,6 +99,9 @@
     <ClCompile Include="SpriteManager.cpp">
       <Filter>スクリプトインターフェース\ソース</Filter>
     </ClCompile>
+    <ClCompile Include="Misc.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -181,6 +184,9 @@
     </ClInclude>
     <ClInclude Include="SpriteManager.h">
       <Filter>スクリプトインターフェース\ヘッダー</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

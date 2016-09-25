@@ -1,5 +1,9 @@
 #include "DxLibResouce.h"
 
+#include "Config.h"
+#include "Debug.h"
+#include "Setting.h"
+
 using namespace std;
 
 DxLibResource::DxLibResource()
@@ -45,7 +49,6 @@ Image::Image(int handle)
 Image::~Image()
 {
     DeleteGraph(handle);
-    ASSERT_CALL;
 }
 
 std::shared_ptr<Image> Image::LoadFromFile(std::string fileName)

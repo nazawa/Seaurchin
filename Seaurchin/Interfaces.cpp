@@ -1,5 +1,12 @@
 #include "Interfaces.h"
 
+#include "Config.h"
+#include "Debug.h"
+#include "Sprite.h"
+#include "ScriptScene.h"
+#include "ExecutionManager.h"
+#include "SystemFunction.h"
+
 void InterfacesRegisterScene(asIScriptEngine *engine)
 {
     engine->RegisterInterface(SU_IF_SCENE);
@@ -11,6 +18,13 @@ void InterfacesRegisterScene(asIScriptEngine *engine)
     engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Initialize()");
     engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Run()");
     engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Draw()");
+    
+    InterfacesRegisterSharedClass<SkinHolder>(engine, SU_IF_SKIN);
+    engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadImage(const string &in, const string &in)", CALLER(SkinHolder, LoadSkinImage), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadFont(const string &in, const string &in)", CALLER(SkinHolder, LoadSkinFont), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_IMAGE " GetImage(const string &in)", CALLER(SkinHolder, GetSkinImage), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_FONT " GetFont(const string &in)", CALLER(SkinHolder, GetSkinFont), asCALL_CDECL_OBJFIRST);
+    
 }
 
 void InterfacesRegisterSprite(asIScriptEngine *engine)
@@ -76,19 +90,21 @@ void InterfacesRegisterGlobalFunction(asIScriptEngine *engine)
     engine->RegisterGlobalFunction(SU_IF_TXTSPRITE " CreateTextSprite()", asFUNCTION(SpriteFactoryTextSprite), asCALL_CDECL);
 }
 
-void InterfaceRegisterSceneFunction(asIScriptEngine *engine)
+void InterfacesRegisterSceneFunction(asIScriptEngine *engine)
 {
     engine->RegisterGlobalFunction("void YieldTime(double)", asFUNCTION(ScriptSceneYieldTime), asCALL_CDECL);
     engine->RegisterGlobalFunction("void YieldFrame(int64)", asFUNCTION(ScriptSceneYieldFrames), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool IsKeyHeld(int)", asFUNCTION(ScriptSceneIsKeyHeld), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool IsKeyTriggered(int)", asFUNCTION(ScriptSceneIsKeyTriggered), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void AddScene(" SU_IF_SCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void AddScene(" SU_IF_COSCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddMove(" SU_IF_IMGSPRITE ", const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddMove(" SU_IF_TXTSPRITE ", const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);
 }
 
 void InterfacesRegisterDrawFunction(asIScriptEngine *engine)
 {
-    
+
 }
 
 void InterfacesRegisterEnum(asIScriptEngine * engine)

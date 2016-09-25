@@ -1,5 +1,4 @@
 #include "Sprite.h"
-#include "ScriptScene.h"
 
 using namespace std;
 

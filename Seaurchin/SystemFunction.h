@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Setting.h"
 #include "DxLibResouce.h"
 
 std::shared_ptr<Image> LoadSystemImage(const std::string & file);

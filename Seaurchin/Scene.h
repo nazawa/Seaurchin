@@ -1,6 +1,8 @@
 #pragma once
-#include "Sprite.h"
+
 #include "SpriteManager.h"
+
+class ExecutionManager;
 
 typedef struct
 {
@@ -9,17 +11,13 @@ typedef struct
     char Trigger[256];
 } KeyState;
 
-typedef struct
-{
-    std::shared_ptr<KeyState> Key;
-} SharedInfo;
-
 class Scene
 {
 protected:
     int index;
-    std::shared_ptr<SharedInfo> sharedInfo;
-    SpriteManager manager;
+
+    ExecutionManager *manager;
+    SpriteManager spmanager;
 
 public:
     Scene();
@@ -27,12 +25,12 @@ public:
 
     inline void SetIndex(int i) { index = i; }
     inline int GetIndex() { return index; }
-    inline void SetSharedInfo(std::shared_ptr<SharedInfo> info) { sharedInfo = info; }
-    inline std::shared_ptr<SharedInfo> GetSharedInfo() { return sharedInfo; }
+    inline void SetManager(ExecutionManager *info) { manager = info; }
+    inline ExecutionManager* GetManager() { return manager; }
+    inline SpriteManager* GetSpriteManager() { return &spmanager; }
 
     virtual void Initialize();
     virtual void Tick(double delta);
     virtual void Draw();
     virtual bool IsDead();
-    virtual void AddMove(std::shared_ptr<Sprite> sprite, const std::string &move);
 };

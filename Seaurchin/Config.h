@@ -13,6 +13,10 @@
 #define SU_CACHE_DIR "Cache"
 #define SU_SCRIPT_DIR "Scripts"
 #define SU_SKIN_MAIN_FILE "Skin.as"
+#define SU_SKIN_TITLE_FILE "Title.as"
+#define SU_SKIN_SELECT_FILE "Select.as"
+#define SU_SKIN_PLAY_FILE "Play.as"
+#define SU_SKIN_RESULT_FILE "Result.as"
 #define SU_SYSTEM_MENU_FILE "System.as"
 
 #define SU_FONT_SYSTEM "ÇlÇr ÉSÉVÉbÉN"

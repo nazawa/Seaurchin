@@ -1,6 +1,10 @@
 #include "ScriptScene.h"
 
+#include "Config.h"
+#include "ExecutionManager.h"
+
 using namespace std;
+using namespace boost::filesystem;
 
 ScriptScene::ScriptScene(asIScriptObject *scene)
 {
@@ -33,7 +37,7 @@ void ScriptScene::Initialize()
 void ScriptScene::Tick(double delta)
 {
     auto func = sceneType->GetMethodByDecl("void Tick(double)");
-    manager.Tick(delta);
+    spmanager.Tick(delta);
     context->Prepare(func);
     context->SetObject(sceneObject);
     context->Execute();
@@ -52,7 +56,7 @@ bool ScriptScene::IsDead()
     return false;
 }
 
-ScriptCoroutineScene::ScriptCoroutineScene(asIScriptObject *scene) : ScriptScene(scene)
+ScriptCoroutineScene::ScriptCoroutineScene(asIScriptObject *scene) : base(scene)
 {
     auto eng = sceneObject->GetEngine();
     runningContext = eng->CreateContext();
@@ -64,7 +68,7 @@ ScriptCoroutineScene::ScriptCoroutineScene(asIScriptObject *scene) : ScriptScene
 
 void ScriptCoroutineScene::Tick(double delta)
 {
-    manager.Tick(delta);
+    spmanager.Tick(delta);
 
     //Run()
     switch (wait.type)
@@ -141,7 +145,7 @@ bool ScriptSceneIsKeyHeld(int keynum)
         ScriptSceneWarnOutOf("Scene Class", ctx);
         return false;
     }
-    return psc->GetSharedInfo()->Key->Current[keynum];
+    return psc->GetManager()->GetKeyState()->Current[keynum];
 }
 
 bool ScriptSceneIsKeyTriggered(int keynum)
@@ -153,7 +157,7 @@ bool ScriptSceneIsKeyTriggered(int keynum)
         ScriptSceneWarnOutOf("Scene Class", ctx);
         return false;
     }
-    return psc->GetSharedInfo()->Key->Trigger[keynum];
+    return  psc->GetManager()->GetKeyState()->Trigger[keynum];
 }
 
 void ScriptSceneAddMove(shared_ptr<Sprite> sprite, const string &move)
@@ -165,5 +169,17 @@ void ScriptSceneAddMove(shared_ptr<Sprite> sprite, const string &move)
         ScriptSceneWarnOutOf("Scene Class", ctx);
         return;
     }
-    psc->AddMove(sprite, move);
+    psc->GetSpriteManager()->AddMove(sprite, move);
+}
+
+void ScriptSceneAddScene(asIScriptObject *sceneObject)
+{
+    auto ctx = asGetActiveContext();
+    auto psc = static_cast<Scene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
+    if (!psc)
+    {
+        ScriptSceneWarnOutOf("Scene Class", ctx);
+        return;
+    }
+    psc->GetManager()->CreateSceneFromScriptObject(sceneObject);
 }

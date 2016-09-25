@@ -1,18 +1,24 @@
 #include "ExecutionManager.h"
+
 #include "Config.h"
 #include "Debug.h"
 #include "Setting.h"
-#include "AngelScriptManager.h"
+#include "Interfaces.h"
 
+using namespace boost::filesystem;
 using namespace std;
 
-ExecutionManager::ExecutionManager()
+ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
 {
     ScriptInterface = shared_ptr<AngelScript>(new AngelScript());
+    InterfacesRegisterEnum(ScriptInterface->GetEngine());
+    InterfacesRegisterSprite(ScriptInterface->GetEngine());
+    InterfacesRegisterScene(ScriptInterface->GetEngine());
+    InterfacesRegisterGlobalFunction(ScriptInterface->GetEngine());
+    InterfacesRegisterSceneFunction(ScriptInterface->GetEngine());
 
-    Shared = shared_ptr<SharedInfo>(new SharedInfo());
+    SharedSetting = setting;
     SharedKeyState = shared_ptr<KeyState>(new KeyState());
-    Shared->Key = SharedKeyState;
 }
 
 void ExecutionManager::EnumerateSkins()
@@ -27,13 +33,24 @@ void ExecutionManager::EnumerateSkins()
     {
         if (!is_directory(fdata)) continue;
         if (!CheckSkinStructure(fdata.path())) continue;
-        WriteDebugConsole(("Skin Found:" + fdata.path().filename().string() + "\n").c_str());
+        SkinNames.push_back(fdata.path().filename().string());
     }
+    ostringstream ss;
+    ss << "Found " << SkinNames.size() << " Skins" << endl;
+    WriteDebugConsole(ss.str().c_str());
 }
 
 void ExecutionManager::InitializeExecution()
 {
-    StartSystemMenu();
+    //StartSystemMenu();
+    auto sn = SharedSetting->ReadValue<string>(SU_SETTING_GENERAL, SU_SETTING_SKIN, "Default");
+    if (find(SkinNames.begin(), SkinNames.end(), sn) == SkinNames.end())
+    {
+        WriteDebugConsole(("Can't Find Skin " + sn + "!\n").c_str());
+        return;
+    }
+    Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, this));
+    Skin->Initialize();
 }
 
 //Tick
@@ -70,7 +87,7 @@ void ExecutionManager::Draw()
 void ExecutionManager::AddScene(shared_ptr<Scene> scene)
 {
     Scenes.push_back(scene);
-    scene->SetSharedInfo(Shared);
+    scene->SetManager(this);
     scene->Initialize();
 }
 
@@ -85,6 +102,27 @@ shared_ptr<ScriptScene> ExecutionManager::CreateSceneFromScriptType(asITypeInfo 
     else if (ScriptInterface->CheckImplementation(type, SU_IF_SCENE))  //最後
     {
         auto obj = ScriptInterface->InstantiateObject(type);
+        return shared_ptr<ScriptScene>(new ScriptScene(obj));
+    }
+    else
+    {
+        ostringstream err;
+        err << "Type '" << type->GetName() << "' Doesn't Implement any Scene Interface!\n" << endl;
+        WriteDebugConsole(err.str().c_str());
+        return nullptr;
+    }
+}
+
+shared_ptr<ScriptScene> ExecutionManager::CreateSceneFromScriptObject(asIScriptObject *obj)
+{
+    shared_ptr<ScriptScene> ret;
+    auto type = obj->GetObjectType();
+    if (ScriptInterface->CheckImplementation(type, SU_IF_COSCENE))
+    {
+        return shared_ptr<ScriptScene>(new ScriptCoroutineScene(obj));
+    }
+    else if (ScriptInterface->CheckImplementation(type, SU_IF_SCENE))  //最後
+    {
         return shared_ptr<ScriptScene>(new ScriptScene(obj));
     }
     else
@@ -116,7 +154,7 @@ void ExecutionManager::StartSystemMenu()
         return;
     }
     auto mod = ScriptInterface->GetLastModule();
-    
+
     //エントリポイント検索
     int cnt = mod->GetObjectTypeCount();
     asITypeInfo *type = nullptr;
@@ -145,6 +183,67 @@ bool ExecutionManager::CheckSkinStructure(boost::filesystem::path name)
     using namespace boost::filesystem;
 
     if (!exists(name / SU_SKIN_MAIN_FILE)) return false;
-
+    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_TITLE_FILE)) return false;
+    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_SELECT_FILE)) return false;
+    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_PLAY_FILE)) return false;
+    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_RESULT_FILE)) return false;
     return true;
+}
+
+
+// SkinHolder -----------------------------
+
+bool SkinHolder::IncludeScript(std::string include, std::string from, CScriptBuilder * builder)
+{
+    return false;
+}
+
+SkinHolder::SkinHolder(string name, ExecutionManager *manager)
+{
+    Manager = manager;
+    SkinName = name;
+    SkinRoot = Setting::GetRootDirectory() / SU_DATA_DIR / SU_SKIN_DIR / SkinName;
+}
+
+SkinHolder::~SkinHolder()
+{
+
+}
+
+void SkinHolder::Initialize()
+{
+    auto si = Manager->GetScriptInterface();
+    si->StartBuildModule("SkinLoader",
+        [this](string inc, string from, CScriptBuilder *b)
+    {
+        if (!exists(SkinRoot / SU_SCRIPT_DIR / inc)) return false;
+        b->AddSectionFromFile((SkinRoot / SU_SCRIPT_DIR / inc).string().c_str());
+        return true;
+    });
+    si->LoadFile((SkinRoot / SU_SKIN_MAIN_FILE).string().c_str());
+    si->FinishBuildModule();
+    auto mod = si->GetLastModule();
+    int fc = mod->GetFunctionCount();
+
+    mod->Discard();
+}
+
+void SkinHolder::LoadSkinImage(const string &key, const string &filename)
+{
+    Images[key] = Image::LoadFromFile((SkinRoot / SU_IMAGE_DIR / filename).string().c_str());
+}
+
+void SkinHolder::LoadSkinFont(const string &key, const string &filename)
+{
+    Fonts[key] = Font::LoadFromFile((SkinRoot / SU_FONT_DIR / filename).string().c_str());
+}
+
+shared_ptr<Image> SkinHolder::GetSkinImage(const string &key)
+{
+    return Images[key];
+}
+
+shared_ptr<Font> SkinHolder::GetSkinFont(const string &key)
+{
+    return Fonts[key];
 }

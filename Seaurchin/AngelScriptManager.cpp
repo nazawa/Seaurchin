@@ -1,4 +1,5 @@
 #include "AngelScriptManager.h"
+#include "Debug.h"
 
 static int ScriptIncludeCallback(const char *include, const char *from, CScriptBuilder *builder, void *userParam);
 
@@ -12,11 +13,6 @@ AngelScript::AngelScript()
     engine->SetMessageCallback(asMETHOD(AngelScript, ScriptMessageCallback), this, asCALL_THISCALL);
 
     //Script Interface
-    InterfacesRegisterEnum(engine);
-    InterfacesRegisterSprite(engine);
-    InterfacesRegisterScene(engine);
-    InterfacesRegisterGlobalFunction(engine);
-    InterfaceRegisterSceneFunction(engine);
 
     sharedContext = engine->CreateContext();
     builder.SetIncludeCallback(ScriptIncludeCallback, this);

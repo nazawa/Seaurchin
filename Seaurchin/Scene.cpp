@@ -29,8 +29,3 @@ bool Scene::IsDead()
 {
     return false;
 }
-
-void Scene::AddMove(std::shared_ptr<Sprite> sprite, const std::string & move)
-{
-    manager.AddMove(sprite, move);
-}

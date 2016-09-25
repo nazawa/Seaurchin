@@ -1,10 +1,5 @@
 #pragma once
 
-
-#include "Debug.h"
-#include "Interfaces.h"
-#include "ScriptScene.h"
-
 typedef std::function<bool(std::string, std::string, CScriptBuilder*)> IncludeCallback;
 
 class AngelScript

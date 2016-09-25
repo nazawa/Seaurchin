@@ -1,9 +1,5 @@
 #pragma once
 
-#include "Config.h"
-#include "Debug.h"
-#include "Setting.h"
-
 #define BEGIN_DRAW_TRANSACTION(h) SetDrawScreen(h)
 #define FINISH_DRAW_TRANSACTION SetDrawScreen(DX_SCREEN_BACK);
 
