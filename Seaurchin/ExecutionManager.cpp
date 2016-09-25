@@ -40,9 +40,22 @@ void ExecutionManager::EnumerateSkins()
     WriteDebugConsole(ss.str().c_str());
 }
 
-void ExecutionManager::InitializeExecution()
+bool ExecutionManager::CheckSkinStructure(boost::filesystem::path name)
 {
-    //StartSystemMenu();
+    using namespace boost;
+    using namespace boost::filesystem;
+
+    if (!exists(name / SU_SKIN_MAIN_FILE)) return false;
+    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_TITLE_FILE)) return false;
+    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_SELECT_FILE)) return false;
+    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_PLAY_FILE)) return false;
+    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_RESULT_FILE)) return false;
+    return true;
+}
+
+
+void ExecutionManager::ExecuteSkin()
+{
     auto sn = SharedSetting->ReadValue<string>(SU_SETTING_GENERAL, SU_SETTING_SKIN, "Default");
     if (find(SkinNames.begin(), SkinNames.end(), sn) == SkinNames.end())
     {
@@ -51,15 +64,58 @@ void ExecutionManager::InitializeExecution()
     }
     Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, this));
     Skin->Initialize();
+    Skin->ExecuteSkinScript(SU_SKIN_TITLE_FILE);
 }
+
+
+void ExecutionManager::ExecuteSystemMenu()
+{
+    using namespace boost;
+    using namespace boost::filesystem;
+
+    path sysmf = Setting::GetRootDirectory() / SU_DATA_DIR / SU_SCRIPT_DIR / SU_SYSTEM_MENU_FILE;
+    if (!exists(sysmf))
+    {
+        WriteDebugConsole("System Menu Script Not Found!\n");
+        return;
+    }
+
+    ScriptInterface->StartBuildModule("SystemMenu", [](auto inc, auto from, auto sb) { return true; });
+    ScriptInterface->LoadFile(sysmf.string().c_str());
+    if (!ScriptInterface->FinishBuildModule())
+    {
+        WriteDebugConsole("Can't Comple System Menu!\n");
+        return;
+    }
+    auto mod = ScriptInterface->GetLastModule();
+
+    //エントリポイント検索
+    int cnt = mod->GetObjectTypeCount();
+    asITypeInfo *type = nullptr;
+    for (int i = 0; i < cnt; i++)
+    {
+        auto cti = mod->GetObjectTypeByIndex(i);
+        if (!ScriptInterface->CheckMetaData(cti, "EntryPoint")) continue;
+        type = cti;
+        type->AddRef();
+        break;
+    }
+    if (!type)
+    {
+        WriteDebugConsole("Entry Point Not Found!\n");
+        return;
+    }
+
+    AddScene(CreateSceneFromScriptType(type));
+
+    type->Release();
+}
+
 
 //Tick
 void ExecutionManager::Tick(double delta)
 {
-    memcpy_s(SharedKeyState->Last, 256, SharedKeyState->Current, 256);
-    GetHitKeyStateAll(SharedKeyState->Current);
-    for (int i = 0; i < 256; i++) SharedKeyState->Trigger[i] = !SharedKeyState->Last[i] && SharedKeyState->Current[i];
-
+    UpdateKeyState();
     sort(Scenes.begin(), Scenes.end(), [](shared_ptr<Scene> sa, shared_ptr<Scene> sb) { return sa->GetIndex() < sb->GetIndex(); });
     auto i = Scenes.begin();
     while (i != Scenes.end())
@@ -82,6 +138,13 @@ void ExecutionManager::Draw()
     ClearDrawScreen();
     for (const auto& s : Scenes) s->Draw();
     ScreenFlip();
+}
+
+void ExecutionManager::UpdateKeyState()
+{
+    memcpy_s(SharedKeyState->Last, 256, SharedKeyState->Current, 256);
+    GetHitKeyStateAll(SharedKeyState->Current);
+    for (int i = 0; i < 256; i++) SharedKeyState->Trigger[i] = !SharedKeyState->Last[i] && SharedKeyState->Current[i];
 }
 
 void ExecutionManager::AddScene(shared_ptr<Scene> scene)
@@ -133,63 +196,6 @@ shared_ptr<ScriptScene> ExecutionManager::CreateSceneFromScriptObject(asIScriptO
         return nullptr;
     }
 }
-
-void ExecutionManager::StartSystemMenu()
-{
-    using namespace boost;
-    using namespace boost::filesystem;
-
-    path sysmf = Setting::GetRootDirectory() / SU_DATA_DIR / SU_SCRIPT_DIR / SU_SYSTEM_MENU_FILE;
-    if (!exists(sysmf))
-    {
-        WriteDebugConsole("System Menu Script Not Found!\n");
-        return;
-    }
-
-    ScriptInterface->StartBuildModule("SystemMenu", [](auto inc, auto from, auto sb) { return true; });
-    ScriptInterface->LoadFile(sysmf.string().c_str());
-    if (!ScriptInterface->FinishBuildModule())
-    {
-        WriteDebugConsole("Can't Comple System Menu!\n");
-        return;
-    }
-    auto mod = ScriptInterface->GetLastModule();
-
-    //エントリポイント検索
-    int cnt = mod->GetObjectTypeCount();
-    asITypeInfo *type = nullptr;
-    for (int i = 0; i < cnt; i++)
-    {
-        auto cti = mod->GetObjectTypeByIndex(i);
-        if (!ScriptInterface->CheckMetaData(cti, "EntryPoint")) continue;
-        type = cti;
-        type->AddRef();
-        break;
-    }
-    if (!type)
-    {
-        WriteDebugConsole("Entry Point Not Found!\n");
-        return;
-    }
-
-    AddScene(CreateSceneFromScriptType(type));
-
-    type->Release();
-}
-
-bool ExecutionManager::CheckSkinStructure(boost::filesystem::path name)
-{
-    using namespace boost;
-    using namespace boost::filesystem;
-
-    if (!exists(name / SU_SKIN_MAIN_FILE)) return false;
-    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_TITLE_FILE)) return false;
-    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_SELECT_FILE)) return false;
-    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_PLAY_FILE)) return false;
-    if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_RESULT_FILE)) return false;
-    return true;
-}
-
 
 // SkinHolder -----------------------------
 
@@ -256,6 +262,48 @@ void SkinHolder::Initialize()
     mod->Discard();
 }
 
+void SkinHolder::ExecuteSkinScript(string file)
+{
+    auto si = Manager->GetScriptInterface();
+    auto mod = si->GetExistModule(file);
+    if (!mod)
+    {
+        si->StartBuildModule(file.c_str(),
+            [this](string inc, string from, CScriptBuilder *b)
+        {
+            if (!exists(SkinRoot / SU_SCRIPT_DIR / inc)) return false;
+            b->AddSectionFromFile((SkinRoot / SU_SCRIPT_DIR / inc).string().c_str());
+            return true;
+        });
+        si->LoadFile((SkinRoot / SU_SCRIPT_DIR / file).string().c_str());
+        si->FinishBuildModule();
+
+        mod = si->GetLastModule();
+    }
+
+    //エントリポイント検索
+    int cnt = mod->GetObjectTypeCount();
+    asITypeInfo *type = nullptr;
+    for (int i = 0; i < cnt; i++)
+    {
+        auto cti = mod->GetObjectTypeByIndex(i);
+        if (!si->CheckMetaData(cti, "EntryPoint")) continue;
+        type = cti;
+        type->AddRef();
+        break;
+    }
+    if (!type)
+    {
+        WriteDebugConsole("Entry Point Not Found!\n");
+        return;
+    }
+
+    auto obj = si->InstantiateObject(type);
+    obj->SetUserData(this, SU_UDTYPE_SKIN);
+    Manager->AddScene(Manager->CreateSceneFromScriptObject(obj));
+    type->Release();
+}
+
 void SkinHolder::LoadSkinImage(const string &key, const string &filename)
 {
     Images[key] = Image::LoadFromFile((SkinRoot / SU_IMAGE_DIR / filename).string().c_str());
@@ -274,4 +322,23 @@ shared_ptr<Image> SkinHolder::GetSkinImage(const string &key)
 shared_ptr<Font> SkinHolder::GetSkinFont(const string &key)
 {
     return Fonts[key];
+}
+
+//スキン専用
+SkinHolder* GetSkinObject()
+{
+    auto ctx = asGetActiveContext();
+    auto obj = (asIScriptObject*)ctx->GetThisPointer();
+    if (!obj)
+    {
+        ScriptSceneWarnOutOf("Instance Method", ctx);
+        return nullptr;
+    }
+    auto skin = obj->GetUserData(SU_UDTYPE_SKIN);
+    if (!skin)
+    {
+        ScriptSceneWarnOutOf("Skin-Related Scene", ctx);
+        return nullptr;
+    }
+    return (SkinHolder*)skin;
 }

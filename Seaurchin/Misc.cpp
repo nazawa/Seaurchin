@@ -15,3 +15,11 @@ string ConvertUTF8ToShiftJis(string utf8str)
     delete[] sbuffer;
     return ret;
 }
+
+void ScriptSceneWarnOutOf(string type, asIScriptContext *ctx)
+{
+    const char *secn;
+    int col, row;
+    row = ctx->GetLineNumber(0, &col, &secn);
+    ctx->GetEngine()->WriteMessage(secn, row, col, asEMsgType::asMSGTYPE_WARNING, ("You can call Yield Function only from " + type + "!").c_str());
+}

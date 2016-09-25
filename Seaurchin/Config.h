@@ -27,3 +27,4 @@
 //AngelScript‚ÌUserData—p
 #define SU_UDTYPE_SCENE 100
 #define SU_UDTYPE_WAIT 101
+#define SU_UDTYPE_SKIN 102

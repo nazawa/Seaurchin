@@ -2,6 +2,7 @@
 
 #include "Config.h"
 #include "ExecutionManager.h"
+#include "Misc.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -100,13 +101,6 @@ bool ScriptCoroutineScene::IsDead()
 }
 
 // Scene用メソッド
-static void ScriptSceneWarnOutOf(string type, asIScriptContext *ctx)
-{
-    const char *secn;
-    int col, row;
-    row = ctx->GetLineNumber(0, &col, &secn);
-    ctx->GetEngine()->WriteMessage(secn, row, col, asEMsgType::asMSGTYPE_WARNING, ("You can call Yield Function only from " + type + "!").c_str());
-}
 
 void ScriptSceneYieldTime(double time)
 {

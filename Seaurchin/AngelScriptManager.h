@@ -21,6 +21,8 @@ public:
 
     //新しくModuleする
     void StartBuildModule(std::string name, IncludeCallback callback);
+
+    inline asIScriptModule* GetExistModule(std::string name) { return engine->GetModule(name.c_str()); }
     
     //ファイル読み込み
     void LoadFile(std::string filename);

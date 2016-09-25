@@ -98,6 +98,7 @@ void InterfacesRegisterSceneFunction(asIScriptEngine *engine)
     engine->RegisterGlobalFunction("void YieldFrame(int64)", asFUNCTION(ScriptSceneYieldFrames), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool IsKeyHeld(int)", asFUNCTION(ScriptSceneIsKeyHeld), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool IsKeyTriggered(int)", asFUNCTION(ScriptSceneIsKeyTriggered), asCALL_CDECL);
+    engine->RegisterGlobalFunction("Skin@ GetSkinObject()", asFUNCTION(GetSkinObject), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddScene(" SU_IF_SCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddScene(" SU_IF_COSCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddMove(" SU_IF_IMGSPRITE ", const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);

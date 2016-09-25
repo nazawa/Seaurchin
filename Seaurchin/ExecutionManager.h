@@ -28,6 +28,7 @@ public:
     void Release();
 
     void Initialize();
+    void ExecuteSkinScript(std::string file);
     void LoadSkinImage(const std::string &key, const std::string &filename);
     void LoadSkinFont(const std::string &key, const std::string &filename);
     std::shared_ptr<Image> GetSkinImage(const std::string &key);
@@ -48,7 +49,6 @@ public:
     ExecutionManager(std::shared_ptr<Setting> setting);
 
     void EnumerateSkins();
-    void InitializeExecution();
     void Tick(double delta);
     void Draw();
     void AddScene(std::shared_ptr<Scene> scene);
@@ -58,8 +58,12 @@ public:
     inline KeyState* GetKeyState() { return SharedKeyState.get(); }
     inline AngelScript* GetScriptInterface() { return ScriptInterface.get(); }
 
-    void StartSystemMenu();
+    void ExecuteSkin();
+    void ExecuteSystemMenu();
 
 private:
     bool CheckSkinStructure(boost::filesystem::path name);
+    void UpdateKeyState();
 };
+
+SkinHolder* GetSkinObject();
