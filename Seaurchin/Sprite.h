@@ -59,6 +59,13 @@ public:
     void SetText(const std::string& str);
 };
 
+class Shape : public Sprite
+{
+public:
+    double Width;
+    double Height;
+};
+
 void SpriteCtorTransform2D(void *memory);
 void SpriteDtorTransform2D(void *memory);
 std::shared_ptr<Sprite> SpriteFactorySprite(int number);
