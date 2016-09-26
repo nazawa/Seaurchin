@@ -7,6 +7,16 @@
 #include "ExecutionManager.h"
 #include "SystemFunction.h"
 
+template<typename T>
+void RegisterSpriteBasic(asIScriptEngine *engine, const char *name)
+{
+    InterfacesRegisterSharedClass<T>(engine, name);
+    engine->RegisterObjectMethod(name, SU_IF_COLOR "& get_Color() const", REF_GETTER(T, Tint), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(name, "void set_Color(const " SU_IF_COLOR "& in)", REF_SETTER(T, Tint), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(name, SU_IF_TF2D "& get_Transform() const", REF_GETTER(T, Transform), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(name, "void set_Transform(const " SU_IF_TF2D "& in)", REF_SETTER(T, Transform), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectMethod(name, "void Draw()", CALLER(T, Draw), asCALL_CDECL_OBJFIRST);
+}
 
 void InterfacesRegisterResource(asIScriptEngine * engine)
 {
@@ -76,27 +86,23 @@ void InterfacesRegisterObject(asIScriptEngine *engine)
     engine->RegisterObjectProperty(SU_IF_TF2D, "double ScaleX", asOFFSET(Transform2D, ScaleX));
     engine->RegisterObjectProperty(SU_IF_TF2D, "double ScaleY", asOFFSET(Transform2D, ScaleY));
 
-    //Sprite
-    InterfacesRegisterSharedClass<Sprite>(engine, SU_IF_SPRITE);
-    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_TF2D "& get_Transform() const", REF_GETTER(Sprite, Transform), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(SU_IF_SPRITE, "void set_Transform(const " SU_IF_TF2D "& in)", REF_SETTER(Sprite, Transform), asCALL_CDECL_OBJFIRST);
+    engine->RegisterObjectType(SU_IF_COLOR, sizeof(ColorTint), asOBJ_VALUE | asOBJ_APP_CLASS_CD);
+    engine->RegisterObjectBehaviour(SU_IF_COLOR, asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(SpriteCtorColorTint), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectBehaviour(SU_IF_COLOR, asBEHAVE_DESTRUCT, "void f()", asFUNCTION(SpriteDtorColorTint), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 A", asOFFSET(ColorTint, A));
+    engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 R", asOFFSET(ColorTint, R));
+    engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 G", asOFFSET(ColorTint, G));
+    engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 B", asOFFSET(ColorTint, B));
 
-
-    //ImageSprite
-    InterfacesRegisterSharedClass<ImageSprite>(engine, SU_IF_IMGSPRITE);
-    engine->RegisterObjectMethod(SU_IF_IMGSPRITE, SU_IF_TF2D "& get_Transform() const", REF_GETTER(ImageSprite, Transform), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(SU_IF_IMGSPRITE, "void set_Transform(const " SU_IF_TF2D "& in)", REF_SETTER(ImageSprite, Transform), asCALL_CDECL_OBJFIRST);
+    RegisterSpriteBasic<Sprite>(engine, SU_IF_SPRITE);
+    
+    RegisterSpriteBasic<ImageSprite>(engine, SU_IF_IMGSPRITE);
     engine->RegisterObjectMethod(SU_IF_IMGSPRITE, SU_IF_IMAGE " get_Source() const", GETTER(ImageSprite, Source), asCALL_CDECL_OBJFIRST);
     engine->RegisterObjectMethod(SU_IF_IMGSPRITE, "void set_Source(const " SU_IF_IMAGE ")", SETTER(ImageSprite, Source), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(SU_IF_IMGSPRITE, "void Draw()", CALLER(ImageSprite, Draw), asCALL_CDECL_OBJFIRST);
 
-    //TextSprite
-    InterfacesRegisterSharedClass<TextSprite>(engine, SU_IF_TXTSPRITE);
-    engine->RegisterObjectMethod(SU_IF_TXTSPRITE, SU_IF_TF2D "& get_Transform() const", REF_GETTER(TextSprite, Transform), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void set_Transform(const " SU_IF_TF2D "& in)", REF_SETTER(TextSprite, Transform), asCALL_CDECL_OBJFIRST);
+    RegisterSpriteBasic<TextSprite>(engine, SU_IF_TXTSPRITE);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, SU_IF_FONT " get_Font() const", GETTER(TextSprite, Font), asCALL_CDECL_OBJFIRST);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void set_Font(const " SU_IF_FONT ")", SETTER(TextSprite, Font), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void Draw()", CALLER(TextSprite, Draw), asCALL_CDECL_OBJFIRST);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetText(const string &in)", CALLER(TextSprite, SetText), asCALL_CDECL_OBJFIRST);
 }
 

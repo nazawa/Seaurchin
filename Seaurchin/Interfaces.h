@@ -11,6 +11,7 @@
 #define SU_IF_FONT "Font"
 #define SU_IF_VFONT "VirtualFont"
 
+#define SU_IF_COLOR "Color"
 #define SU_IF_SPRITE "Sprite"
 #define SU_IF_TXTSPRITE "TextSprite"
 #define SU_IF_IMGSPRITE "ImageSprite"

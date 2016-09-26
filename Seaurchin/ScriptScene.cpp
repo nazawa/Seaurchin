@@ -72,10 +72,11 @@ ScriptCoroutineScene::~ScriptCoroutineScene()
     runningContext->Release();
     for (auto& i : coroutines)
     {
-        auto e = i.context->GetEngine();
-        i.context->Release();
-        i.function->Release();
-        e->ReleaseScriptObject(i.object, i.type);
+        auto e = i->context->GetEngine();
+        i->context->Release();
+        i->function->Release();
+        e->ReleaseScriptObject(i->object, i->type);
+        delete i;
     }
     coroutines.clear();
 }
@@ -89,32 +90,33 @@ void ScriptCoroutineScene::Tick(double delta)
     while (i != coroutines.end())
     {
         auto c = *i;
-        switch (c.wait.type)
+        switch (c->wait.type)
         {
         case WaitType::Frame:
-            c.wait.frames -= 1;
-            if (c.wait.frames > 0)
+            c->wait.frames -= 1;
+            if (c->wait.frames > 0)
             {
                 ++i;
                 continue;
             }
             break;
         case WaitType::Time:
-            c.wait.time -= delta;
-            if (c.wait.time > 0.0)
+            c->wait.time -= delta;
+            if (c->wait.time > 0.0)
             {
                 ++i;
                 continue;
             }
             break;
         }
-        auto result = c.context->Execute();
+        auto result = c->context->Execute();
         if (result != asEXECUTION_SUSPENDED)
         {
-            auto e = c.context->GetEngine();
-            c.context->Release();
-            c.function->Release();
-            e->ReleaseScriptObject(c.object, c.type);
+            auto e = c->context->GetEngine();
+            c->context->Release();
+            c->function->Release();
+            e->ReleaseScriptObject(c->object, c->type);
+            delete c;
             i = coroutines.erase(i);
         }
         else
@@ -240,15 +242,16 @@ void ScriptSceneRunCoroutine(asIScriptFunction * cofunc)
         return;
     }
     if (!cofunc || cofunc->GetFuncType() != asFUNC_DELEGATE) return;
-    Coroutine c = { 0 };
-    c.context = ctx->GetEngine()->CreateContext();
-    c.function = cofunc->GetDelegateFunction();
-    c.function->AddRef();
-    c.object = cofunc->GetDelegateObject();
-    c.type = cofunc->GetDelegateObjectType();
-    ctx->GetEngine()->AddRefScriptObject(c.object, c.type);
-    c.context->SetUserData(&c.wait, SU_UDTYPE_WAIT);
-    c.context->Prepare(c.function);
-    c.context->SetObject(c.object);
+    auto *c = new Coroutine;
+    c->context = ctx->GetEngine()->CreateContext();
+    c->function = cofunc->GetDelegateFunction();
+    c->function->AddRef();
+    c->object = cofunc->GetDelegateObject();
+    c->type = cofunc->GetDelegateObjectType();
+    ctx->GetEngine()->AddRefScriptObject(c->object, c->type);
+
+    c->context->SetUserData(&c->wait, SU_UDTYPE_WAIT);
+    c->context->Prepare(c->function);
+    c->context->SetObject(c->object);
     psc->coroutines.push_back(c);
 }

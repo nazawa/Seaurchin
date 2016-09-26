@@ -8,8 +8,9 @@ sregex SpriteManager::srmove = bos >> (s1 = +_w) >> !('(' >> (s2 = SpriteManager
 
 unordered_map<string, function<bool(shared_ptr<Sprite>, SpriteManager::Mover&, double)>> SpriteManager::actions =
 {
-    {"move_to", SpriteManager::ActionMoveTo},
-    {"move_by", SpriteManager::ActionMoveBy}
+    { "move_to", SpriteManager::ActionMoveTo },
+    { "move_by", SpriteManager::ActionMoveBy },
+    { "alpha", SpriteManager::ActionAlpha },
 };
 
 unordered_map<string, Easing::EasingFunction> SpriteManager::easings =
@@ -137,7 +138,7 @@ void SpriteManager::Tick(double delta)
     }
 }
 
-bool SpriteManager::ActionMoveTo(std::shared_ptr<Sprite> target, Mover &mover, double delta)
+bool SpriteManager::ActionMoveTo(shared_ptr<Sprite> target, Mover &mover, double delta)
 {
     if (delta == 0)
     {
@@ -159,7 +160,7 @@ bool SpriteManager::ActionMoveTo(std::shared_ptr<Sprite> target, Mover &mover, d
     }
 }
 
-bool SpriteManager::ActionMoveBy(std::shared_ptr<Sprite> target, Mover &mover, double delta)
+bool SpriteManager::ActionMoveBy(shared_ptr<Sprite> target, Mover &mover, double delta)
 {
     if (delta == 0)
     {
@@ -177,6 +178,25 @@ bool SpriteManager::ActionMoveBy(std::shared_ptr<Sprite> target, Mover &mover, d
     {
         target->Transform.X = mover.Extra1 + mover.X;
         target->Transform.Y = mover.Extra2 + mover.Y;
+        return true;
+    }
+}
+
+bool SpriteManager::ActionAlpha(shared_ptr<Sprite> target, Mover &mover, double delta)
+{
+    if (delta == 0)
+    {
+        target->Tint.A = (uint8_t)(mover.X * 255.0);
+        return false;
+    }
+    else if (delta >= 0)
+    {
+        target->Tint.A = (uint8_t)(255.0 * mover.Function(mover.Now, mover.Duration, mover.X, mover.Y - mover.X));
+        return false;
+    }
+    else
+    {
+        target->Tint.A = (uint8_t)(mover.Y * 255.0);
         return true;
     }
 }

@@ -58,7 +58,7 @@ protected:
 public:
     ScriptCoroutineScene(asIScriptObject *scene);
     ~ScriptCoroutineScene();
-    std::list<Coroutine> coroutines;
+    std::list<Coroutine*> coroutines;
     
     void Tick(double delta) override;
     void Initialize() override;
