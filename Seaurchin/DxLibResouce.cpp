@@ -306,7 +306,7 @@ void Font::SaveFontTexture(uint8_t *bitmap, int width, int height, std::string n
     delete[] rows;
 }
 
-void Font::RectPacker::Init(int w, int h, int rowh)
+void RectPacker::Init(int w, int h, int rowh)
 {
     width = w;
     height = h;
@@ -315,7 +315,7 @@ void Font::RectPacker::Init(int w, int h, int rowh)
     cursorY = 0;
 }
 
-Font::RectPacker::Rect Font::RectPacker::Insert(int w, int h)
+RectPacker::Rect RectPacker::Insert(int w, int h)
 {
     if (cursorX + w >= width)
     {

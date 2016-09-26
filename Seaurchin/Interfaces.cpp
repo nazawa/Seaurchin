@@ -7,55 +7,6 @@
 #include "ExecutionManager.h"
 #include "SystemFunction.h"
 
-template<typename T>
-void RegisterSpriteBasic(asIScriptEngine *engine, const char *name)
-{
-    InterfacesRegisterSharedClass<T>(engine, name);
-    engine->RegisterObjectMethod(name, SU_IF_COLOR "& get_Color() const", REF_GETTER(T, Tint), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(name, "void set_Color(const " SU_IF_COLOR "& in)", REF_SETTER(T, Tint), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(name, SU_IF_TF2D "& get_Transform() const", REF_GETTER(T, Transform), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(name, "void set_Transform(const " SU_IF_TF2D "& in)", REF_SETTER(T, Transform), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(name, "void Draw()", CALLER(T, Draw), asCALL_CDECL_OBJFIRST);
-}
-
-void InterfacesRegisterResource(asIScriptEngine * engine)
-{
-    //Image
-    InterfacesRegisterSharedClass<Image>(engine, SU_IF_IMAGE);
-
-    //VirtualFont
-    InterfacesRegisterSharedClass<VirtualFont>(engine, SU_IF_VFONT);
-    //engine->RegisterObjectMethod(SU_IF_VFONT, "void DrawRaw(const string & in, double, double)", CALLER(VirtualFont, DrawRaw), asCALL_CDECL_OBJFIRST);
-
-    //Font
-    InterfacesRegisterSharedClass<Font>(engine, SU_IF_FONT);
-    engine->RegisterObjectMethod(SU_IF_FONT, "void DrawRaw(const string & in, double, double)", CALLER(Font, DrawRawUTF8), asCALL_CDECL_OBJFIRST);
-}
-
-
-void InterfacesRegisterScene(asIScriptEngine *engine)
-{
-    engine->RegisterInterface(SU_IF_SCENE);
-    engine->RegisterInterfaceMethod(SU_IF_SCENE, "void Initialize()");
-    engine->RegisterInterfaceMethod(SU_IF_SCENE, "void Tick(double)");
-    engine->RegisterInterfaceMethod(SU_IF_SCENE, "void Draw()");
-
-    engine->RegisterInterface(SU_IF_COSCENE);
-    engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Initialize()");
-    engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Run()");
-    engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Draw()");
-
-    engine->RegisterObjectType(SU_IF_SKIN, 0, asOBJ_REF);
-    engine->RegisterObjectBehaviour(SU_IF_SKIN, asBEHAVE_ADDREF, "void f()", asMETHOD(SkinHolder, AddRef), asCALL_THISCALL);
-    engine->RegisterObjectBehaviour(SU_IF_SKIN, asBEHAVE_RELEASE, "void f()", asMETHOD(SkinHolder, Release), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadImage(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinImage), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadFont(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinFont), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_IMAGE " GetImage(const string &in)", asMETHOD(SkinHolder, GetSkinImage), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_FONT " GetFont(const string &in)", asMETHOD(SkinHolder, GetSkinFont), asCALL_THISCALL);
-
-}
-
-
 void InterfacesRegisterSceneFunction(asIScriptEngine *engine)
 {
     engine->RegisterFuncdef("void " SU_IF_COROUTINE "()");
@@ -72,27 +23,10 @@ void InterfacesRegisterSceneFunction(asIScriptEngine *engine)
     engine->RegisterGlobalFunction("void AddMove(" SU_IF_TXTSPRITE ", const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);
 }
 
+/*
 void InterfacesRegisterObject(asIScriptEngine *engine)
 {
-    //Transform2D
-    engine->RegisterObjectType(SU_IF_TF2D, sizeof(Transform2D), asOBJ_VALUE | asOBJ_APP_CLASS_CD);
-    engine->RegisterObjectBehaviour(SU_IF_TF2D, asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(SpriteCtorTransform2D), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectBehaviour(SU_IF_TF2D, asBEHAVE_DESTRUCT, "void f()", asFUNCTION(SpriteDtorTransform2D), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectProperty(SU_IF_TF2D, "double X", asOFFSET(Transform2D, X));
-    engine->RegisterObjectProperty(SU_IF_TF2D, "double Y", asOFFSET(Transform2D, Y));
-    engine->RegisterObjectProperty(SU_IF_TF2D, "double Angle", asOFFSET(Transform2D, Angle));
-    engine->RegisterObjectProperty(SU_IF_TF2D, "double OriginX", asOFFSET(Transform2D, OriginX));
-    engine->RegisterObjectProperty(SU_IF_TF2D, "double OriginY", asOFFSET(Transform2D, OriginY));
-    engine->RegisterObjectProperty(SU_IF_TF2D, "double ScaleX", asOFFSET(Transform2D, ScaleX));
-    engine->RegisterObjectProperty(SU_IF_TF2D, "double ScaleY", asOFFSET(Transform2D, ScaleY));
-
-    engine->RegisterObjectType(SU_IF_COLOR, sizeof(ColorTint), asOBJ_VALUE | asOBJ_APP_CLASS_CD);
-    engine->RegisterObjectBehaviour(SU_IF_COLOR, asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(SpriteCtorColorTint), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectBehaviour(SU_IF_COLOR, asBEHAVE_DESTRUCT, "void f()", asFUNCTION(SpriteDtorColorTint), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 A", asOFFSET(ColorTint, A));
-    engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 R", asOFFSET(ColorTint, R));
-    engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 G", asOFFSET(ColorTint, G));
-    engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 B", asOFFSET(ColorTint, B));
+    
 
     RegisterSpriteBasic<Sprite>(engine, SU_IF_SPRITE);
     
@@ -105,6 +39,7 @@ void InterfacesRegisterObject(asIScriptEngine *engine)
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void set_Font(const " SU_IF_FONT ")", SETTER(TextSprite, Font), asCALL_CDECL_OBJFIRST);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetText(const string &in)", CALLER(TextSprite, SetText), asCALL_CDECL_OBJFIRST);
 }
+*/
 
 void InterfacesRegisterGlobalFunction(asIScriptEngine *engine)
 {
@@ -118,11 +53,6 @@ void InterfacesRegisterGlobalFunction(asIScriptEngine *engine)
     engine->RegisterGlobalFunction(SU_IF_SPRITE " CreateSprite(int)", asFUNCTION(SpriteFactorySprite), asCALL_CDECL);
     engine->RegisterGlobalFunction(SU_IF_IMGSPRITE " CreateImageSprite()", asFUNCTION(SpriteFactoryImageSprite), asCALL_CDECL);
     engine->RegisterGlobalFunction(SU_IF_TXTSPRITE " CreateTextSprite()", asFUNCTION(SpriteFactoryTextSprite), asCALL_CDECL);
-}
-
-void InterfacesRegisterDrawFunction(asIScriptEngine *engine)
-{
-
 }
 
 void InterfacesRegisterEnum(asIScriptEngine * engine)

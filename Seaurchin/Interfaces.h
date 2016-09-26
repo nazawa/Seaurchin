@@ -2,9 +2,7 @@
 
 #define SU_IF_KEY "Key"
 #define SU_IF_SKIN "Skin"
-#define SU_IF_SCENE "Scene"
-#define SU_IF_COSCENE "CoroutineScene"
-#define SU_IF_COROUTINE "Coroutine"
+
 #define SU_IF_TF2D "Transform2D"
 
 #define SU_IF_IMAGE "Image"
@@ -52,10 +50,8 @@ void InterfacesRegisterSharedClass(asIScriptEngine *engine, std::string classnam
     engine->RegisterObjectMethod(classname.c_str(), (classname + " &opAssign(const " + classname + " &in)").c_str(), asFUNCTION(asAssign<std::shared_ptr<T>>), asCALL_CDECL_OBJFIRST);
 }
 
-void InterfacesRegisterScene(asIScriptEngine *engine);
 void InterfacesRegisterEnum(asIScriptEngine *engine);
-void InterfacesRegisterResource(asIScriptEngine *engine);
-void InterfacesRegisterObject(asIScriptEngine *engine);
+//void InterfacesRegisterObject(asIScriptEngine *engine);
 
 void InterfacesRegisterGlobalFunction(asIScriptEngine *engine);
 void InterfacesRegisterSceneFunction(asIScriptEngine *engine);

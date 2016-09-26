@@ -38,7 +38,6 @@ void ScriptScene::Initialize()
 void ScriptScene::Tick(double delta)
 {
     auto func = sceneType->GetMethodByDecl("void Tick(double)");
-    spmanager.Tick(delta);
     context->Prepare(func);
     context->SetObject(sceneObject);
     context->Execute();
@@ -154,6 +153,29 @@ bool ScriptCoroutineScene::IsDead()
     return finished;
 }
 
+void RegisterScriptScene(asIScriptEngine * engine)
+{
+    engine->RegisterInterface(SU_IF_SCENE);
+    engine->RegisterInterfaceMethod(SU_IF_SCENE, "void Initialize()");
+    engine->RegisterInterfaceMethod(SU_IF_SCENE, "void Tick(double)");
+    engine->RegisterInterfaceMethod(SU_IF_SCENE, "void Draw()");
+
+    engine->RegisterInterface(SU_IF_COSCENE);
+    engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Initialize()");
+    engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Run()");
+    engine->RegisterInterfaceMethod(SU_IF_COSCENE, "void Draw()");
+
+    /*
+    engine->RegisterObjectType(SU_IF_SKIN, 0, asOBJ_REF);
+    engine->RegisterObjectBehaviour(SU_IF_SKIN, asBEHAVE_ADDREF, "void f()", asMETHOD(SkinHolder, AddRef), asCALL_THISCALL);
+    engine->RegisterObjectBehaviour(SU_IF_SKIN, asBEHAVE_RELEASE, "void f()", asMETHOD(SkinHolder, Release), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadImage(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinImage), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadFont(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinFont), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_IMAGE " GetImage(const string &in)", asMETHOD(SkinHolder, GetSkinImage), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_FONT " GetFont(const string &in)", asMETHOD(SkinHolder, GetSkinFont), asCALL_THISCALL);
+    */
+}
+
 // Scene用メソッド
 
 void ScriptSceneYieldTime(double time)
@@ -187,7 +209,7 @@ void ScriptSceneYieldFrames(int64_t frames)
 bool ScriptSceneIsKeyHeld(int keynum)
 {
     auto ctx = asGetActiveContext();
-    auto psc = (Scene*)ctx->GetUserData(SU_UDTYPE_SCENE);
+    auto psc = static_cast<ScriptScene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
     if (!psc)
     {
         ScriptSceneWarnOutOf("Scene Class", ctx);
@@ -199,7 +221,7 @@ bool ScriptSceneIsKeyHeld(int keynum)
 bool ScriptSceneIsKeyTriggered(int keynum)
 {
     auto ctx = asGetActiveContext();
-    auto psc = (Scene*)ctx->GetUserData(SU_UDTYPE_SCENE);
+    auto psc = static_cast<ScriptScene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
     if (!psc)
     {
         ScriptSceneWarnOutOf("Scene Class", ctx);
@@ -208,22 +230,22 @@ bool ScriptSceneIsKeyTriggered(int keynum)
     return  psc->GetManager()->GetKeyState()->Trigger[keynum];
 }
 
-void ScriptSceneAddMove(shared_ptr<Sprite> sprite, const string &move)
+void ScriptSceneAddMove(SSprite* sprite, const string &move)
 {
     auto ctx = asGetActiveContext();
-    auto psc = static_cast<Scene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
+    auto psc = static_cast<ScriptCoroutineScene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
     if (!psc)
     {
         ScriptSceneWarnOutOf("Scene Class", ctx);
         return;
     }
-    psc->GetSpriteManager()->AddMove(sprite, move);
+    psc->spmanager.AddMove(sprite, move);
 }
 
 void ScriptSceneAddScene(asIScriptObject *sceneObject)
 {
     auto ctx = asGetActiveContext();
-    auto psc = static_cast<Scene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
+    auto psc = static_cast<ScriptScene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
     if (!psc)
     {
         ScriptSceneWarnOutOf("Scene Class", ctx);

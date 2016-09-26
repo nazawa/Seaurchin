@@ -17,7 +17,7 @@ protected:
     int index;
 
     ExecutionManager *manager;
-    SpriteManager spmanager;
+    //SpriteManager spmanager;
 
 public:
     Scene();
@@ -27,7 +27,7 @@ public:
     inline int GetIndex() { return index; }
     inline void SetManager(ExecutionManager *info) { manager = info; }
     inline ExecutionManager* GetManager() { return manager; }
-    inline SpriteManager* GetSpriteManager() { return &spmanager; }
+    //inline SpriteManager* GetSpriteManager() { return &spmanager; }
 
     virtual void Initialize();
     virtual void Tick(double delta);

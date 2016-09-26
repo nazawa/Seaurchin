@@ -5,16 +5,21 @@
 #include "Setting.h"
 #include "Interfaces.h"
 
+#include "ScriptResource.h"
+#include "ScriptScene.h"
+#include "ScriptSprite.h"
+
 using namespace boost::filesystem;
 using namespace std;
 
 ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
 {
     ScriptInterface = shared_ptr<AngelScript>(new AngelScript());
+
+    RegisterScriptResource(ScriptInterface->GetEngine());
+    RegisterScriptSprite(ScriptInterface->GetEngine());
+    RegisterScriptScene(ScriptInterface->GetEngine());
     InterfacesRegisterEnum(ScriptInterface->GetEngine());
-    InterfacesRegisterResource(ScriptInterface->GetEngine());
-    InterfacesRegisterObject(ScriptInterface->GetEngine());
-    InterfacesRegisterScene(ScriptInterface->GetEngine());
     InterfacesRegisterSceneFunction(ScriptInterface->GetEngine());
     InterfacesRegisterGlobalFunction(ScriptInterface->GetEngine());
 
