@@ -12,6 +12,16 @@ void SpriteDtorTransform2D(void *memory)
     // nothing to do
 }
 
+void SpriteCtorColorTint(void *memory)
+{
+    new(memory) ColorTint();
+}
+
+void SpriteDtorColorTint(void *memory)
+{
+    // nothing to do
+}
+
 // Sprite -----------------------------
 
 shared_ptr<Sprite> SpriteFactorySprite(int number)
@@ -52,6 +62,8 @@ shared_ptr<ImageSprite> SpriteFactoryImageSprite()
 
 void ImageSprite::Draw()
 {
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, Tint.A);
+    SetDrawBright(Tint.R, Tint.G, Tint.B);
     DrawRotaGraph3F(
         Transform.X, Transform.Y,
         Transform.OriginX, Transform.OriginY,
@@ -64,6 +76,8 @@ void ImageSprite::Draw()
 
 void TextSprite::Draw()
 {
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, Tint.A);
+    SetDrawBright(Tint.R, Tint.G, Tint.B);
     DrawRotaGraph3F(
         Transform.X, Transform.Y,
         Transform.OriginX, Transform.OriginY,
@@ -77,6 +91,8 @@ void TextSprite::Refresh()
     int w = Font->DrawRawUTF8(Text, INT_MIN, 0);
     cache = RenderTarget::Create(w, Font->GetSize());
     BEGIN_DRAW_TRANSACTION(cache->GetHandle());
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+    SetDrawBright(255, 255, 255);
     Font->DrawRawUTF8(Text, 0, 0);
     FINISH_DRAW_TRANSACTION;
 }

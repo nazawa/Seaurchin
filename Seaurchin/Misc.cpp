@@ -1,4 +1,5 @@
 #include "Misc.h"
+#include "ScriptScene.h"
 
 using namespace std;
 

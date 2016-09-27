@@ -6,10 +6,11 @@ using namespace boost::xpressive;
 sregex SpriteManager::srparam = (s1 = +_w) >> ':' >> (s2 = +_w | (+_d >> !('.' >> +_d)));
 sregex SpriteManager::srmove = bos >> (s1 = +_w) >> !('(' >> (s2 = SpriteManager::srparam >> *(',' >> SpriteManager::srparam)) >> ')') >> eos;
 
-unordered_map<string, function<bool(shared_ptr<Sprite>, SpriteManager::Mover&, double)>> SpriteManager::actions =
+unordered_map<string, function<bool(shared_ptr<Sprite>, Mover&, double)>> SpriteManager::actions =
 {
-    {"move_to", SpriteManager::ActionMoveTo},
-    {"move_by", SpriteManager::ActionMoveBy}
+    { "move_to", SpriteManager::ActionMoveTo },
+    { "move_by", SpriteManager::ActionMoveBy },
+    { "alpha", SpriteManager::ActionAlpha },
 };
 
 unordered_map<string, Easing::EasingFunction> SpriteManager::easings =
@@ -53,48 +54,8 @@ SpriteManager::SpriteManager()
 
 void SpriteManager::AddMove(shared_ptr<Sprite> sprite, std::string move)
 {
-    using namespace boost::algorithm;
-    constexpr auto hash = &crc_ccitt::checksum;
-    smatch match;
-    move.erase(remove(move.begin(), move.end(), ' '), move.end());
-    bool m = regex_match(move, match, srmove);
-    if (!m) return;
-
     Mover *mover = new Mover{ 0 };
-    mover->Function = Easing::Linear;
-    auto action = actions[match[s1].str()];
-    vector<string> params;
-    split(params, match[s2].str(), is_any_of(","));
-    for (const auto& s : params)
-    {
-        regex_match(s, match, srparam);
-        auto pname = match[s1].str();
-        auto pval = match[s2].str();
-        switch (hash(pname.c_str()))
-        {
-        case hash("x"):
-        case hash("r"):
-            mover->X = atof(pval.c_str());
-            break;
-        case hash("y"):
-        case hash("g"):
-            mover->Y = atof(pval.c_str());
-            break;
-        case hash("z"):
-        case hash("b"):
-            mover->Z = atof(pval.c_str());
-            break;
-        case hash("time"):
-            mover->Duration = atof(pval.c_str());
-            break;
-        case hash("wait"):
-            mover->Wait = atof(pval.c_str());
-            break;
-        case hash("ease"):
-            mover->Function = easings[pval];
-            break;
-        }
-    }
+    auto action = actions[ParseMover(mover, move)];
     action(sprite, *mover, 0);
     movers.push_back(make_tuple(sprite, mover, action));
 }
@@ -137,7 +98,7 @@ void SpriteManager::Tick(double delta)
     }
 }
 
-bool SpriteManager::ActionMoveTo(std::shared_ptr<Sprite> target, Mover &mover, double delta)
+bool SpriteManager::ActionMoveTo(shared_ptr<Sprite> target, Mover &mover, double delta)
 {
     if (delta == 0)
     {
@@ -159,7 +120,7 @@ bool SpriteManager::ActionMoveTo(std::shared_ptr<Sprite> target, Mover &mover, d
     }
 }
 
-bool SpriteManager::ActionMoveBy(std::shared_ptr<Sprite> target, Mover &mover, double delta)
+bool SpriteManager::ActionMoveBy(shared_ptr<Sprite> target, Mover &mover, double delta)
 {
     if (delta == 0)
     {
@@ -179,4 +140,71 @@ bool SpriteManager::ActionMoveBy(std::shared_ptr<Sprite> target, Mover &mover, d
         target->Transform.Y = mover.Extra2 + mover.Y;
         return true;
     }
+}
+
+bool SpriteManager::ActionAlpha(shared_ptr<Sprite> target, Mover &mover, double delta)
+{
+    if (delta == 0)
+    {
+        target->Tint.A = (uint8_t)(mover.X * 255.0);
+        return false;
+    }
+    else if (delta >= 0)
+    {
+        target->Tint.A = (uint8_t)(255.0 * mover.Function(mover.Now, mover.Duration, mover.X, mover.Y - mover.X));
+        return false;
+    }
+    else
+    {
+        target->Tint.A = (uint8_t)(mover.Y * 255.0);
+        return true;
+    }
+}
+
+string SpriteManager::ParseMover(Mover * mover, std::string move)
+{
+    using namespace boost::algorithm;
+    constexpr auto hash = &crc_ccitt::checksum;
+    smatch match;
+    move.erase(remove(move.begin(), move.end(), ' '), move.end());
+
+    mover->Function = Easing::Linear;
+    
+    bool m = regex_match(move, match, srmove);
+    if (!m) return "";
+    auto ms = match[s1].str();
+    vector<string> params;
+    split(params, match[s2].str(), is_any_of(","));
+    for (const auto& s : params)
+    {
+        regex_match(s, match, srparam);
+        auto pname = match[s1].str();
+        auto pval = match[s2].str();
+        switch (hash(pname.c_str()))
+        {
+        case hash("x"):
+        case hash("r"):
+            mover->X = atof(pval.c_str());
+            break;
+        case hash("y"):
+        case hash("g"):
+            mover->Y = atof(pval.c_str());
+            break;
+        case hash("z"):
+        case hash("b"):
+            mover->Z = atof(pval.c_str());
+            break;
+        case hash("time"):
+            mover->Duration = atof(pval.c_str());
+            break;
+        case hash("wait"):
+            mover->Wait = atof(pval.c_str());
+            break;
+        case hash("ease"):
+            mover->Function = easings[pval];
+            break;
+        }
+    }
+
+    return ms;
 }
