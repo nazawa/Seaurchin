@@ -14,11 +14,12 @@ class SSprite
 {
 protected:
     int Reference;
-    SImage *Image = nullptr;
+    
 public:
     Transform2D Transform;
     int32_t ZIndex;
     ColorTint Color;
+    SImage *Image = nullptr;
     bool HasAlpha = true;
     void set_Image(SImage *img);
     const SImage* get_Image();

@@ -18,7 +18,7 @@ void ScriptSpriteManager::AddMove(SSprite* sprite, std::string move)
 {
     Mover *mover = new Mover{ 0 };
     auto action = actions[SpriteManager::ParseMover(mover, move)];
-    sprite->AddRef();
+    //sprite->AddRef();
     action(sprite, *mover, 0);
     movers.push_back(make_tuple(sprite, mover, action));
 }

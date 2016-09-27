@@ -4,11 +4,13 @@ void SSprite::set_Image(SImage * img)
 {
     if (Image) Image->Release();
     Image = img;
-    Image->AddRef();
+    
+    //Image->AddRef();
 }
 
 const SImage * SSprite::get_Image()
 {
+    if (Image) Image->AddRef();
     return Image;
 }
 

@@ -172,6 +172,7 @@ string SpriteManager::ParseMover(Mover * mover, std::string move)
     
     bool m = regex_match(move, match, srmove);
     if (!m) return "";
+    auto ms = match[s1].str();
     vector<string> params;
     split(params, match[s2].str(), is_any_of(","));
     for (const auto& s : params)
@@ -205,5 +206,5 @@ string SpriteManager::ParseMover(Mover * mover, std::string move)
         }
     }
 
-    return match[s1].str();
+    return ms;
 }

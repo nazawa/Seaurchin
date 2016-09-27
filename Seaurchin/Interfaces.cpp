@@ -49,10 +49,6 @@ void InterfacesRegisterGlobalFunction(asIScriptEngine *engine)
     engine->RegisterGlobalFunction(SU_IF_IMAGE "@ LoadSystemImage(const string &in)", asFUNCTION(LoadSystemImage), asCALL_CDECL);
     //engine->RegisterGlobalFunction("void CreateImageFont(const string &in, const string &in, int)", asFUNCTION(CreateImageFont), asCALL_CDECL);
     //engine->RegisterGlobalFunction("void DrawRawString(" SU_IF_VFONT ", const string & in, double, double)", asFUNCTION(DrawRawString), asCALL_CDECL);
-
-    //engine->RegisterGlobalFunction(SU_IF_SPRITE " CreateSprite(int)", asFUNCTION(SpriteFactorySprite), asCALL_CDECL);
-    //engine->RegisterGlobalFunction(SU_IF_IMGSPRITE " CreateImageSprite()", asFUNCTION(SpriteFactoryImageSprite), asCALL_CDECL);
-    //engine->RegisterGlobalFunction(SU_IF_TXTSPRITE " CreateTextSprite()", asFUNCTION(SpriteFactoryTextSprite), asCALL_CDECL);
 }
 
 void InterfacesRegisterEnum(asIScriptEngine * engine)

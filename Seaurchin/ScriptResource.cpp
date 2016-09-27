@@ -136,7 +136,7 @@ void RegisterScriptResource(asIScriptEngine * engine)
     engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_RELEASE, "void f()", asMETHOD(SImage, Release), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_IMAGE, "int get_Width()", asMETHOD(SImage, get_Width), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_IMAGE, "int get_Height()", asMETHOD(SImage, get_Height), asCALL_THISCALL);
-    //engine->RegisterObjectMethod(SU_IF_IMAGE, SU_IF_IMAGE "@ opAssign(" SU_IF_IMAGE "@)", asFUNCTION(asAssign<SImage>), asCALL_CDECL_OBJFIRST);
+    //engine->RegisterObjectMethod(SU_IF_IMAGE, SU_IF_IMAGE "& opAssign(" SU_IF_IMAGE "&)", asFUNCTION(asAssign<SImage>), asCALL_CDECL_OBJFIRST);
 
     engine->RegisterObjectType(SU_IF_FONT, 0, asOBJ_REF);
     engine->RegisterObjectBehaviour(SU_IF_FONT, asBEHAVE_FACTORY, SU_IF_FONT "@ f()", asFUNCTION(SFont::CreateBlankFont), asCALL_CDECL);
