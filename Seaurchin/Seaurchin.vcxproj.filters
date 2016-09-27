@@ -114,6 +114,9 @@
     <ClCompile Include="DxLibResource.cpp">
       <Filter>インターフェース\C++</Filter>
     </ClCompile>
+    <ClCompile Include="SkinHolder.cpp">
+      <Filter>インターフェース\AngelScript</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -211,6 +214,9 @@
     </ClInclude>
     <ClInclude Include="DxLibResource.h">
       <Filter>インターフェース\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinHolder.h">
+      <Filter>インターフェース\AngelScript</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -5,35 +5,7 @@
 #include "DxLibResource.h"
 #include "Scene.h"
 #include "ScriptScene.h"
-
-class ExecutionManager;
-
-class SkinHolder final
-{
-private:
-    ExecutionManager *Manager;
-    std::string SkinName;
-    boost::filesystem::path SkinRoot;
-    std::unordered_map<std::string, std::shared_ptr<Image>> Images;
-    std::unordered_map<std::string, std::shared_ptr<Font>> Fonts;
-    //std::unordered_map<std::string, shared_ptr<Image>> Images;
-    //std::unordered_map<std::string, shared_ptr<Image>> Images;
-
-    bool IncludeScript(std::string include, std::string from, CScriptBuilder *builder);
-
-public:
-    SkinHolder(std::string name, ExecutionManager *manager);
-    ~SkinHolder();
-    void AddRef();
-    void Release();
-
-    void Initialize();
-    void ExecuteSkinScript(std::string file);
-    void LoadSkinImage(const std::string &key, const std::string &filename);
-    void LoadSkinFont(const std::string &key, const std::string &filename);
-    std::shared_ptr<Image> GetSkinImage(const std::string &key);
-    std::shared_ptr<Font> GetSkinFont(const std::string &key);
-};
+#include "SkinHolder.h"
 
 class ExecutionManager final
 {
@@ -66,4 +38,3 @@ private:
     void UpdateKeyState();
 };
 
-SkinHolder* GetSkinObject();

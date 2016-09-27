@@ -34,7 +34,7 @@ SImage::SImage(int ih)
 SImage::~SImage()
 {
     DeleteGraph(Handle);
-    WriteDebugConsole(":Ç†ÇüÇÒ?ç≈ãﬂÇæÇÁÇµÇÀÇ•Ç»?\n");
+    //WriteDebugConsole(":Ç†ÇüÇÒ?ç≈ãﬂÇæÇÁÇµÇÀÇ•Ç»?\n");
     Handle = 0;
 }
 

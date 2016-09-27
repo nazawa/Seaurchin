@@ -196,6 +196,7 @@
     <ClCompile Include="ScriptSprite.cpp" />
     <ClCompile Include="ScriptSpriteManager.cpp" />
     <ClCompile Include="Setting.cpp" />
+    <ClCompile Include="SkinHolder.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="SystemFunction.cpp" />
@@ -230,6 +231,7 @@
     <ClInclude Include="ScriptSprite.h" />
     <ClInclude Include="ScriptSpriteManager.h" />
     <ClInclude Include="Setting.h" />
+    <ClInclude Include="SkinHolder.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="SystemFunction.h" />
