@@ -155,4 +155,11 @@ void InterfacesRegisterEnum(asIScriptEngine * engine)
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_7", KEY_INPUT_7);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_8", KEY_INPUT_8);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_9", KEY_INPUT_9);
+
+    engine->RegisterEnum(SU_IF_SHAPETYPE);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Pixel", SShapeType::Pixel);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Box", SShapeType::Box);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "BoxFill", SShapeType::BoxFill);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Oval", SShapeType::Oval);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "OvalFill", SShapeType::OvalFill);
 }

@@ -49,7 +49,8 @@ void Initialize()
 
     setting->Load(SU_SETTING_FILE);
     manager->EnumerateSkins();
-    manager->ExecuteSkin();
+    //manager->ExecuteSkin();
+    manager->ExecuteSystemMenu();
     manager->AddScene(shared_ptr<Scene>(new SceneDebug()));
     
 }

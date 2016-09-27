@@ -44,6 +44,8 @@ void SSprite::Draw()
 {
     
     if (!Image) return;
+    SetDrawBright(Color.R, Color.G, Color.B);
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
     DrawRotaGraph3F(
         Transform.X, Transform.Y,
         Transform.OriginX, Transform.OriginY,
@@ -63,6 +65,54 @@ SSprite * SSprite::Factory()
 
 void SShape::Draw()
 {
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
+    switch (Type)
+    {
+    case SShapeType::Pixel:
+        DrawPixel(Transform.X, Transform.Y, GetColor(Color.R, Color.G, Color.B));
+        break;
+    case SShapeType::Box:
+        DrawBoxAA(
+            Transform.X - Width / 2, Transform.Y - Height / 2,
+            Transform.X + Width / 2, Transform.Y + Height / 2,
+            GetColor(Color.R, Color.G, Color.B), FALSE);
+        break;
+    case SShapeType::BoxFill:
+        DrawBoxAA(
+            Transform.X - Width / 2, Transform.Y - Height / 2,
+            Transform.X + Width / 2, Transform.Y + Height / 2,
+            GetColor(Color.R, Color.G, Color.B), TRUE);
+        break;
+    case SShapeType::Oval:
+        DrawOvalAA(
+            Transform.X, Transform.Y,
+            Width / 2, Height / 2,
+            256, GetColor(Color.R, Color.G, Color.B), FALSE);
+        break;
+    case SShapeType::OvalFill:
+        DrawOvalAA(
+            Transform.X, Transform.Y,
+            Width / 2, Height / 2,
+            256, GetColor(Color.R, Color.G, Color.B), TRUE);
+        break;
+    }
+}
+
+SSprite * SShape::Factory()
+{
+    auto result = new SShape();
+    result->AddRef();
+    return result;
+}
+
+void SShape::RegisterType(asIScriptEngine * engine)
+{
+    RegisterSpriteBasic<SShape>(engine, SU_IF_SHAPE);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_SHAPE "@ opCast()", asFUNCTION((CastReferenceType<SShape, SSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_SHAPE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SSprite, SShape>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectProperty(SU_IF_SHAPE, "double Width", asOFFSET(SShape, Width));
+    engine->RegisterObjectProperty(SU_IF_SHAPE, "double Height", asOFFSET(SShape, Height));
+    engine->RegisterObjectProperty(SU_IF_SHAPE, SU_IF_SHAPETYPE " Type", asOFFSET(SShape, Type));
 }
 
 //“¯Žž‚ÉColor‚ÆTransform2D‚à
@@ -95,4 +145,5 @@ void SSprite::RegisterType(asIScriptEngine * engine)
 void RegisterScriptSprite(asIScriptEngine * engine)
 {
     SSprite::RegisterType(engine);
+    SShape::RegisterType(engine);
 }

@@ -16,10 +16,10 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
 {
     ScriptInterface = shared_ptr<AngelScript>(new AngelScript());
 
+    InterfacesRegisterEnum(ScriptInterface->GetEngine());
     RegisterScriptResource(ScriptInterface->GetEngine());
     RegisterScriptSprite(ScriptInterface->GetEngine());
     RegisterScriptScene(ScriptInterface->GetEngine());
-    InterfacesRegisterEnum(ScriptInterface->GetEngine());
     InterfacesRegisterSceneFunction(ScriptInterface->GetEngine());
     InterfacesRegisterGlobalFunction(ScriptInterface->GetEngine());
 
