@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "DxLibResouce.h"
+#include "DxLibResource.h"
 #include "Config.h"
 #include "Debug.h"
 

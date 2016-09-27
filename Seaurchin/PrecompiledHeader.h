@@ -51,7 +51,7 @@
 #include <scriptmath\scriptmath.h>
 #include <scriptmath\scriptmathcomplex.h>
 #include <scriptstdstring\scriptstdstring.h>
-#include "as_smart_ptr_wrapper.h"
+//#include "as_smart_ptr_wrapper.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

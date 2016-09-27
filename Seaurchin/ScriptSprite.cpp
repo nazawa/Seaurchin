@@ -1,13 +1,26 @@
 #include "ScriptSprite.h"
 
+void SSprite::set_Image(SImage * img)
+{
+    if (Image) Image->Release();
+    Image = img;
+    Image->AddRef();
+}
+
+const SImage * SSprite::get_Image()
+{
+    return Image;
+}
+
 SSprite::SSprite()
 {
-    ZIndex = 0;
+    //ZIndex = 0;
     Color = Colors::White;
 }
 
 SSprite::~SSprite()
 {
+    WriteDebugConsole("Destructing ScriptSprite\n");
     if (Image) Image->Release();
 }
 
@@ -27,7 +40,15 @@ void SSprite::Tick(double delta)
 
 void SSprite::Draw()
 {
-
+    
+    if (!Image) return;
+    DrawRotaGraph3F(
+        Transform.X, Transform.Y,
+        Transform.OriginX, Transform.OriginY,
+        Transform.ScaleX, Transform.ScaleY,
+        Transform.Angle, Image->GetHandle(),
+        HasAlpha ? TRUE : FALSE, FALSE);
+        
 }
 
 SSprite * SSprite::Factory()
@@ -37,19 +58,9 @@ SSprite * SSprite::Factory()
     return result;
 }
 
-template<typename T>
-void RegisterSpriteBasic(asIScriptEngine *engine, const char *name)
+
+void SShape::Draw()
 {
-    engine->RegisterObjectType(SU_IF_SPRITE, 0, asOBJ_REF);
-    engine->RegisterObjectBehaviour(SU_IF_SPRITE, asBEHAVE_FACTORY, SU_IF_SPRITE "@ f()", asFUNCTION(T::Factory), asCALL_CDECL);
-    engine->RegisterObjectBehaviour(SU_IF_SPRITE, asBEHAVE_ADDREF, "void f()", asMETHOD(T, AddRef), asCALL_THISCALL);
-    engine->RegisterObjectBehaviour(SU_IF_SPRITE, asBEHAVE_RELEASE, "void f()", asMETHOD(T, Release), asCALL_THISCALL);
-
-    engine->RegisterObjectProperty(name, SU_IF_COLOR " Color", asOFFSET(T, Color));
-    engine->RegisterObjectProperty(name, "int Z", asOFFSET(T, ZIndex));
-    engine->RegisterObjectProperty(name, SU_IF_TF2D " Transform", asOFFSET(T, Transform));
-
-    engine->RegisterObjectMethod(name, "void Draw()", asMETHOD(T, Draw), asCALL_CDECL_OBJFIRST);
 }
 
 //“¯Žž‚ÉColor‚ÆTransform2D‚à

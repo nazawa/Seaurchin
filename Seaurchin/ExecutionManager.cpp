@@ -68,9 +68,10 @@ void ExecutionManager::ExecuteSkin()
         WriteDebugConsole(("Can't Find Skin " + sn + "!\n").c_str());
         return;
     }
-    Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, this));
-    Skin->Initialize();
-    Skin->ExecuteSkinScript(SU_SKIN_TITLE_FILE);
+    //Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, this));
+    //Skin->Initialize();
+    //Skin->ExecuteSkinScript(SU_SKIN_TITLE_FILE);
+    ExecuteSystemMenu();
 }
 
 

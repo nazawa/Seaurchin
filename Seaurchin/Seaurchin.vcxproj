@@ -176,7 +176,7 @@
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring_utils.cpp" />
     <ClCompile Include="AngelScriptManager.cpp" />
     <ClCompile Include="Debug.cpp" />
-    <ClCompile Include="DxLibResouce.cpp" />
+    <ClCompile Include="DxLibResource.cpp" />
     <ClCompile Include="Easing.cpp" />
     <ClCompile Include="ExecutionManager.cpp" />
     <ClCompile Include="Font.cpp" />
@@ -215,7 +215,7 @@
     <ClInclude Include="as_smart_ptr_wrapper.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="DxLibResouce.h" />
+    <ClInclude Include="DxLibResource.h" />
     <ClInclude Include="Easing.h" />
     <ClInclude Include="ExecutionManager.h" />
     <ClInclude Include="Font.h" />

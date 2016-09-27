@@ -15,6 +15,7 @@ AngelScript::AngelScript()
     //Script Interface
 
     sharedContext = engine->CreateContext();
+    sharedContext->AddRef();
     builder.SetIncludeCallback(ScriptIncludeCallback, this);
 }
 

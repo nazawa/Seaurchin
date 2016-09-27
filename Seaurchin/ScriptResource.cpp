@@ -1,4 +1,5 @@
 #include "ScriptResource.h"
+#include "Interfaces.h"
 
 using namespace std;
 
@@ -33,6 +34,7 @@ SImage::SImage(int ih)
 SImage::~SImage()
 {
     DeleteGraph(Handle);
+    WriteDebugConsole(":‚ ‚Ÿ‚ñ?Å‹ß‚¾‚ç‚µ‚Ë‚¥‚È?\n");
     Handle = 0;
 }
 
@@ -134,9 +136,10 @@ void RegisterScriptResource(asIScriptEngine * engine)
     engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_RELEASE, "void f()", asMETHOD(SImage, Release), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_IMAGE, "int get_Width()", asMETHOD(SImage, get_Width), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_IMAGE, "int get_Height()", asMETHOD(SImage, get_Height), asCALL_THISCALL);
+    //engine->RegisterObjectMethod(SU_IF_IMAGE, SU_IF_IMAGE "@ opAssign(" SU_IF_IMAGE "@)", asFUNCTION(asAssign<SImage>), asCALL_CDECL_OBJFIRST);
 
     engine->RegisterObjectType(SU_IF_FONT, 0, asOBJ_REF);
-    engine->RegisterObjectBehaviour(SU_IF_FONT, asBEHAVE_FACTORY, SU_IF_IMAGE "@ f()", asFUNCTION(SFont::CreateBlankFont), asCALL_CDECL);
+    engine->RegisterObjectBehaviour(SU_IF_FONT, asBEHAVE_FACTORY, SU_IF_FONT "@ f()", asFUNCTION(SFont::CreateBlankFont), asCALL_CDECL);
     engine->RegisterObjectBehaviour(SU_IF_FONT, asBEHAVE_ADDREF, "void f()", asMETHOD(SFont, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_FONT, asBEHAVE_RELEASE, "void f()", asMETHOD(SFont, Release), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_FONT, "int get_Size()", asMETHOD(SFont, get_Size), asCALL_THISCALL);

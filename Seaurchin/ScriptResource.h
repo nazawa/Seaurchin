@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Debug.h"
 #include "Font.h"
 #include "Misc.h"
 
@@ -45,7 +46,7 @@ class SRenderTarget : public SImage
 {
 public:
     SRenderTarget(int w, int h);
-    ~SRenderTarget();
+    ~SRenderTarget() override;
 };
 
 class SFont : public SResource
@@ -57,7 +58,7 @@ protected:
 
 public:
     SFont();
-    ~SFont();
+    ~SFont() override;
 
     inline int get_Size() { return Size; }
 

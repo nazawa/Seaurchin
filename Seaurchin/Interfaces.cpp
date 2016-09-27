@@ -15,12 +15,12 @@ void InterfacesRegisterSceneFunction(asIScriptEngine *engine)
     engine->RegisterGlobalFunction("void YieldFrame(int64)", asFUNCTION(ScriptSceneYieldFrames), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool IsKeyHeld(int)", asFUNCTION(ScriptSceneIsKeyHeld), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool IsKeyTriggered(int)", asFUNCTION(ScriptSceneIsKeyTriggered), asCALL_CDECL);
-    engine->RegisterGlobalFunction("Skin@ GetSkinObject()", asFUNCTION(GetSkinObject), asCALL_CDECL);
+    //engine->RegisterGlobalFunction("Skin@ GetSkinObject()", asFUNCTION(GetSkinObject), asCALL_CDECL);
     engine->RegisterGlobalFunction("void RunCoroutine(" SU_IF_COROUTINE "@)", asFUNCTION(ScriptSceneRunCoroutine), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddScene(" SU_IF_SCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddScene(" SU_IF_COSCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void AddMove(" SU_IF_IMGSPRITE ", const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void AddMove(" SU_IF_TXTSPRITE ", const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void AddMove(" SU_IF_SPRITE "@, const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);
+    //engine->RegisterGlobalFunction("void AddMove(" SU_IF_TXTSPRITE ", const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);
 }
 
 /*
@@ -44,15 +44,15 @@ void InterfacesRegisterObject(asIScriptEngine *engine)
 void InterfacesRegisterGlobalFunction(asIScriptEngine *engine)
 {
     engine->RegisterGlobalFunction("void WriteDebugConsole(const string &in)", asFUNCTION(WriteDebugConsoleU), asCALL_CDECL);
-    engine->RegisterGlobalFunction(SU_IF_FONT " LoadSystemFont(const string & in)", asFUNCTION(LoadSystemFont), asCALL_CDECL);
-    engine->RegisterGlobalFunction(SU_IF_VFONT " CreateVirtualFont(const string & in, int)", asFUNCTION(CreateVirtualFont), asCALL_CDECL);
-    engine->RegisterGlobalFunction(SU_IF_IMAGE " LoadSystemImage(const string &in)", asFUNCTION(LoadSystemImage), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void CreateImageFont(const string &in, const string &in, int)", asFUNCTION(CreateImageFont), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void DrawRawString(" SU_IF_VFONT ", const string & in, double, double)", asFUNCTION(DrawRawString), asCALL_CDECL);
+    engine->RegisterGlobalFunction(SU_IF_FONT "@ LoadSystemFont(const string & in)", asFUNCTION(LoadSystemFont), asCALL_CDECL);
+    //engine->RegisterGlobalFunction(SU_IF_VFONT " CreateVirtualFont(const string & in, int)", asFUNCTION(CreateVirtualFont), asCALL_CDECL);
+    engine->RegisterGlobalFunction(SU_IF_IMAGE "@ LoadSystemImage(const string &in)", asFUNCTION(LoadSystemImage), asCALL_CDECL);
+    //engine->RegisterGlobalFunction("void CreateImageFont(const string &in, const string &in, int)", asFUNCTION(CreateImageFont), asCALL_CDECL);
+    //engine->RegisterGlobalFunction("void DrawRawString(" SU_IF_VFONT ", const string & in, double, double)", asFUNCTION(DrawRawString), asCALL_CDECL);
 
-    engine->RegisterGlobalFunction(SU_IF_SPRITE " CreateSprite(int)", asFUNCTION(SpriteFactorySprite), asCALL_CDECL);
-    engine->RegisterGlobalFunction(SU_IF_IMGSPRITE " CreateImageSprite()", asFUNCTION(SpriteFactoryImageSprite), asCALL_CDECL);
-    engine->RegisterGlobalFunction(SU_IF_TXTSPRITE " CreateTextSprite()", asFUNCTION(SpriteFactoryTextSprite), asCALL_CDECL);
+    //engine->RegisterGlobalFunction(SU_IF_SPRITE " CreateSprite(int)", asFUNCTION(SpriteFactorySprite), asCALL_CDECL);
+    //engine->RegisterGlobalFunction(SU_IF_IMGSPRITE " CreateImageSprite()", asFUNCTION(SpriteFactoryImageSprite), asCALL_CDECL);
+    //engine->RegisterGlobalFunction(SU_IF_TXTSPRITE " CreateTextSprite()", asFUNCTION(SpriteFactoryTextSprite), asCALL_CDECL);
 }
 
 void InterfacesRegisterEnum(asIScriptEngine * engine)

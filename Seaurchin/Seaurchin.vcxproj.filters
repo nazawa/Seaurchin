@@ -75,9 +75,6 @@
     <ClCompile Include="Misc.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="DxLibResouce.cpp">
-      <Filter>インターフェース\C++</Filter>
-    </ClCompile>
     <ClCompile Include="Easing.cpp">
       <Filter>インターフェース\C++</Filter>
     </ClCompile>
@@ -113,6 +110,9 @@
     </ClCompile>
     <ClCompile Include="AngelScriptManager.cpp">
       <Filter>インターフェース\AngelScript</Filter>
+    </ClCompile>
+    <ClCompile Include="DxLibResource.cpp">
+      <Filter>インターフェース\C++</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -173,9 +173,6 @@
     <ClInclude Include="Misc.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="DxLibResouce.h">
-      <Filter>インターフェース\C++</Filter>
-    </ClInclude>
     <ClInclude Include="Easing.h">
       <Filter>インターフェース\C++</Filter>
     </ClInclude>
@@ -211,6 +208,9 @@
     </ClInclude>
     <ClInclude Include="AngelScriptManager.h">
       <Filter>インターフェース\AngelScript</Filter>
+    </ClInclude>
+    <ClInclude Include="DxLibResource.h">
+      <Filter>インターフェース\C++</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

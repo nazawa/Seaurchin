@@ -16,6 +16,7 @@
 
 //Helpers from as_smart_ptr_wrapper
 
+
 template <typename T>
 void asConstruct(void * address)
 {
@@ -35,9 +36,12 @@ void asCopyConstruct(void * address, T * other)
 }
 
 template <typename T>
-void asAssign(T * lhs, T* rhs)
+T* asAssign(T * lhs, T* rhs)
 {
+    //rhs->AddRef();
+    //lhs->Release();
     *lhs = *rhs;
+    return lhs;
 }
 
 template <typename T>
