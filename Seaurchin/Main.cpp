@@ -1,4 +1,5 @@
 #include "Main.h"
+#include "resource.h"
 #include "Debug.h"
 #include "Setting.h"
 #include "ExecutionManager.h"
@@ -37,6 +38,7 @@ void PreInitialize(HINSTANCE hInstance)
     SetMainWindowText(SU_APP_NAME " " SU_APP_VERSION);
     SetAlwaysRunFlag(TRUE);
     SetWaitVSyncFlag(FALSE);
+    SetWindowIconID(IDI_ICON1);
     SetGraphMode(SU_RES_WIDTH, SU_RES_HEIGHT, 32);
 }
 

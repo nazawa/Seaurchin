@@ -87,9 +87,6 @@
     <ClCompile Include="SpriteManager.cpp">
       <Filter>インターフェース\C++</Filter>
     </ClCompile>
-    <ClCompile Include="SystemFunction.cpp">
-      <Filter>インターフェース\C++</Filter>
-    </ClCompile>
     <ClCompile Include="ScriptScene.cpp">
       <Filter>インターフェース\AngelScript</Filter>
     </ClCompile>
@@ -116,6 +113,12 @@
     </ClCompile>
     <ClCompile Include="SkinHolder.cpp">
       <Filter>インターフェース\AngelScript</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptFunction.cpp">
+      <Filter>インターフェース\AngelScript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\AngelScript\add_on\scriptdictionary\scriptdictionary.cpp">
+      <Filter>AngelScript</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -188,9 +191,6 @@
     <ClInclude Include="SpriteManager.h">
       <Filter>インターフェース\C++</Filter>
     </ClInclude>
-    <ClInclude Include="SystemFunction.h">
-      <Filter>インターフェース\C++</Filter>
-    </ClInclude>
     <ClInclude Include="ScriptSprite.h">
       <Filter>インターフェース\AngelScript</Filter>
     </ClInclude>
@@ -218,5 +218,24 @@
     <ClInclude Include="SkinHolder.h">
       <Filter>インターフェース\AngelScript</Filter>
     </ClInclude>
+    <ClInclude Include="ScriptFunction.h">
+      <Filter>インターフェース\AngelScript</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\AngelScript\add_on\scriptdictionary\scriptdictionary.h">
+      <Filter>AngelScript</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Seaurchin.rc">
+      <Filter>リソース ファイル</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Resources\Images\Seaurchin.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
   </ItemGroup>
 </Project>

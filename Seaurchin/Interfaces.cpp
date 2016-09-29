@@ -5,22 +5,12 @@
 #include "Sprite.h"
 #include "ScriptScene.h"
 #include "ExecutionManager.h"
-#include "SystemFunction.h"
+#include "ScriptFunction.h"
 
 void InterfacesRegisterSceneFunction(asIScriptEngine *engine)
 {
-    engine->RegisterFuncdef("void " SU_IF_COROUTINE "()");
-
-    engine->RegisterGlobalFunction("void YieldTime(double)", asFUNCTION(ScriptSceneYieldTime), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void YieldFrame(int64)", asFUNCTION(ScriptSceneYieldFrames), asCALL_CDECL);
-    engine->RegisterGlobalFunction("bool IsKeyHeld(int)", asFUNCTION(ScriptSceneIsKeyHeld), asCALL_CDECL);
-    engine->RegisterGlobalFunction("bool IsKeyTriggered(int)", asFUNCTION(ScriptSceneIsKeyTriggered), asCALL_CDECL);
-    //engine->RegisterGlobalFunction("Skin@ GetSkinObject()", asFUNCTION(GetSkinObject), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void RunCoroutine(" SU_IF_COROUTINE "@)", asFUNCTION(ScriptSceneRunCoroutine), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void AddScene(" SU_IF_SCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void AddScene(" SU_IF_COSCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void AddMove(" SU_IF_SPRITE "@, const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);
-    //engine->RegisterGlobalFunction("void AddMove(" SU_IF_TXTSPRITE ", const string &in)", asFUNCTION(ScriptSceneAddMove), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void YieldTime(double)", asFUNCTION(YieldTime), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void YieldFrame(int64)", asFUNCTION(YieldFrames), asCALL_CDECL);
 }
 
 /*

@@ -1,10 +1,14 @@
 #include "ScriptSprite.h"
+#include "ScriptSpriteManager.h"
+#include "Misc.h"
+
+using namespace std;
 
 void SSprite::set_Image(SImage * img)
 {
     if (Image) Image->Release();
     Image = img;
-    
+
     //Image->AddRef();
 }
 
@@ -18,6 +22,7 @@ SSprite::SSprite()
 {
     //ZIndex = 0;
     Color = Colors::White;
+    mover = new ScriptSpriteMover(this);
 }
 
 SSprite::~SSprite()
@@ -36,13 +41,82 @@ void SSprite::Release()
     if (--Reference == 0) delete this;
 }
 
+void SSprite::AddMove(const string & move)
+{
+    mover->AddMove(move);
+}
+
+void SSprite::Apply(const string & dict)
+{
+    using namespace boost::algorithm;
+    constexpr auto hash = &crc_ccitt::checksum;
+    string list = dict;
+    list.erase(remove(list.begin(), list.end(), ' '), list.end());
+    vector<string> params;
+    split(params, list, is_any_of(","));
+    
+    vector<string> pr;
+    for (auto& p : params)
+    {
+        pr.clear();
+        split(pr, p, is_any_of(":"));
+        if (pr.size() != 2) continue;
+        switch (hash(pr[0].c_str()))
+        {
+        case hash("x"):
+            Transform.X = atof(pr[1].c_str());
+            break;
+        case hash("y"):
+            Transform.Y = atof(pr[1].c_str());
+            break;
+        case hash("origX"):
+            Transform.OriginX = atof(pr[1].c_str());
+            break;
+        case hash("origY"):
+            Transform.OriginY = atof(pr[1].c_str());
+            break;
+        case hash("scaleX"):
+            Transform.ScaleX = atof(pr[1].c_str());
+            break;
+        case hash("scaleY"):
+            Transform.ScaleY = atof(pr[1].c_str());
+            break;
+        case hash("angle"):
+            Transform.Angle = atof(pr[1].c_str());
+            break;
+        case hash("alpha"):
+            Color.A = (unsigned char)(atof(pr[1].c_str()) * 255.0);
+            break;
+        }
+    }
+}
+
+void SSprite::Apply(const CScriptDictionary & dict)
+{
+    constexpr auto hash = &crc_ccitt::checksum;
+    ostringstream aps;
+
+    auto i = dict.begin();
+    while (i != dict.end())
+    {
+        auto key = i.GetKey();
+        aps << key << ":";
+        double dv = 0;
+        aps << i.GetValue(dv) << ", ";
+        i++;
+    }
+
+    Apply(aps.str());
+}
+
 void SSprite::Tick(double delta)
 {
+    mover->Tick(delta);
 }
 
 void SSprite::Draw()
 {
-    
+
     if (!Image) return;
     SetDrawBright(Color.R, Color.G, Color.B);
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
@@ -52,12 +126,37 @@ void SSprite::Draw()
         Transform.ScaleX, Transform.ScaleY,
         Transform.Angle, Image->GetHandle(),
         HasAlpha ? TRUE : FALSE, FALSE);
-        
+
+}
+
+SSprite * SSprite::Clone()
+{
+    //ƒRƒsƒRƒ“‚Å—Ç‚­‚È‚¢‚©‚±‚ê
+    auto clone = new SSprite();
+    if (Image)
+    {
+        Image->AddRef();
+        clone->set_Image(Image);
+    }
+    clone->Transform = Transform;
+    clone->ZIndex = ZIndex;
+    clone->IsDead = IsDead;
+    clone->HasAlpha = true;
+    clone->AddRef();
+    return clone;
 }
 
 SSprite * SSprite::Factory()
 {
     auto result = new SSprite();
+    result->AddRef();
+    return result;
+}
+
+SSprite * SSprite::Factory(SImage * img)
+{
+    auto result = new SSprite();
+    result->set_Image(img);
     result->AddRef();
     return result;
 }
@@ -98,7 +197,7 @@ void SShape::Draw()
     }
 }
 
-SSprite * SShape::Factory()
+SShape * SShape::Factory()
 {
     auto result = new SShape();
     result->AddRef();
@@ -108,6 +207,7 @@ SSprite * SShape::Factory()
 void SShape::RegisterType(asIScriptEngine * engine)
 {
     RegisterSpriteBasic<SShape>(engine, SU_IF_SHAPE);
+    engine->RegisterObjectBehaviour(SU_IF_SHAPE, asBEHAVE_FACTORY, SU_IF_SHAPE "@ f()", asFUNCTIONPR(SShape::Factory, (), SShape*), asCALL_CDECL);
     engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_SHAPE "@ opCast()", asFUNCTION((CastReferenceType<SShape, SSprite>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod(SU_IF_SHAPE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SSprite, SShape>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectProperty(SU_IF_SHAPE, "double Width", asOFFSET(SShape, Width));
@@ -140,6 +240,9 @@ void SSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 B", asOFFSET(ColorTint, B));
 
     RegisterSpriteBasic<SSprite>(engine, SU_IF_SPRITE);
+    engine->RegisterObjectBehaviour(SU_IF_SPRITE, asBEHAVE_FACTORY, SU_IF_SPRITE "@ f()", asFUNCTIONPR(SSprite::Factory, (), SSprite*), asCALL_CDECL);
+    engine->RegisterObjectBehaviour(SU_IF_SPRITE, asBEHAVE_FACTORY, SU_IF_SPRITE "@ f(" SU_IF_IMAGE "@)", asFUNCTIONPR(SSprite::Factory, (SImage*), SSprite*), asCALL_CDECL);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_SPRITE "@ Clone()", asMETHOD(SSprite, Clone), asCALL_THISCALL);
 }
 
 void RegisterScriptSprite(asIScriptEngine * engine)

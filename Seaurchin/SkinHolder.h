@@ -4,6 +4,8 @@
 #include "ScriptResource.h"
 #include "Misc.h"
 
+#define SU_IF_SKIN "Skin"
+
 class SkinHolder final
 {
 private:
@@ -31,4 +33,5 @@ public:
     SFont* GetSkinFont(const std::string &key);
 };
 
+void RegisterScriptSkin(asIScriptEngine *engine);
 SkinHolder* GetSkinObject();

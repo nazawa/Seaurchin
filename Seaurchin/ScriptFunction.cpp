@@ -1,4 +1,4 @@
-#include "SystemFunction.h"
+#include "ScriptFunction.h"
 
 #include "Setting.h"
 #include "Config.h"
@@ -13,6 +13,34 @@ static int CALLBACK FontEnumerationProc(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *
 static int CALLBACK FontEnumerationProc(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *lpntme, DWORD FontType, LPARAM lParam)
 {
     return 0;
+}
+
+void YieldTime(double time)
+{
+    auto ctx = asGetActiveContext();
+    auto pcw = (CoroutineWait*)ctx->GetUserData(SU_UDTYPE_WAIT);
+    if (!pcw)
+    {
+        ScriptSceneWarnOutOf("Coroutine Function", ctx);
+        return;
+    }
+    pcw->type = WaitType::Time;
+    pcw->time = time;
+    ctx->Suspend();
+}
+
+void YieldFrames(int64_t frames)
+{
+    auto ctx = asGetActiveContext();
+    auto pcw = (CoroutineWait*)ctx->GetUserData(SU_UDTYPE_WAIT);
+    if (!pcw)
+    {
+        ScriptSceneWarnOutOf("Coroutine Function", ctx);
+        return;
+    }
+    pcw->type = WaitType::Frame;
+    pcw->frames = frames;
+    ctx->Suspend();
 }
 
 SImage* LoadSystemImage(const string & file)

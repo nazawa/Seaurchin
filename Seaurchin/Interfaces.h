@@ -1,7 +1,6 @@
 #pragma once
 
 #define SU_IF_KEY "Key"
-#define SU_IF_SKIN "Skin"
 
 #define SU_IF_TF2D "Transform2D"
 

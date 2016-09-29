@@ -3,33 +3,41 @@
 using namespace std;
 using namespace boost::xpressive;
 
-unordered_map<string, function<bool(SSprite*, Mover&, double)>> ScriptSpriteManager::actions =
+unordered_map<string, function<bool(SSprite*, Mover&, double)>> ScriptSpriteMover::actions =
 {
-    { "move_to", ScriptSpriteManager::ActionMoveTo },
-    { "move_by", ScriptSpriteManager::ActionMoveBy },
-    { "alpha", ScriptSpriteManager::ActionAlpha },
+    { "move_to", ScriptSpriteMover::ActionMoveTo },
+    { "move_by", ScriptSpriteMover::ActionMoveBy },
+    { "alpha", ScriptSpriteMover::ActionAlpha },
+    { "death", ScriptSpriteMover::ActionDeath },
 };
 
-ScriptSpriteManager::ScriptSpriteManager()
+ScriptSpriteMover::ScriptSpriteMover(SSprite *target)
 {
+    Target = target;
 }
 
-void ScriptSpriteManager::AddMove(SSprite* sprite, std::string move)
+ScriptSpriteMover::~ScriptSpriteMover()
+{
+    for (auto& i : movers) delete get<0>(i);
+
+
+}
+
+void ScriptSpriteMover::AddMove(std::string move)
 {
     Mover *mover = new Mover{ 0 };
     auto action = actions[SpriteManager::ParseMover(mover, move)];
-    //sprite->AddRef();
-    action(sprite, *mover, 0);
-    movers.push_back(make_tuple(sprite, mover, action));
+    action(Target, *mover, 0);
+    movers.push_back(make_tuple(mover, action));
 }
 
-void ScriptSpriteManager::Tick(double delta)
+void ScriptSpriteMover::Tick(double delta)
 {
     auto i = movers.begin();
     while (i != movers.end())
     {
         auto t = *i;
-        auto mover = get<1>(t);
+        auto mover = get<0>(t);
         if (mover->Wait > 0)
         {
             //ó]Ç¡ÇΩdeltaÇ≈åƒÇ—èoÇ∑Ç◊Ç´Ç»ÇÃÇ©Ç‡ÇµÇÍÇ»Ç¢ÇØÇ«Ç‹Ç†Ç¢Ç¢Ç©Ç¡Çƒ
@@ -37,12 +45,11 @@ void ScriptSpriteManager::Tick(double delta)
             ++i;
             continue;
         }
-        bool result = get<2>(t)(get<0>(t), *mover, delta);
+        bool result = get<1>(t)(Target, *mover, delta);
         mover->Now += delta;
         if (mover->Now >= mover->Duration || result)
         {
-            get<2>(t)(get<0>(t), *mover, -1);
-            get<0>(t)->Release();
+            get<1>(t)(Target, *mover, -1);
             delete mover;
             i = movers.erase(i);
         }
@@ -53,7 +60,7 @@ void ScriptSpriteManager::Tick(double delta)
     }
 }
 
-bool ScriptSpriteManager::ActionMoveTo(SSprite* target, Mover &mover, double delta)
+bool ScriptSpriteMover::ActionMoveTo(SSprite* target, Mover &mover, double delta)
 {
     if (delta == 0)
     {
@@ -75,7 +82,7 @@ bool ScriptSpriteManager::ActionMoveTo(SSprite* target, Mover &mover, double del
     }
 }
 
-bool ScriptSpriteManager::ActionMoveBy(SSprite* target, Mover &mover, double delta)
+bool ScriptSpriteMover::ActionMoveBy(SSprite* target, Mover &mover, double delta)
 {
     if (delta == 0)
     {
@@ -97,7 +104,7 @@ bool ScriptSpriteManager::ActionMoveBy(SSprite* target, Mover &mover, double del
     }
 }
 
-bool ScriptSpriteManager::ActionAlpha(SSprite* target, Mover &mover, double delta)
+bool ScriptSpriteMover::ActionAlpha(SSprite* target, Mover &mover, double delta)
 {
     if (delta == 0)
     {
@@ -112,6 +119,19 @@ bool ScriptSpriteManager::ActionAlpha(SSprite* target, Mover &mover, double delt
     else
     {
         target->Color.A = (uint8_t)(mover.Y * 255.0);
+        return true;
+    }
+}
+
+bool ScriptSpriteMover::ActionDeath(SSprite * target, Mover & mover, double delta)
+{
+    if (delta >= 0)
+    {
+        return false;
+    }
+    else
+    {
+        target->Dismiss();
         return true;
     }
 }

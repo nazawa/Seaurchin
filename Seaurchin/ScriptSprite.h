@@ -11,16 +11,20 @@
 #define SU_IF_SHAPE "Shape"
 #define SU_IF_TXTSPRITE "TextSprite"
 
+class ScriptSpriteMover;
 //Šî’ê‚ªImageSprite‚Å‚à‚¢‚¢‹C‚ª‚µ‚Ä‚é‚ñ‚¾‚æ‚Ë³’¼
 class SSprite
 {
 protected:
     int Reference;
+    ScriptSpriteMover *mover;
+
 
 public:
     Transform2D Transform;
     int32_t ZIndex;
     ColorTint Color;
+    bool IsDead = false;
     SImage *Image = nullptr;
     bool HasAlpha = true;
     void set_Image(SImage *img);
@@ -31,11 +35,25 @@ public:
     void AddRef();
     void Release();
 
+    inline void Dismiss() { IsDead = true; }
+    inline void Revive() { IsDead = false; }
+    void AddMove(const std::string &move);
+    void Apply(const std::string &dict);
+    void Apply(const CScriptDictionary &dict);
     void Tick(double delta);
     virtual void Draw();
+    SSprite* Clone();
 
     static SSprite* Factory();
+    static SSprite* Factory(SImage *img);
     static void RegisterType(asIScriptEngine *engine);
+    struct Comparator
+    {
+        inline bool operator()(const SSprite* lhs, const SSprite* rhs) const
+        {
+            return lhs->ZIndex < rhs->ZIndex;
+        }
+    };
 };
 
 enum SShapeType
@@ -56,9 +74,10 @@ public:
 
     void Draw() override;
 
-    static SSprite* Factory();
+    static SShape* Factory();
     static void RegisterType(asIScriptEngine *engine);
 };
+
 
 
 template<typename T>
@@ -66,7 +85,6 @@ void RegisterSpriteBasic(asIScriptEngine *engine, const char *name)
 {
     using namespace std;
     engine->RegisterObjectType(name, 0, asOBJ_REF);
-    engine->RegisterObjectBehaviour(name, asBEHAVE_FACTORY, (string(name) + "@ f()").c_str(), asFUNCTION(T::Factory), asCALL_CDECL);
     engine->RegisterObjectBehaviour(name, asBEHAVE_ADDREF, "void f()", asMETHOD(T, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(name, asBEHAVE_RELEASE, "void f()", asMETHOD(T, Release), asCALL_THISCALL);
 
@@ -75,8 +93,11 @@ void RegisterSpriteBasic(asIScriptEngine *engine, const char *name)
     engine->RegisterObjectProperty(name, SU_IF_TF2D " Transform", asOFFSET(T, Transform));
     engine->RegisterObjectMethod(name, "void SetImage(" SU_IF_IMAGE "@)", asMETHOD(T, set_Image), asCALL_THISCALL);
     //engine->RegisterObjectMethod(name, SU_IF_IMAGE "@ get_Image()", asMETHOD(T, get_Image), asCALL_THISCALL);
-
-    //engine->RegisterObjectMethod(name, "void Tick(double)", asMETHOD(T, Tick), asCALL_THISCALL);
+    engine->RegisterObjectMethod(name, "void Dismiss()", asMETHOD(T, Dismiss), asCALL_THISCALL);
+    engine->RegisterObjectMethod(name, "void Apply(const string &in)", asMETHODPR(T, Apply, (const std::string&), void), asCALL_THISCALL);
+    engine->RegisterObjectMethod(name, "void Apply(const dictionary@)", asMETHODPR(T, Apply, (const CScriptDictionary&), void), asCALL_THISCALL);
+    engine->RegisterObjectMethod(name, "void AddMove(const string &in)", asMETHOD(T, AddMove), asCALL_THISCALL);
+    engine->RegisterObjectMethod(name, "void Tick(double)", asMETHOD(T, Tick), asCALL_THISCALL);
     engine->RegisterObjectMethod(name, "void Draw()", asMETHOD(T, Draw), asCALL_THISCALL);
 }
 

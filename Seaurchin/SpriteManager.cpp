@@ -1,4 +1,5 @@
 #include "SpriteManager.h"
+#include "Misc.h"
 
 using namespace std;
 using namespace boost::xpressive;
