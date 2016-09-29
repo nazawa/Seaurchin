@@ -7,6 +7,9 @@ unordered_map<string, function<bool(SSprite*, Mover&, double)>> ScriptSpriteMove
 {
     { "move_to", ScriptSpriteMover::ActionMoveTo },
     { "move_by", ScriptSpriteMover::ActionMoveBy },
+    { "angle_to", ScriptSpriteMover::ActionAngleTo },
+    { "angle_by", ScriptSpriteMover::ActionAngleBy },
+    { "scale_to", ScriptSpriteMover::ActionScaleTo },
     { "alpha", ScriptSpriteMover::ActionAlpha },
     { "death", ScriptSpriteMover::ActionDeath },
 };
@@ -27,7 +30,6 @@ void ScriptSpriteMover::AddMove(std::string move)
 {
     Mover *mover = new Mover{ 0 };
     auto action = actions[SpriteManager::ParseMover(mover, move)];
-    action(Target, *mover, 0);
     movers.push_back(make_tuple(mover, action));
 }
 
@@ -44,6 +46,12 @@ void ScriptSpriteMover::Tick(double delta)
             mover->Wait -= delta;
             ++i;
             continue;
+        }
+        else if (mover->Wait != -1e+10)
+        {
+            //多分初期化処理はこのタイミングの方がいい
+            mover->Wait = -1e+10;
+            get<1>(t)(Target, *mover, 0);
         }
         bool result = get<1>(t)(Target, *mover, delta);
         mover->Now += delta;
@@ -100,6 +108,66 @@ bool ScriptSpriteMover::ActionMoveBy(SSprite* target, Mover &mover, double delta
     {
         target->Transform.X = mover.Extra1 + mover.X;
         target->Transform.Y = mover.Extra2 + mover.Y;
+        return true;
+    }
+}
+
+bool ScriptSpriteMover::ActionAngleTo(SSprite * target, Mover & mover, double delta)
+{
+    if (delta == 0)
+    {
+        mover.Extra1 = target->Transform.Angle;
+        return false;
+    }
+    else if (delta >= 0)
+    {
+        target->Transform.Angle = mover.Function(mover.Now, mover.Duration, mover.Extra1, mover.X - mover.Extra1);
+        return false;
+    }
+    else
+    {
+        target->Transform.Angle = mover.X;
+        return true;
+    }
+}
+
+bool ScriptSpriteMover::ActionAngleBy(SSprite * target, Mover & mover, double delta)
+{
+    if (delta == 0)
+    {
+        mover.Extra1 = target->Transform.Angle;
+        return false;
+    }
+    else if (delta >= 0)
+    {
+        target->Transform.Angle = mover.Function(mover.Now, mover.Duration, mover.Extra1, mover.X);
+        return false;
+    }
+    else
+    {
+        target->Transform.Angle = mover.Extra1 + mover.X;
+        return true;
+    }
+}
+
+bool ScriptSpriteMover::ActionScaleTo(SSprite *target, Mover &mover, double delta)
+{
+    if (delta == 0)
+    {
+        mover.Extra1 = target->Transform.ScaleX;
+        mover.Extra2 = target->Transform.ScaleY;
+        return false;
+    }
+    else if (delta >= 0)
+    {
+        target->Transform.ScaleX = mover.Function(mover.Now, mover.Duration, mover.Extra1, mover.X - mover.Extra1);
+        target->Transform.ScaleY = mover.Function(mover.Now, mover.Duration, mover.Extra2, mover.Y - mover.Extra2);
+        return false;
+    }
+    else
+    {
+        target->Transform.ScaleX = mover.X;
+        target->Transform.ScaleY = mover.Y;
         return true;
     }
 }

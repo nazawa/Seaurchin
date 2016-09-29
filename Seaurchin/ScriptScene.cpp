@@ -49,8 +49,8 @@ void ScriptScene::AddCoroutine(Coroutine * co)
 
 void ScriptScene::Tick(double delta)
 {
-    TickCoroutine(delta);
     TickSprite(delta);
+    TickCoroutine(delta);
     auto func = sceneType->GetMethodByDecl("void Tick(double)");
     context->Prepare(func);
     context->SetObject(sceneObject);
@@ -163,9 +163,8 @@ ScriptCoroutineScene::~ScriptCoroutineScene()
 
 void ScriptCoroutineScene::Tick(double delta)
 {
-    TickCoroutine(delta);
     TickSprite(delta);
-
+    TickCoroutine(delta);
     //Run()
     switch (wait.type)
     {

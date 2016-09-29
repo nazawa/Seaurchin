@@ -29,6 +29,9 @@ public:
 
     static bool ActionMoveTo(SSprite* target, Mover &mover, double delta);
     static bool ActionMoveBy(SSprite* target, Mover &mover, double delta);
+    static bool ActionAngleTo(SSprite* target, Mover &mover, double delta);
+    static bool ActionAngleBy(SSprite* target, Mover &mover, double delta);
+    static bool ActionScaleTo(SSprite* target, Mover &mover, double delta);
     static bool ActionAlpha(SSprite* target, Mover &mover, double delta);
     static bool ActionDeath(SSprite* target, Mover &mover, double delta);
 };

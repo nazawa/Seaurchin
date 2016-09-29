@@ -138,6 +138,7 @@ SSprite * SSprite::Clone()
         Image->AddRef();
         clone->set_Image(Image);
     }
+    clone->Color = Color;
     clone->Transform = Transform;
     clone->ZIndex = ZIndex;
     clone->IsDead = IsDead;
