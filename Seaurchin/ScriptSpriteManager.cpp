@@ -30,6 +30,7 @@ void ScriptSpriteMover::AddMove(std::string move)
 {
     Mover *mover = new Mover{ 0 };
     auto action = actions[SpriteManager::ParseMover(mover, move)];
+    if (!action) return;
     movers.push_back(make_tuple(mover, action));
 }
 

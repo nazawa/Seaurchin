@@ -78,6 +78,26 @@ public:
     static void RegisterType(asIScriptEngine *engine);
 };
 
+class STextSprite : public SSprite
+{
+protected:
+    SRenderTarget *Target = nullptr;
+
+    void Refresh();
+public:
+    SFont *Font = nullptr;
+    std::string Text = "";
+    void set_Font(SFont* font);
+    void set_Text(const std::string &txt);
+
+    ~STextSprite() override;
+    void Draw() override;
+
+    static STextSprite* Factory();
+    static STextSprite* Factory(SFont *img, const std::string &str);
+    static void RegisterType(asIScriptEngine *engine);
+};
+
 
 
 template<typename T>
@@ -89,6 +109,7 @@ void RegisterSpriteBasic(asIScriptEngine *engine, const char *name)
     engine->RegisterObjectBehaviour(name, asBEHAVE_RELEASE, "void f()", asMETHOD(T, Release), asCALL_THISCALL);
 
     engine->RegisterObjectProperty(name, SU_IF_COLOR " Color", asOFFSET(T, Color));
+    engine->RegisterObjectProperty(name, "bool HasAlpha", asOFFSET(T, HasAlpha));
     engine->RegisterObjectProperty(name, "int Z", asOFFSET(T, ZIndex));
     engine->RegisterObjectProperty(name, SU_IF_TF2D " Transform", asOFFSET(T, Transform));
     engine->RegisterObjectMethod(name, "void SetImage(" SU_IF_IMAGE "@)", asMETHOD(T, set_Image), asCALL_THISCALL);

@@ -61,6 +61,7 @@ public:
     ~SFont() override;
 
     inline int get_Size() { return Size; }
+    void RenderRaw(SRenderTarget *rt, const std::wstring& str);
 
     static SFont* CreateBlankFont();
     static SFont* CreateLoadedFontFromFile(const std::string &file);

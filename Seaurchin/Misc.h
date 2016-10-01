@@ -1,5 +1,8 @@
 #pragma once
 
+#define BEGIN_DRAW_TRANSACTION(h) SetDrawScreen(h)
+#define FINISH_DRAW_TRANSACTION SetDrawScreen(DX_SCREEN_BACK);
+
 //http://iorate.hatenablog.com/entry/20110115/1295108835
 namespace crc_ccitt
 {
@@ -29,4 +32,5 @@ namespace crc_ccitt
 
 
 std::string ConvertUTF8ToShiftJis(std::string utf8str);
+std::wstring ConvertUTF8ToUnicode(std::string utf8str);
 void ScriptSceneWarnOutOf(std::string type, asIScriptContext *ctx);

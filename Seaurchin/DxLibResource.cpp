@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "Debug.h"
 #include "Setting.h"
+#include "Misc.h"
 
 using namespace std;
 

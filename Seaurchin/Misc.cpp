@@ -17,6 +17,16 @@ string ConvertUTF8ToShiftJis(string utf8str)
     return ret;
 }
 
+wstring ConvertUTF8ToUnicode(string utf8str)
+{
+    int len = MultiByteToWideChar(CP_UTF8, 0, utf8str.c_str(), -1, nullptr, 0);
+    wchar_t *buffer = new wchar_t[len];
+    MultiByteToWideChar(CP_UTF8, 0, utf8str.c_str(), -1, buffer, len);
+    wstring ret = buffer;
+    delete[] buffer;
+    return ret;
+}
+
 void ScriptSceneWarnOutOf(string type, asIScriptContext *ctx)
 {
     const char *secn;

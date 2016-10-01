@@ -1,5 +1,6 @@
 #include "ScriptResource.h"
 #include "Interfaces.h"
+#include "Misc.h"
 
 using namespace std;
 
@@ -85,13 +86,40 @@ SRenderTarget::~SRenderTarget()
 
 SFont::SFont()
 {
-    for (int i = 0; i < 0x1000; i++) Chars.push_back(nullptr);
+    for (int i = 0; i < 0x10000; i++) Chars.push_back(nullptr);
 }
 
 SFont::~SFont()
 {
     for (auto &i : Chars) if (i) delete i;
     for (auto &i : Images) i->Release();
+}
+
+void SFont::RenderRaw(SRenderTarget * rt, const std::wstring & str)
+{
+    double cx = 0, cy = 0;
+    double line = 1;
+    BEGIN_DRAW_TRANSACTION(rt->GetHandle());
+    for (auto &c : str)
+    {
+        if (c == L'\n')
+        {
+            line++;
+            cx = 0;
+            cy += Size;
+            continue;
+        }
+        auto gi = Chars[c];
+        if (!gi) continue;
+        DrawRectGraphF(
+            cx + gi->bearX, cy + gi->bearY,
+            gi->x, gi->y,
+            gi->width, gi->height,
+            Images[gi->texture]->GetHandle(),
+            TRUE, FALSE);
+        cx += gi->wholeAdvance;
+    }
+    FINISH_DRAW_TRANSACTION;
 }
 
 SFont * SFont::CreateBlankFont()
