@@ -79,11 +79,6 @@ SRenderTarget::SRenderTarget(int w, int h) : SImage(0)
     Height = h;
 }
 
-SRenderTarget::~SRenderTarget()
-{
-    DeleteGraph(Handle);
-}
-
 SFont::SFont()
 {
     for (int i = 0; i < 0x10000; i++) Chars.push_back(nullptr);
@@ -95,11 +90,17 @@ SFont::~SFont()
     for (auto &i : Images) i->Release();
 }
 
-void SFont::RenderRaw(SRenderTarget * rt, const std::wstring & str)
+tuple<double, double, int> SFont::RenderRaw(SRenderTarget * rt, const std::wstring & str)
 {
     double cx = 0, cy = 0;
-    double line = 1;
-    BEGIN_DRAW_TRANSACTION(rt->GetHandle());
+    double mx = 0, my = 0;
+    int line = 1;
+    if (rt)
+    {
+        BEGIN_DRAW_TRANSACTION(rt->GetHandle());
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+        SetDrawBright(255, 255, 255);
+    }
     for (auto &c : str)
     {
         if (c == L'\n')
@@ -107,11 +108,13 @@ void SFont::RenderRaw(SRenderTarget * rt, const std::wstring & str)
             line++;
             cx = 0;
             cy += Size;
+            mx = max(mx, cx);
+            my = line * Size;
             continue;
         }
         auto gi = Chars[c];
         if (!gi) continue;
-        DrawRectGraphF(
+        if (rt)DrawRectGraph(
             cx + gi->bearX, cy + gi->bearY,
             gi->x, gi->y,
             gi->width, gi->height,
@@ -119,7 +122,13 @@ void SFont::RenderRaw(SRenderTarget * rt, const std::wstring & str)
             TRUE, FALSE);
         cx += gi->wholeAdvance;
     }
-    FINISH_DRAW_TRANSACTION;
+    if (rt)
+    {
+        FINISH_DRAW_TRANSACTION;
+    }
+    mx = max(mx, cx);
+    my = line * Size;
+    return make_tuple(mx, my, line);
 }
 
 SFont * SFont::CreateBlankFont()
@@ -153,6 +162,7 @@ SFont * SFont::CreateLoadedFontFromFile(const string & file)
         result->Images.push_back(SImage::CreateLoadedImageFromMemory(pngdata, size));
         delete[] pngdata;
     }
+    result->AddRef();
     return result;
 }
 

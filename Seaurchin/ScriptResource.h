@@ -46,7 +46,6 @@ class SRenderTarget : public SImage
 {
 public:
     SRenderTarget(int w, int h);
-    ~SRenderTarget() override;
 };
 
 class SFont : public SResource
@@ -54,14 +53,14 @@ class SFont : public SResource
 protected:
     int Size = 0;
     std::vector<GlyphInfo*> Chars;
-    std::vector<SImage*> Images;
 
 public:
+    std::vector<SImage*> Images;
     SFont();
     ~SFont() override;
 
     inline int get_Size() { return Size; }
-    void RenderRaw(SRenderTarget *rt, const std::wstring& str);
+    std::tuple<double, double, int> RenderRaw(SRenderTarget *rt, const std::wstring& str);
 
     static SFont* CreateBlankFont();
     static SFont* CreateLoadedFontFromFile(const std::string &file);

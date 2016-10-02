@@ -87,6 +87,15 @@ void SSprite::Apply(const string & dict)
         case hash("alpha"):
             Color.A = (unsigned char)(atof(pr[1].c_str()) * 255.0);
             break;
+        case hash("r"):
+            Color.R = (unsigned char)atoi(pr[1].c_str());
+            break;
+        case hash("g"):
+            Color.G = (unsigned char)atoi(pr[1].c_str());
+            break;
+        case hash("b"):
+            Color.B = (unsigned char)atoi(pr[1].c_str());
+            break;
         }
     }
 }
@@ -160,6 +169,11 @@ SSprite * SSprite::Factory(SImage * img)
     result->set_Image(img);
     result->AddRef();
     return result;
+}
+
+ColorTint GetColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+    return ColorTint{ a, r, g, b };
 }
 
 //“¯Žž‚ÉColor‚ÆTransform2D‚à
@@ -240,8 +254,8 @@ void SShape::RegisterType(asIScriptEngine * engine)
 {
     RegisterSpriteBasic<SShape>(engine, SU_IF_SHAPE);
     engine->RegisterObjectBehaviour(SU_IF_SHAPE, asBEHAVE_FACTORY, SU_IF_SHAPE "@ f()", asFUNCTIONPR(SShape::Factory, (), SShape*), asCALL_CDECL);
-    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_SHAPE "@ opCast()", asFUNCTION((CastReferenceType<SShape, SSprite>)), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectMethod(SU_IF_SHAPE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SSprite, SShape>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_SHAPE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, SShape>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_SHAPE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SShape, SSprite>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectProperty(SU_IF_SHAPE, "double Width", asOFFSET(SShape, Width));
     engine->RegisterObjectProperty(SU_IF_SHAPE, "double Height", asOFFSET(SShape, Height));
     engine->RegisterObjectProperty(SU_IF_SHAPE, SU_IF_SHAPETYPE " Type", asOFFSET(SShape, Type));
@@ -254,6 +268,8 @@ void STextSprite::Refresh()
     if (!Font) return;
     if (Target) delete Target;
     wstring cs = ConvertUTF8ToUnicode(Text);
+    auto size = Font->RenderRaw(nullptr, cs);
+    Target = new SRenderTarget((int)get<0>(size), (int)get<1>(size));
     Font->RenderRaw(Target, cs);
 }
 
@@ -277,7 +293,7 @@ STextSprite::~STextSprite()
 
 void STextSprite::Draw()
 {
-    if (!Image) return;
+    if (!Target) return;
     SetDrawBright(Color.R, Color.G, Color.B);
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
     DrawRotaGraph3F(
@@ -309,8 +325,8 @@ void STextSprite::RegisterType(asIScriptEngine * engine)
     RegisterSpriteBasic<STextSprite>(engine, SU_IF_TXTSPRITE);
     engine->RegisterObjectBehaviour(SU_IF_TXTSPRITE, asBEHAVE_FACTORY, SU_IF_TXTSPRITE "@ f()", asFUNCTIONPR(STextSprite::Factory, (), STextSprite*), asCALL_CDECL);
     engine->RegisterObjectBehaviour(SU_IF_TXTSPRITE, asBEHAVE_FACTORY, SU_IF_TXTSPRITE "@ f(" SU_IF_FONT "@, const string &in)", asFUNCTIONPR(STextSprite::Factory, (SFont*, const string&), STextSprite*), asCALL_CDECL);
-    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_TXTSPRITE "@ opCast()", asFUNCTION((CastReferenceType<STextSprite, SSprite>)), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectMethod(SU_IF_TXTSPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SSprite, STextSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_TXTSPRITE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, STextSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_TXTSPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<STextSprite, SSprite>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetFont(" SU_IF_FONT "@)", asMETHOD(STextSprite, set_Font), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetText(const string &in)", asMETHOD(STextSprite, set_Text), asCALL_THISCALL);
 }
