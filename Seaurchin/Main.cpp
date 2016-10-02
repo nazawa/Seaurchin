@@ -50,9 +50,15 @@ void Initialize()
     WriteDebugConsole(TEXT("DxLib_Init\n"));
 
     setting->Load(SU_SETTING_FILE);
-    manager->EnumerateSkins();
-    //manager->ExecuteSkin();
-    manager->ExecuteSystemMenu();
+    if (CheckHitKey(KEY_INPUT_F2))
+    {
+        manager->ExecuteSystemMenu();
+    }
+    else
+    {
+        manager->EnumerateSkins();
+        manager->ExecuteSkin();
+    }
     manager->AddScene(shared_ptr<Scene>(new SceneDebug()));
     
 }

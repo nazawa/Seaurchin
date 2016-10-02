@@ -13,16 +13,6 @@ void InterfacesRegisterSceneFunction(asIScriptEngine *engine)
     engine->RegisterGlobalFunction("void YieldFrame(int64)", asFUNCTION(YieldFrames), asCALL_CDECL);
 }
 
-/*
-void InterfacesRegisterObject(asIScriptEngine *engine)
-{
-    RegisterSpriteBasic<TextSprite>(engine, SU_IF_TXTSPRITE);
-    engine->RegisterObjectMethod(SU_IF_TXTSPRITE, SU_IF_FONT " get_Font() const", GETTER(TextSprite, Font), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void set_Font(const " SU_IF_FONT ")", SETTER(TextSprite, Font), asCALL_CDECL_OBJFIRST);
-    engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetText(const string &in)", CALLER(TextSprite, SetText), asCALL_CDECL_OBJFIRST);
-}
-*/
-
 void InterfacesRegisterGlobalFunction(asIScriptEngine *engine)
 {
     engine->RegisterGlobalFunction("void WriteDebugConsole(const string &in)", asFUNCTION(WriteDebugConsoleU), asCALL_CDECL);
