@@ -1,9 +1,11 @@
 #include "SpriteManager.h"
+#include "Misc.h"
 
 using namespace std;
 using namespace boost::xpressive;
+auto& srset = boost::xpressive::set;
 
-sregex SpriteManager::srparam = (s1 = +_w) >> ':' >> (s2 = +_w | (+_d >> !('.' >> +_d)));
+sregex SpriteManager::srparam = (s1 = +_w) >> ':' >> (s2 = +_w | (!(srset = '+', '-') >> +_d >> !('.' >> +_d)));
 sregex SpriteManager::srmove = bos >> (s1 = +_w) >> !('(' >> (s2 = SpriteManager::srparam >> *(',' >> SpriteManager::srparam)) >> ')') >> eos;
 
 unordered_map<string, function<bool(shared_ptr<Sprite>, Mover&, double)>> SpriteManager::actions =

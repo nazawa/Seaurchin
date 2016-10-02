@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "Debug.h"
 #include "Setting.h"
+#include "Misc.h"
 
 using namespace std;
 
@@ -200,6 +201,8 @@ void Font::CreateAndSave(std::string name, std::string save, int size, int texWi
         if (ginfo.width * ginfo.height == 0)
         {
             //まさか' 'がグリフを持たないとは思わなかった(いや当たり前でしょ)
+            fontstream.write((const char*)&ginfo, sizeof(GlyphInfo));
+            all++;
             code = FT_Get_Next_Char(face, code, &gidx);
             continue;
         }
@@ -321,9 +324,9 @@ RectPacker::Rect RectPacker::Insert(int w, int h)
     {
         cursorX = 0;
         cursorY += row;
-        if (cursorY + h > height) return Rect{ 0 };
-        if (w > width) return Rect{ 0 };
     }
+    if (cursorY + h > height) return Rect{ 0 };
+    if (w > width) return Rect{ 0 };
     Rect r;
     r.x = cursorX;
     r.y = cursorY;

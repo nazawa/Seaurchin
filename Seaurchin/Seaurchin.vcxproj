@@ -170,6 +170,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptarray\scriptarray.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptbuilder\scriptbuilder.cpp" />
+    <ClCompile Include="..\..\..\AngelScript\add_on\scriptdictionary\scriptdictionary.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptmath\scriptmath.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptmath\scriptmathcomplex.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring.cpp" />
@@ -199,11 +200,12 @@
     <ClCompile Include="SkinHolder.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
-    <ClCompile Include="SystemFunction.cpp" />
+    <ClCompile Include="ScriptFunction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptarray\scriptarray.h" />
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptbuilder\scriptbuilder.h" />
+    <ClInclude Include="..\..\..\AngelScript\add_on\scriptdictionary\scriptdictionary.h" />
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptmath\scriptmath.h" />
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptmath\scriptmathcomplex.h" />
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring.h" />
@@ -224,6 +226,7 @@
     <ClInclude Include="Main.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="PrecompiledHeader.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneDebug.h" />
     <ClInclude Include="ScriptResource.h" />
@@ -234,7 +237,13 @@
     <ClInclude Include="SkinHolder.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteManager.h" />
-    <ClInclude Include="SystemFunction.h" />
+    <ClInclude Include="ScriptFunction.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Seaurchin.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Resources\Images\Seaurchin.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -20,6 +20,7 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     RegisterScriptResource(ScriptInterface->GetEngine());
     RegisterScriptSprite(ScriptInterface->GetEngine());
     RegisterScriptScene(ScriptInterface->GetEngine());
+    RegisterScriptSkin(ScriptInterface->GetEngine());
     InterfacesRegisterSceneFunction(ScriptInterface->GetEngine());
     InterfacesRegisterGlobalFunction(ScriptInterface->GetEngine());
 

@@ -4,16 +4,20 @@
 #include "ScriptSprite.h"
 #include "Easing.h"
 
-class ScriptSpriteManager final
+class ScriptSpriteMover final
 {
 
 private:
-    std::list<std::tuple<SSprite*, Mover*, std::function<bool(SSprite*, Mover&, double)>>> movers;
+    std::list<std::tuple<Mover*, std::function<bool(SSprite*, Mover&, double)>>> movers;
     static std::unordered_map<std::string, std::function<bool(SSprite*, Mover&, double)>> actions;
 
 public:
-    ScriptSpriteManager();
-    void AddMove(SSprite* sprite, std::string move);
+    SSprite *Target;
+
+    ScriptSpriteMover(SSprite *target);
+    ~ScriptSpriteMover();
+
+    void AddMove(std::string move);
     //bool CheckPattern(std::string move);
 
     void Tick(double delta);
@@ -25,5 +29,9 @@ public:
 
     static bool ActionMoveTo(SSprite* target, Mover &mover, double delta);
     static bool ActionMoveBy(SSprite* target, Mover &mover, double delta);
+    static bool ActionAngleTo(SSprite* target, Mover &mover, double delta);
+    static bool ActionAngleBy(SSprite* target, Mover &mover, double delta);
+    static bool ActionScaleTo(SSprite* target, Mover &mover, double delta);
     static bool ActionAlpha(SSprite* target, Mover &mover, double delta);
+    static bool ActionDeath(SSprite* target, Mover &mover, double delta);
 };

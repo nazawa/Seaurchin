@@ -1,5 +1,6 @@
 #include "ScriptResource.h"
 #include "Interfaces.h"
+#include "Misc.h"
 
 using namespace std;
 
@@ -78,20 +79,56 @@ SRenderTarget::SRenderTarget(int w, int h) : SImage(0)
     Height = h;
 }
 
-SRenderTarget::~SRenderTarget()
-{
-    DeleteGraph(Handle);
-}
-
 SFont::SFont()
 {
-    for (int i = 0; i < 0x1000; i++) Chars.push_back(nullptr);
+    for (int i = 0; i < 0x10000; i++) Chars.push_back(nullptr);
 }
 
 SFont::~SFont()
 {
     for (auto &i : Chars) if (i) delete i;
     for (auto &i : Images) i->Release();
+}
+
+tuple<double, double, int> SFont::RenderRaw(SRenderTarget * rt, const std::wstring & str)
+{
+    double cx = 0, cy = 0;
+    double mx = 0, my = 0;
+    int line = 1;
+    if (rt)
+    {
+        BEGIN_DRAW_TRANSACTION(rt->GetHandle());
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+        SetDrawBright(255, 255, 255);
+    }
+    for (auto &c : str)
+    {
+        if (c == L'\n')
+        {
+            line++;
+            cx = 0;
+            cy += Size;
+            mx = max(mx, cx);
+            my = line * Size;
+            continue;
+        }
+        auto gi = Chars[c];
+        if (!gi) continue;
+        if (rt)DrawRectGraph(
+            cx + gi->bearX, cy + gi->bearY,
+            gi->x, gi->y,
+            gi->width, gi->height,
+            Images[gi->texture]->GetHandle(),
+            TRUE, FALSE);
+        cx += gi->wholeAdvance;
+    }
+    if (rt)
+    {
+        FINISH_DRAW_TRANSACTION;
+    }
+    mx = max(mx, cx);
+    my = line * Size;
+    return make_tuple(mx, my, line);
 }
 
 SFont * SFont::CreateBlankFont()
@@ -125,6 +162,7 @@ SFont * SFont::CreateLoadedFontFromFile(const string & file)
         result->Images.push_back(SImage::CreateLoadedImageFromMemory(pngdata, size));
         delete[] pngdata;
     }
+    result->AddRef();
     return result;
 }
 

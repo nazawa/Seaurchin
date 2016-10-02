@@ -6,4 +6,8 @@ void InitializeSkin(Skin@ skin) {
   skin.LoadImage("LogoAngelScript", "aslogo.png");    //311x135
   skin.LoadImage("LogoBoost", "boost.png");           //277x86
   skin.LoadImage("LogoFreeType", "fond2-small.png");  //584x388
+  
+  skin.LoadFont("Normal32", "Normal32.sif");
+  skin.LoadFont("Normal64", "Normal64.sif");
+  skin.LoadFont("Latin128", "Latin128.sif");
 }

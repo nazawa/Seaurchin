@@ -1,26 +1,26 @@
 [EntryPoint]
 class SystemMenu : CoroutineScene {
-  Sprite sprite;
-  Shape shape;
-  Image@ bg;
+  string font = "mgenplus-2pp-regular.ttf";
   void Initialize() {
-    //bg = LoadSystemImage("Background.png");
-    @bg = LoadSystemImage("Background.png");
-    sprite.SetImage(@bg);
-    AddMove(sprite, "move_to(x:100, y:100, time:2, ease:out_elastic)");
-    shape.Width = 100;
-    shape.Height = 100;
-    shape.Transform.X = 640;
-    shape.Transform.Y = 320;
+    
   }
   
   void Run() {
-    WriteDebugConsole("Yo!\n");
-    YieldTime(4.0);
+    while(true) {
+      if (IsKeyTriggered(Key::INPUT_0)) {
+        CreateImageFont("C:\\Windows\\Fonts\\" + font, "System32", 32);
+      }
+      if (IsKeyTriggered(Key::INPUT_1)) {
+        CreateImageFont("C:\\Windows\\Fonts\\" + font, "System64", 64);
+      }
+      if (IsKeyTriggered(Key::INPUT_2)) {
+        CreateImageFont("C:\\Windows\\Fonts\\" + font, "System128", 128);
+      }
+      YieldFrame(1);
+    }
   }
   
   void Draw() {
-    sprite.Draw();
-    shape.Draw();
+    
   }
 }

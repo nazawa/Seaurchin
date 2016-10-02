@@ -1,4 +1,5 @@
 #include "Sprite.h"
+#include "Misc.h"
 
 using namespace std;
 
