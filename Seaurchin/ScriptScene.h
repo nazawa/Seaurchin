@@ -1,22 +1,22 @@
 #pragma once
 
 #include "Scene.h"
+#include "ScriptSprite.h"
+#include "ScriptSpriteManager.h"
+#include "ScriptFunction.h"
 
-enum WaitType
-{
-    Frame,
-    Time,
-};
+#define SU_IF_SCENE "Scene"
+#define SU_IF_COSCENE "CoroutineScene"
+#define SU_IF_COROUTINE "Coroutine"
 
 typedef struct
 {
-    WaitType type;
-    union
-    {
-        double time;
-        int64_t frames;
-    };
-} CoroutineWait;
+    void *object;
+    asIScriptContext *context;
+    asITypeInfo *type;
+    asIScriptFunction *function;
+    CoroutineWait wait;
+} Coroutine;
 
 class ScriptScene : public Scene
 {
@@ -25,6 +25,12 @@ protected:
     asIScriptContext *context;
     asIScriptObject *sceneObject;
     asITypeInfo *sceneType;
+    std::multiset<SSprite*, SSprite::Comparator> sprites;
+    std::list<Coroutine*> coroutines;
+
+    void TickCoroutine(double delta);
+    void TickSprite(double delta);
+    void DrawSprite();
 
 public:
     ScriptScene(asIScriptObject *scene);
@@ -32,6 +38,8 @@ public:
 
     void Initialize() override;
 
+    void AddSprite(SSprite *sprite);
+    void AddCoroutine(Coroutine *co);
     void Tick(double delta) override;
     void Draw() override;
     bool IsDead() override;
@@ -48,6 +56,8 @@ protected:
 
 public:
     ScriptCoroutineScene(asIScriptObject *scene);
+    ~ScriptCoroutineScene();
+    
     
     void Tick(double delta) override;
     void Initialize() override;
@@ -55,10 +65,10 @@ public:
 
 };
 
-void ScriptSceneWarnOutOf(std::string type, asIScriptContext *ctx);
-void ScriptSceneYieldTime(double time);
-void ScriptSceneYieldFrames(int64_t frames);
+void RegisterScriptScene(asIScriptEngine *engine);
+
 bool ScriptSceneIsKeyHeld(int keynum);
 bool ScriptSceneIsKeyTriggered(int keynum);
-void ScriptSceneAddMove(std::shared_ptr<Sprite> sprite, const std::string &move);
 void ScriptSceneAddScene(asIScriptObject *sceneObject);
+void ScriptSceneAddSprite(SSprite *sprite);
+void ScriptSceneRunCoroutine(asIScriptFunction *cofunc);

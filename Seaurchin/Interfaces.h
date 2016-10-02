@@ -1,20 +1,20 @@
 #pragma once
 
 #define SU_IF_KEY "Key"
-#define SU_IF_SKIN "Skin"
-#define SU_IF_SCENE "Scene"
-#define SU_IF_COSCENE "CoroutineScene"
+
 #define SU_IF_TF2D "Transform2D"
 
 #define SU_IF_IMAGE "Image"
 #define SU_IF_FONT "Font"
 #define SU_IF_VFONT "VirtualFont"
 
+#define SU_IF_COLOR "Color"
 #define SU_IF_SPRITE "Sprite"
 #define SU_IF_TXTSPRITE "TextSprite"
 #define SU_IF_IMGSPRITE "ImageSprite"
 
 //Helpers from as_smart_ptr_wrapper
+
 
 template <typename T>
 void asConstruct(void * address)
@@ -35,9 +35,12 @@ void asCopyConstruct(void * address, T * other)
 }
 
 template <typename T>
-void asAssign(T * lhs, T* rhs)
+T* asAssign(T * lhs, T* rhs)
 {
+    //rhs->AddRef();
+    //lhs->Release();
     *lhs = *rhs;
+    return lhs;
 }
 
 template <typename T>
@@ -50,8 +53,8 @@ void InterfacesRegisterSharedClass(asIScriptEngine *engine, std::string classnam
     engine->RegisterObjectMethod(classname.c_str(), (classname + " &opAssign(const " + classname + " &in)").c_str(), asFUNCTION(asAssign<std::shared_ptr<T>>), asCALL_CDECL_OBJFIRST);
 }
 
-void InterfacesRegisterScene(asIScriptEngine *engine);
-void InterfacesRegisterSprite(asIScriptEngine *engine);
 void InterfacesRegisterEnum(asIScriptEngine *engine);
+//void InterfacesRegisterObject(asIScriptEngine *engine);
+
 void InterfacesRegisterGlobalFunction(asIScriptEngine *engine);
 void InterfacesRegisterSceneFunction(asIScriptEngine *engine);

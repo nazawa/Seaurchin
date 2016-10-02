@@ -1,4 +1,5 @@
 #include "Main.h"
+#include "resource.h"
 #include "Debug.h"
 #include "Setting.h"
 #include "ExecutionManager.h"
@@ -37,6 +38,7 @@ void PreInitialize(HINSTANCE hInstance)
     SetMainWindowText(SU_APP_NAME " " SU_APP_VERSION);
     SetAlwaysRunFlag(TRUE);
     SetWaitVSyncFlag(FALSE);
+    SetWindowIconID(IDI_ICON1);
     SetGraphMode(SU_RES_WIDTH, SU_RES_HEIGHT, 32);
 }
 
@@ -48,8 +50,15 @@ void Initialize()
     WriteDebugConsole(TEXT("DxLib_Init\n"));
 
     setting->Load(SU_SETTING_FILE);
-    manager->EnumerateSkins();
-    manager->ExecuteSkin();
+    if (CheckHitKey(KEY_INPUT_F2))
+    {
+        manager->ExecuteSystemMenu();
+    }
+    else
+    {
+        manager->EnumerateSkins();
+        manager->ExecuteSkin();
+    }
     manager->AddScene(shared_ptr<Scene>(new SceneDebug()));
     
 }

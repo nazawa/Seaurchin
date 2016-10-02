@@ -5,17 +5,24 @@
 #include "Setting.h"
 #include "Interfaces.h"
 
+#include "ScriptResource.h"
+#include "ScriptScene.h"
+#include "ScriptSprite.h"
+
 using namespace boost::filesystem;
 using namespace std;
 
 ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
 {
     ScriptInterface = shared_ptr<AngelScript>(new AngelScript());
+
     InterfacesRegisterEnum(ScriptInterface->GetEngine());
-    InterfacesRegisterSprite(ScriptInterface->GetEngine());
-    InterfacesRegisterScene(ScriptInterface->GetEngine());
-    InterfacesRegisterGlobalFunction(ScriptInterface->GetEngine());
+    RegisterScriptResource(ScriptInterface->GetEngine());
+    RegisterScriptSprite(ScriptInterface->GetEngine());
+    RegisterScriptScene(ScriptInterface->GetEngine());
+    RegisterScriptSkin(ScriptInterface->GetEngine());
     InterfacesRegisterSceneFunction(ScriptInterface->GetEngine());
+    InterfacesRegisterGlobalFunction(ScriptInterface->GetEngine());
 
     SharedSetting = setting;
     SharedKeyState = shared_ptr<KeyState>(new KeyState());
@@ -62,9 +69,16 @@ void ExecutionManager::ExecuteSkin()
         WriteDebugConsole(("Can't Find Skin " + sn + "!\n").c_str());
         return;
     }
-    Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, this));
+    Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, ScriptInterface));
     Skin->Initialize();
-    Skin->ExecuteSkinScript(SU_SKIN_TITLE_FILE);
+    auto obj = Skin->ExecuteSkinScript(SU_SKIN_TITLE_FILE);
+    auto s = CreateSceneFromScriptObject(obj);
+    if (!s)
+    {
+        WriteDebugConsole("Entry Point Not Found!\n");
+        return;
+    }
+    AddScene(s);
 }
 
 
@@ -130,6 +144,7 @@ void ExecutionManager::Tick(double delta)
             i++;
         }
     }
+    ScriptInterface->GetEngine()->GarbageCollect(asGC_ONE_STEP);
 }
 
 //Draw
@@ -197,148 +212,3 @@ shared_ptr<ScriptScene> ExecutionManager::CreateSceneFromScriptObject(asIScriptO
     }
 }
 
-// SkinHolder -----------------------------
-
-bool SkinHolder::IncludeScript(std::string include, std::string from, CScriptBuilder * builder)
-{
-    return false;
-}
-
-SkinHolder::SkinHolder(string name, ExecutionManager *manager)
-{
-    Manager = manager;
-    SkinName = name;
-    SkinRoot = Setting::GetRootDirectory() / SU_DATA_DIR / SU_SKIN_DIR / SkinName;
-}
-
-SkinHolder::~SkinHolder()
-{
-
-}
-
-void SkinHolder::AddRef()
-{
-}
-
-void SkinHolder::Release()
-{
-}
-
-void SkinHolder::Initialize()
-{
-    auto si = Manager->GetScriptInterface();
-    si->StartBuildModule("SkinLoader",
-        [this](string inc, string from, CScriptBuilder *b)
-    {
-        if (!exists(SkinRoot / SU_SCRIPT_DIR / inc)) return false;
-        b->AddSectionFromFile((SkinRoot / SU_SCRIPT_DIR / inc).string().c_str());
-        return true;
-    });
-    si->LoadFile((SkinRoot / SU_SKIN_MAIN_FILE).string().c_str());
-    si->FinishBuildModule();
-
-    auto mod = si->GetLastModule();
-    int fc = mod->GetFunctionCount();
-    asIScriptFunction *ep = nullptr;
-    for (asUINT i = 0; i < fc; i++)
-    {
-        auto func = mod->GetFunctionByIndex(i);
-        if (!si->CheckMetaData(func, "EntryPoint")) continue;
-        ep = func;
-        break;
-    }
-    if (!ep)
-    {
-        WriteDebugConsole("Entry Point Not Found!\n");
-        mod->Discard();
-        return;
-    }
-
-    auto ctx = si->GetEngine()->CreateContext();
-    ctx->Prepare(ep);
-    ctx->SetArgObject(0, this);
-    ctx->Execute();
-    ctx->Release();
-    mod->Discard();
-}
-
-void SkinHolder::ExecuteSkinScript(string file)
-{
-    auto si = Manager->GetScriptInterface();
-    auto mod = si->GetExistModule(file);
-    if (!mod)
-    {
-        si->StartBuildModule(file.c_str(),
-            [this](string inc, string from, CScriptBuilder *b)
-        {
-            if (!exists(SkinRoot / SU_SCRIPT_DIR / inc)) return false;
-            b->AddSectionFromFile((SkinRoot / SU_SCRIPT_DIR / inc).string().c_str());
-            return true;
-        });
-        si->LoadFile((SkinRoot / SU_SCRIPT_DIR / file).string().c_str());
-        si->FinishBuildModule();
-
-        mod = si->GetLastModule();
-    }
-
-    //エントリポイント検索
-    int cnt = mod->GetObjectTypeCount();
-    asITypeInfo *type = nullptr;
-    for (int i = 0; i < cnt; i++)
-    {
-        auto cti = mod->GetObjectTypeByIndex(i);
-        if (!si->CheckMetaData(cti, "EntryPoint")) continue;
-        type = cti;
-        type->AddRef();
-        break;
-    }
-    if (!type)
-    {
-        WriteDebugConsole("Entry Point Not Found!\n");
-        return;
-    }
-
-    auto obj = si->InstantiateObject(type);
-    obj->SetUserData(this, SU_UDTYPE_SKIN);
-    Manager->AddScene(Manager->CreateSceneFromScriptObject(obj));
-    type->Release();
-}
-
-void SkinHolder::LoadSkinImage(const string &key, const string &filename)
-{
-    Images[key] = Image::LoadFromFile((SkinRoot / SU_IMAGE_DIR / filename).string().c_str());
-}
-
-void SkinHolder::LoadSkinFont(const string &key, const string &filename)
-{
-    Fonts[key] = Font::LoadFromFile((SkinRoot / SU_FONT_DIR / filename).string().c_str());
-}
-
-shared_ptr<Image> SkinHolder::GetSkinImage(const string &key)
-{
-    return Images[key];
-}
-
-shared_ptr<Font> SkinHolder::GetSkinFont(const string &key)
-{
-    return Fonts[key];
-}
-
-//スキン専用
-SkinHolder* GetSkinObject()
-{
-    auto ctx = asGetActiveContext();
-    auto obj = (asIScriptObject*)ctx->GetThisPointer();
-    if (!obj)
-    {
-        ScriptSceneWarnOutOf("Instance Method", ctx);
-        return nullptr;
-    }
-    auto skin = obj->GetUserData(SU_UDTYPE_SKIN);
-    if (!skin)
-    {
-        ScriptSceneWarnOutOf("Skin-Related Scene", ctx);
-        return nullptr;
-    }
-    return (SkinHolder*)skin;
-}

@@ -10,11 +10,13 @@ AngelScript::AngelScript()
     RegisterScriptArray(engine, true);
     RegisterStdString(engine);
     RegisterStdStringUtils(engine);
+    RegisterScriptDictionary(engine);
     engine->SetMessageCallback(asMETHOD(AngelScript, ScriptMessageCallback), this, asCALL_THISCALL);
 
     //Script Interface
 
     sharedContext = engine->CreateContext();
+    sharedContext->AddRef();
     builder.SetIncludeCallback(ScriptIncludeCallback, this);
 }
 
