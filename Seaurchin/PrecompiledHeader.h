@@ -44,6 +44,7 @@
 
 //Libraries
 #include <DxLib.h>
+#include <EffekseerForDXLib.h>
 
 #include <angelscript.h>
 #include <scriptbuilder\scriptbuilder.h>

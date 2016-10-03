@@ -227,6 +227,12 @@
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptdictionary\scriptdictionary.h">
       <Filter>AngelScript</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\EffekseerForDXLib\include\Effekseer.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\EffekseerForDXLib\include\EffekseerRendererDX9.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Seaurchin.rc">

@@ -24,6 +24,8 @@
 #define SU_RES_WIDTH 1280
 #define SU_RES_HEIGHT 720
 
+#define SU_EFX_PMAX 8192
+
 //AngelScript‚ÌUserData—p
 #define SU_UDTYPE_SCENE 100
 #define SU_UDTYPE_WAIT 101

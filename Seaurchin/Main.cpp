@@ -44,12 +44,20 @@ void PreInitialize(HINSTANCE hInstance)
 
 void Initialize()
 {
+    setting->Load(SU_SETTING_FILE);
+
     if (DxLib_Init() == -1) abort();
     SetDrawScreen(DX_SCREEN_BACK);
-
     WriteDebugConsole(TEXT("DxLib_Init\n"));
 
-    setting->Load(SU_SETTING_FILE);
+    SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
+    SetUseDirect3DVersion(DX_DIRECT3D_9);
+    SetUseZBuffer3D(TRUE);
+    SetWriteZBuffer3D(TRUE);
+    if (Effkseer_Init(SU_EFX_PMAX) == -1) abort();
+    Effekseer_Set2DSetting(SU_RES_WIDTH, SU_RES_HEIGHT);
+    //if (GetUseDirect3DVersion() == DX_DIRECT3D_11) WriteDebugConsole(TEXT("Using D3D11!\n"));
+
     if (CheckHitKey(KEY_INPUT_F2))
     {
         manager->ExecuteSystemMenu();
@@ -81,5 +89,6 @@ void Terminate()
 {
     TerminateDebugFeature();
     setting->Save();
+    Effkseer_End();
     DxLib_End();
 }
