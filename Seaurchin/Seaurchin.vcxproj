@@ -215,6 +215,7 @@
     <ClInclude Include="..\..\..\DXLib\include\DxFunctionWin.h" />
     <ClInclude Include="..\..\..\DXLib\include\DxLib.h" />
     <ClInclude Include="..\..\..\EffekseerForDXLib\include\Effekseer.h" />
+    <ClInclude Include="..\..\..\EffekseerForDXLib\include\EffekseerForDXLib.h" />
     <ClInclude Include="..\..\..\EffekseerForDXLib\include\EffekseerRendererDX9.h" />
     <ClInclude Include="AngelScriptManager.h" />
     <ClInclude Include="as_smart_ptr_wrapper.h" />

@@ -24,6 +24,9 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     InterfacesRegisterSceneFunction(ScriptInterface->GetEngine());
     InterfacesRegisterGlobalFunction(ScriptInterface->GetEngine());
 
+    Effect2D = GetEffekseer2DManager();
+    Effect3D = GetEffekseer3DManager();
+
     SharedSetting = setting;
     SharedKeyState = shared_ptr<KeyState>(new KeyState());
 }

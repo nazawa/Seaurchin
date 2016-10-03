@@ -9,6 +9,13 @@
 #define SU_IF_RENDER "RenderTarget"
 #define SU_IF_SOUND "Sound"
 
+//interface 自動解放対象
+class ISResouceAutoRelease
+{
+    virtual bool Dispose() = 0;
+};
+
+//リソース基底クラス
 class SResource
 {
 protected:
@@ -23,6 +30,7 @@ public:
     inline int GetHandle() { return Handle; }
 };
 
+//画像
 class SImage : public SResource
 {
 protected:
@@ -42,12 +50,14 @@ public:
     static SImage* CreateLoadedImageFromMemory(void *buffer, size_t size);
 };
 
+//描画タゲ
 class SRenderTarget : public SImage
 {
 public:
     SRenderTarget(int w, int h);
 };
 
+//フォント
 class SFont : public SResource
 {
 protected:
@@ -66,9 +76,17 @@ public:
     static SFont* CreateLoadedFontFromFile(const std::string &file);
 };
 
+//音声
 class SSound : public SResource
 {
 
+};
+
+//エフェクト
+class SEffect : public SResource
+{
+    SEffect(int handle);
+    ~SEffect() override;
 };
 
 void RegisterScriptResource(asIScriptEngine *engine);

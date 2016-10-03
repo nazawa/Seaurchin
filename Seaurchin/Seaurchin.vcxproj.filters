@@ -233,6 +233,9 @@
     <ClInclude Include="..\..\..\EffekseerForDXLib\include\EffekseerRendererDX9.h">
       <Filter>DxLib</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\EffekseerForDXLib\include\EffekseerForDXLib.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Seaurchin.rc">

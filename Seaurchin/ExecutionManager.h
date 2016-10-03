@@ -16,6 +16,8 @@ private:
     std::shared_ptr<KeyState> SharedKeyState;
     std::vector<std::string> SkinNames;
     std::unique_ptr<SkinHolder> Skin;
+    Effekseer::Manager *Effect2D;
+    Effekseer::Manager *Effect3D;
 
 public:
     ExecutionManager(std::shared_ptr<Setting> setting);

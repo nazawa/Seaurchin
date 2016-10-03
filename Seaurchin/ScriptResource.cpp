@@ -98,6 +98,7 @@ tuple<double, double, int> SFont::RenderRaw(SRenderTarget * rt, const std::wstri
     if (rt)
     {
         BEGIN_DRAW_TRANSACTION(rt->GetHandle());
+        ClearDrawScreen();
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
         SetDrawBright(255, 255, 255);
     }
@@ -181,4 +182,12 @@ void RegisterScriptResource(asIScriptEngine * engine)
     engine->RegisterObjectBehaviour(SU_IF_FONT, asBEHAVE_ADDREF, "void f()", asMETHOD(SFont, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_FONT, asBEHAVE_RELEASE, "void f()", asMETHOD(SFont, Release), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_FONT, "int get_Size()", asMETHOD(SFont, get_Size), asCALL_THISCALL);
+}
+
+SEffect::SEffect(int handle)
+{
+}
+
+SEffect::~SEffect()
+{
 }
