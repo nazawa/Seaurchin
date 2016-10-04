@@ -179,6 +179,8 @@
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="DxLibResource.cpp" />
     <ClCompile Include="Easing.cpp" />
+    <ClCompile Include="EffectBuilder.cpp" />
+    <ClCompile Include="EffectData.cpp" />
     <ClCompile Include="ExecutionManager.cpp" />
     <ClCompile Include="Font.cpp" />
     <ClCompile Include="Interfaces.cpp" />
@@ -223,6 +225,8 @@
     <ClInclude Include="Debug.h" />
     <ClInclude Include="DxLibResource.h" />
     <ClInclude Include="Easing.h" />
+    <ClInclude Include="EffectBuilder.h" />
+    <ClInclude Include="EffectData.h" />
     <ClInclude Include="ExecutionManager.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="Interfaces.h" />
