@@ -8,23 +8,14 @@ using namespace boost::spirit;
 class EffectBuilder final
 {
 private:
-
-    bool ParseSource(std::string source, EffectData *output);
+    std::unordered_map<std::string, EffectData*> effects;
 
 public:
-    EffectData* LoadFromFile(std::string fileName);
+    EffectBuilder();
+    ~EffectBuilder();
+
+    void LoadFromFile(std::string fileName);
+    bool ParseSource(std::string source);
 };
 
-template<typename Iter>
-struct EffectGrammar : qi::grammar<Iter, std::tuple<std::string, int>, qi::space_type>
-{
-    qi::rule<Iter, std::tuple<std::string, int>(), qi::space_type> rEffect;
-    qi::rule<Iter, std::vector<double>(), qi::space_type> rDist;
-    qi::rule<Iter, std::string(), qi::space_type> rType;
-    
-
-    EffectGrammar() : EffectGrammar::base_type(rEffect)
-    {
-        rType = qi::lit("type") >> 
-    }
-};
+#include "EffectGrammar.h"

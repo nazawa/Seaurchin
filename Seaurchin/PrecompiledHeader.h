@@ -31,6 +31,7 @@
 #include <forward_list>
 #include <list>
 #include <tuple>
+#include <exception>
 
 //Boost
 #include <boost/property_tree/ptree.hpp>
@@ -43,6 +44,7 @@
 #include <boost/crc.hpp>
 #include <boost/fusion/include/std_tuple.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/optional.hpp>
 
 //Libraries
 #include <DxLib.h>

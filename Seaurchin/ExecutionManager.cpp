@@ -29,6 +29,16 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
 
     SharedSetting = setting;
     SharedKeyState = shared_ptr<KeyState>(new KeyState());
+
+    SuEffect = unique_ptr<EffectBuilder>(new EffectBuilder());
+    SuEffect->ParseSource(R"(
+effect Test {
+    option "opt1";
+    emitter {
+        distopt fix(0), fix(0);
+    }
+}
+    )", nullptr);
 }
 
 void ExecutionManager::EnumerateSkins()

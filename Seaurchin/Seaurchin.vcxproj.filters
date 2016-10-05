@@ -176,9 +176,6 @@
     <ClInclude Include="as_smart_ptr_wrapper.h">
       <Filter>AngelScript</Filter>
     </ClInclude>
-    <ClInclude Include="PrecompiledHeader.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="ExecutionManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -246,6 +243,12 @@
       <Filter>インターフェース\C++</Filter>
     </ClInclude>
     <ClInclude Include="EffectData.h">
+      <Filter>インターフェース\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="PrecompiledHeader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectGrammar.h">
       <Filter>インターフェース\C++</Filter>
     </ClInclude>
   </ItemGroup>

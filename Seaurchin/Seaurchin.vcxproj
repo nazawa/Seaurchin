@@ -227,6 +227,7 @@
     <ClInclude Include="Easing.h" />
     <ClInclude Include="EffectBuilder.h" />
     <ClInclude Include="EffectData.h" />
+    <ClInclude Include="EffectGrammar.h" />
     <ClInclude Include="ExecutionManager.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="Interfaces.h" />
