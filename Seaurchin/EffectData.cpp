@@ -2,16 +2,6 @@
 
 using namespace std;
 
-EffectData::EffectData(std::string name)
-{
-    Name = name;
-}
-
-EffectData::~EffectData()
-{
-    for (auto& em : Emitters) delete em;
-}
-
 EffectEmitter::EffectEmitter()
 {
 }
@@ -47,4 +37,34 @@ void EffectEmitter::FillDefault()
         InitAccX = new DistributionFix(0);
         InitAccY = new DistributionFix(0);
     }
+}
+
+// EffectData ----------------------------
+
+EffectData::EffectData(std::string name)
+{
+    Name = name;
+    Type = EffectType::LoopEffect;
+}
+
+EffectData::~EffectData()
+{
+    for (auto& em : Emitters) delete em;
+}
+
+std::shared_ptr<EffectInstance> EffectData::Instantiate()
+{
+    auto result = std::shared_ptr<EffectInstance>(new EffectInstance());
+
+    return result;
+}
+
+// EffectInstance ------------------------
+
+EffectInstance::EffectInstance()
+{
+}
+
+EffectInstance::~EffectInstance()
+{
 }

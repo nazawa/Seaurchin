@@ -63,17 +63,34 @@ bool EffectBuilder::ParseSource(std::string source)
             // Effect / Dist
             if (get<0>(eel))
             {
+                auto ep = get<0>(eel).get();
+                switch (hashstr(ep.name.c_str()))
+                {
 
+                }
             }
             // Effect / String
             if (get<1>(eel))
             {
-
+                auto ep = get<1>(eel).get();
+                switch (hashstr(ep.name.c_str()))
+                {
+                case hashstr("type"):
+                    if (ep.values[0] == "loop") nfx->Type = EffectType::LoopEffect;
+                    if (ep.values[0] == "oneshot") nfx->Type = EffectType::OneshotEffect;
+                    break;
+                }
             }
             // Effect / Number
             if (get<2>(eel))
             {
-
+                auto ep = get<2>(eel).get();
+                switch (hashstr(ep.name.c_str()))
+                {
+                case hashstr("looptime"):
+                    nfx->LoopTime = ep.values[0];
+                    break;
+                }
             }
             // Effect / Emitter
             if (get<3>(eel))
@@ -115,11 +132,11 @@ void EffectBuilder::ParseEmitterParameter(EffectEmitter *emitter, const EffectPa
         break;
 
     case hashstr("burst"):
-        emitter->Type = EmitterRateType::Oneshot;
+        emitter->Type = EmitterRateType::BurstEmission;
         emitter->Rate = GetDistribution(param.values[0]);
         break;
     case hashstr("rate"):
-        emitter->Type = EmitterRateType::Loop;
+        emitter->Type = EmitterRateType::RateEmission;
         emitter->Rate = GetDistribution(param.values[0]);
         break;
     case hashstr("velocity"):

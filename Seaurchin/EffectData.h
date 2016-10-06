@@ -1,10 +1,30 @@
 #pragma once
 #include "EffectFunction.h"
 
+struct ParticleData
+{
+    float X;
+    float Y;
+    float Angle;
+    float VelX;
+    float VelY;
+    float VelAngle;
+    float AccX;
+    float AccY;
+    float AccAngle;
+};
+
+class EffectInstance
+{
+public:
+    EffectInstance();
+    ~EffectInstance();
+};
+
 enum EmitterRateType
 {
-    Loop,           //ジワー
-    Oneshot,        //バシュ
+    RateEmission,           //ジワー
+    BurstEmission           //バシュ
 };
 
 class EffectEmitter
@@ -23,6 +43,12 @@ public:
     void FillDefault();
 };
 
+enum EffectType
+{
+    LoopEffect,
+    OneshotEffect
+};
+
 class EffectData final
 {
 private:
@@ -33,5 +59,9 @@ public:
     ~EffectData();
 
     std::string Name;
+    EffectType Type;
+    double LoopTime;
     std::vector<EffectEmitter*> Emitters;
+
+    std::shared_ptr<EffectInstance> Instantiate();
 };
