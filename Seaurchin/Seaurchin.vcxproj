@@ -91,6 +91,7 @@
       <AdditionalIncludeDirectories>C:\Programming\DXLib\include;C:\Programming\AngelScript\angelscript\include;C:\Programming\AngelScript\add_on;C:\Programming\Boost\include\boost-1_61;C:\Programming\FreeType\include;C:\Programming\libpng\include;C:\Programming\EffekseerForDXLib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -181,6 +182,7 @@
     <ClCompile Include="Easing.cpp" />
     <ClCompile Include="EffectBuilder.cpp" />
     <ClCompile Include="EffectData.cpp" />
+    <ClCompile Include="EffectFunction.cpp" />
     <ClCompile Include="ExecutionManager.cpp" />
     <ClCompile Include="Font.cpp" />
     <ClCompile Include="Interfaces.cpp" />
@@ -227,6 +229,7 @@
     <ClInclude Include="Easing.h" />
     <ClInclude Include="EffectBuilder.h" />
     <ClInclude Include="EffectData.h" />
+    <ClInclude Include="EffectFunction.h" />
     <ClInclude Include="EffectGrammar.h" />
     <ClInclude Include="ExecutionManager.h" />
     <ClInclude Include="Font.h" />

@@ -87,6 +87,7 @@ class SEffect : public SResource
 {
     SEffect(int handle);
     ~SEffect() override;
+
 };
 
 void RegisterScriptResource(asIScriptEngine *engine);

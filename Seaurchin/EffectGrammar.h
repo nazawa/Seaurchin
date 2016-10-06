@@ -29,7 +29,7 @@ namespace sefx
         optional<EffectParameter<EffectDistribution>>,
         optional<EffectParameter<string>>,
         optional<EffectParameter<double>>,
-        optional<vector<tuple<EffectOptionals>>>>>>
+        optional<vector<EffectOptionals>>>>>
         EffectTuple;
 
     template<typename Iter>

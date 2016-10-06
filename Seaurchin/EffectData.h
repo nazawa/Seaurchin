@@ -1,33 +1,37 @@
 #pragma once
+#include "EffectFunction.h"
 
-enum EffectType
+enum EmitterRateType
 {
-    Loop,
-    Oneshot,
-};
-
-class EffectDistribution
-{
-protected:
-    std::vector<double> params;
-public:
-    virtual double Take() = 0;
+    Loop,           //ジワー
+    Oneshot,        //バシュ
 };
 
 class EffectEmitter
 {
 public:
-    double wait;
+    EffectEmitter();
+    ~EffectEmitter();
 
+    double Wait;
+    EmitterRateType Type;
+    DistributionBase *Rate = 0;
+    DistributionBase *LifeTime = 0;
+    DistributionBase *InitVelX = 0, *InitVelY = 0;
+    DistributionBase *InitAccX = 0, *InitAccY = 0;
+
+    void FillDefault();
 };
 
-class EffectData
+class EffectData final
 {
 private:
+
 
 public:
     EffectData(std::string name);
     ~EffectData();
 
     std::string Name;
+    std::vector<EffectEmitter*> Emitters;
 };

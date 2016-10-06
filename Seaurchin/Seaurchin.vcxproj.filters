@@ -126,6 +126,9 @@
     <ClCompile Include="EffectData.cpp">
       <Filter>インターフェース\C++</Filter>
     </ClCompile>
+    <ClCompile Include="EffectFunction.cpp">
+      <Filter>インターフェース\C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -249,6 +252,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="EffectGrammar.h">
+      <Filter>インターフェース\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectFunction.h">
       <Filter>インターフェース\C++</Filter>
     </ClInclude>
   </ItemGroup>

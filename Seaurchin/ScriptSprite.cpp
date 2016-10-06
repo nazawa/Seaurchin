@@ -331,6 +331,52 @@ void STextSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetText(const string &in)", asMETHOD(STextSprite, set_Text), asCALL_THISCALL);
 }
 
+// SEffectSprite ------------------------------
+SEffectSprite::SEffectSprite()
+{
+    
+}
+
+SEffectSprite::~SEffectSprite()
+{
+    
+}
+
+void SEffectSprite::Draw()
+{
+
+}
+
+void SEffectSprite::Tick(double delta)
+{
+
+}
+
+void SEffectSprite::Play()
+{
+
+}
+
+void SEffectSprite::Reset()
+{
+
+}
+
+void SEffectSprite::Stop()
+{
+
+}
+
+SEffectSprite * SEffectSprite::Factory()
+{
+    return nullptr;
+}
+
+void SEffectSprite::RegisterType(asIScriptEngine * engine)
+{
+}
+
+
 // ˆê”Ê
 
 void RegisterScriptSprite(asIScriptEngine * engine)

@@ -31,6 +31,7 @@
 #include <forward_list>
 #include <list>
 #include <tuple>
+#include <random>
 #include <exception>
 
 //Boost

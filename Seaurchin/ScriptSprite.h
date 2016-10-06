@@ -40,7 +40,7 @@ public:
     void AddMove(const std::string &move);
     void Apply(const std::string &dict);
     void Apply(const CScriptDictionary &dict);
-    void Tick(double delta);
+    virtual void Tick(double delta);
     virtual void Draw();
     SSprite* Clone();
 
@@ -112,6 +112,24 @@ public:
     double Width = 64;
     double Height = 64;
     SScrollRepetition type;
+};
+
+class SEffectSprite : public SSprite
+{
+protected:
+    
+public:
+    SEffectSprite();
+    ~SEffectSprite();
+
+    void Draw() override;
+    void Tick(double delta) override;
+    void Play();
+    void Reset();
+    void Stop();
+
+    static SEffectSprite* Factory();
+    static void RegisterType(asIScriptEngine *engine);
 };
 
 template<typename T>

@@ -15,7 +15,6 @@ using namespace std;
 ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
 {
     ScriptInterface = shared_ptr<AngelScript>(new AngelScript());
-
     InterfacesRegisterEnum(ScriptInterface->GetEngine());
     RegisterScriptResource(ScriptInterface->GetEngine());
     RegisterScriptSprite(ScriptInterface->GetEngine());
@@ -30,15 +29,17 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     SharedSetting = setting;
     SharedKeyState = shared_ptr<KeyState>(new KeyState());
 
-    SuEffect = unique_ptr<EffectBuilder>(new EffectBuilder());
+    random_device seed;
+    Random = shared_ptr<mt19937>(new mt19937(seed()));
+    SuEffect = unique_ptr<EffectBuilder>(new EffectBuilder(Random));
     SuEffect->ParseSource(R"(
-effect Test {
-    option "opt1";
+effect Unko {
     emitter {
-        distopt fix(0), fix(0);
+        accel fix(0), fix(1);
+        velocity uniform(-1, 1), normal(-1, 0.5);
     }
 }
-    )", nullptr);
+    )");
 }
 
 void ExecutionManager::EnumerateSkins()

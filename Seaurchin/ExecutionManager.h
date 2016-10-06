@@ -18,6 +18,7 @@ private:
     std::vector<std::string> SkinNames;
     std::unique_ptr<SkinHolder> Skin;
     std::unique_ptr<EffectBuilder> SuEffect;
+    std::shared_ptr<std::mt19937> Random;
 
     Effekseer::Manager *Effect2D;
     Effekseer::Manager *Effect3D;
