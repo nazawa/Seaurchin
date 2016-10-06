@@ -40,7 +40,7 @@ public:
     void AddMove(const std::string &move);
     void Apply(const std::string &dict);
     void Apply(const CScriptDictionary &dict);
-    void Tick(double delta);
+    virtual void Tick(double delta);
     virtual void Draw();
     SSprite* Clone();
 
@@ -98,7 +98,39 @@ public:
     static void RegisterType(asIScriptEngine *engine);
 };
 
+enum SScrollRepetition
+{
+    Horizontal = 1,
+    Vertical = 2
+};
 
+class SScrollSprite : public SSprite
+{
+protected:
+
+public:
+    double Width = 64;
+    double Height = 64;
+    SScrollRepetition type;
+};
+
+class SEffectSprite : public SSprite
+{
+protected:
+    
+public:
+    SEffectSprite();
+    ~SEffectSprite();
+
+    void Draw() override;
+    void Tick(double delta) override;
+    void Play();
+    void Reset();
+    void Stop();
+
+    static SEffectSprite* Factory();
+    static void RegisterType(asIScriptEngine *engine);
+};
 
 template<typename T>
 void RegisterSpriteBasic(asIScriptEngine *engine, const char *name)
@@ -132,5 +164,5 @@ To* CastReferenceType(From *from)
 }
 
 //SpriteŒn‘S•”
-ColorTint GetColorTint(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+//ColorTint GetColorTint(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 void RegisterScriptSprite(asIScriptEngine *engine);

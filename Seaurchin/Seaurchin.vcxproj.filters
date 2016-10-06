@@ -120,6 +120,15 @@
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptdictionary\scriptdictionary.cpp">
       <Filter>AngelScript</Filter>
     </ClCompile>
+    <ClCompile Include="EffectBuilder.cpp">
+      <Filter>インターフェース\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectData.cpp">
+      <Filter>インターフェース\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectFunction.cpp">
+      <Filter>インターフェース\C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -169,9 +178,6 @@
     </ClInclude>
     <ClInclude Include="as_smart_ptr_wrapper.h">
       <Filter>AngelScript</Filter>
-    </ClInclude>
-    <ClInclude Include="PrecompiledHeader.h">
-      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="ExecutionManager.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -226,6 +232,30 @@
     </ClInclude>
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptdictionary\scriptdictionary.h">
       <Filter>AngelScript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\EffekseerForDXLib\include\Effekseer.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\EffekseerForDXLib\include\EffekseerRendererDX9.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\EffekseerForDXLib\include\EffekseerForDXLib.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectBuilder.h">
+      <Filter>インターフェース\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectData.h">
+      <Filter>インターフェース\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="PrecompiledHeader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectGrammar.h">
+      <Filter>インターフェース\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectFunction.h">
+      <Filter>インターフェース\C++</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

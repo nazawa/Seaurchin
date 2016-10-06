@@ -31,6 +31,8 @@
 #include <forward_list>
 #include <list>
 #include <tuple>
+#include <random>
+#include <exception>
 
 //Boost
 #include <boost/property_tree/ptree.hpp>
@@ -41,9 +43,13 @@
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/crc.hpp>
+#include <boost/fusion/include/std_tuple.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/optional.hpp>
 
 //Libraries
 #include <DxLib.h>
+#include <EffekseerForDXLib.h>
 
 #include <angelscript.h>
 #include <scriptbuilder\scriptbuilder.h>
