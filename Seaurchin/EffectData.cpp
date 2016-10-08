@@ -68,3 +68,7 @@ EffectInstance::EffectInstance()
 EffectInstance::~EffectInstance()
 {
 }
+
+void EffectInstance::Update(double delta)
+{
+}

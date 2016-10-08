@@ -41,6 +41,8 @@ class Title : CoroutineScene {
   }
   
   void Run() {
+    YieldTime(4.0); //ロゴ待ち
+    RunCoroutine(Coroutine(TitleRipple), "Title:Ripple");
     while(true) YieldFrame(1);
   }
   
@@ -59,5 +61,22 @@ class Title : CoroutineScene {
     @imgBoost = skin.GetImage("LogoBoost");
     @imgFreeType = skin.GetImage("LogoFreeType");
     @imgAngelScript = skin.GetImage("LogoAngelScript");
+  }
+  
+  //ここからコルーチン
+  void TitleRipple() {
+    Sprite @sp = Sprite(imgDxLib);
+    sp.HasAlpha = false;
+    sp.Apply("origX:102, origY:102, x:640, y:360");
+    AddSprite(sp);
+    while(true) {
+      YieldTime(2);
+      auto ripple = sp.Clone();
+      ripple.Apply("alpha:0.5");
+      ripple.AddMove("alpha(x:0.3, y:0, time:1.0)");
+      ripple.AddMove("scale_to(x:1.5, y:1.5, time:1.0)");
+      ripple.AddMove("death(wait:1.0)");
+      AddSprite(ripple);
+    }
   }
 }

@@ -10,6 +10,7 @@
 #define SU_IF_SPRITE "Sprite"
 #define SU_IF_SHAPE "Shape"
 #define SU_IF_TXTSPRITE "TextSprite"
+#define SU_IF_SYHSPRITE "SynthSprite"
 
 class ScriptSpriteMover;
 //基底がImageSpriteでもいい気がしてるんだよね正直
@@ -19,14 +20,17 @@ protected:
     int Reference;
     ScriptSpriteMover *mover;
 
+    void CopyParameterFrom(SSprite *original);
 
 public:
+    //値(CopyParameterFromで一括)
     Transform2D Transform;
     int32_t ZIndex;
     ColorTint Color;
     bool IsDead = false;
-    SImage *Image = nullptr;
     bool HasAlpha = true;
+    //参照(手動コピー)
+    SImage *Image = nullptr;
     void set_Image(SImage *img);
     const SImage* get_Image();
 
@@ -65,6 +69,7 @@ enum SShapeType
     OvalFill,
 };
 
+//任意の多角形などを表示できる
 class SShape : public SSprite
 {
 public:
@@ -78,6 +83,7 @@ public:
     static void RegisterType(asIScriptEngine *engine);
 };
 
+//文字列をスプライトとして扱います
 class STextSprite : public SSprite
 {
 protected:
@@ -92,26 +98,34 @@ public:
 
     ~STextSprite() override;
     void Draw() override;
+    STextSprite *Clone();
 
     static STextSprite* Factory();
     static STextSprite* Factory(SFont *img, const std::string &str);
     static void RegisterType(asIScriptEngine *engine);
 };
 
-enum SScrollRepetition
-{
-    Horizontal = 1,
-    Vertical = 2
-};
-
-class SScrollSprite : public SSprite
+//画像を任意のスプライトから合成してウェイできます
+class SSynthSprite : public SSprite
 {
 protected:
+    SRenderTarget *Target = nullptr;
+    int Width = 0;
+    int Height = 0;
 
 public:
-    double Width = 64;
-    double Height = 64;
-    SScrollRepetition type;
+    SSynthSprite(int w, int h);
+    ~SSynthSprite();
+    inline int get_Width() { return Width; }
+    inline int get_Height() { return Height; }
+
+    void Clear();
+    void Transfer(SSprite *sprite);
+    void Draw() override;
+    SSynthSprite *Clone();
+
+    static SSynthSprite *Factory(int w, int h);
+    static void RegisterType(asIScriptEngine *engine);
 };
 
 class SEffectSprite : public SSprite

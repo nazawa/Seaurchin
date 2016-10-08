@@ -55,6 +55,8 @@ class SRenderTarget : public SImage
 {
 public:
     SRenderTarget(int w, int h);
+
+    static SRenderTarget* CreateBlankTarget(int w, int h);
 };
 
 //ƒtƒHƒ“ƒg

@@ -79,6 +79,13 @@ SRenderTarget::SRenderTarget(int w, int h) : SImage(0)
     Height = h;
 }
 
+SRenderTarget * SRenderTarget::CreateBlankTarget(int w, int h)
+{
+    auto result = new SRenderTarget(w, h);
+    result->AddRef();
+    return result;
+}
+
 SFont::SFont()
 {
     for (int i = 0; i < 0x10000; i++) Chars.push_back(nullptr);

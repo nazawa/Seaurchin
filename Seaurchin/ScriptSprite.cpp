@@ -4,6 +4,15 @@
 
 using namespace std;
 
+void SSprite::CopyParameterFrom(SSprite * original)
+{
+    Color = original->Color;
+    Transform = original->Transform;
+    ZIndex = original->ZIndex;
+    IsDead = original->IsDead;
+    HasAlpha = original->HasAlpha;
+}
+
 void SSprite::set_Image(SImage * img)
 {
     if (Image) Image->Release();
@@ -142,17 +151,13 @@ SSprite * SSprite::Clone()
 {
     //コピコンで良くないかこれ
     auto clone = new SSprite();
+    clone->AddRef();
+    clone->CopyParameterFrom(this);
     if (Image)
     {
         Image->AddRef();
         clone->set_Image(Image);
     }
-    clone->Color = Color;
-    clone->Transform = Transform;
-    clone->ZIndex = ZIndex;
-    clone->IsDead = IsDead;
-    clone->HasAlpha = true;
-    clone->AddRef();
     return clone;
 }
 
@@ -304,6 +309,24 @@ void STextSprite::Draw()
         TRUE, FALSE);
 }
 
+STextSprite * STextSprite::Clone()
+{
+    //やっぱりコピコンで良くないかこれ
+    auto clone = new STextSprite();
+    clone->CopyParameterFrom(this);
+    clone->AddRef();
+    if (Font)
+    {
+        Font->AddRef();
+        clone->set_Font(Font);
+    }
+    if (Target)
+    {
+        clone->set_Text(Text);
+    }
+    return clone;
+}
+
 STextSprite * STextSprite::Factory()
 {
     auto result = new STextSprite();
@@ -327,11 +350,87 @@ void STextSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectBehaviour(SU_IF_TXTSPRITE, asBEHAVE_FACTORY, SU_IF_TXTSPRITE "@ f(" SU_IF_FONT "@, const string &in)", asFUNCTIONPR(STextSprite::Factory, (SFont*, const string&), STextSprite*), asCALL_CDECL);
     engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_TXTSPRITE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, STextSprite>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<STextSprite, SSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_TXTSPRITE, SU_IF_TXTSPRITE "@ Clone()", asMETHOD(STextSprite, Clone), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetFont(" SU_IF_FONT "@)", asMETHOD(STextSprite, set_Font), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetText(const string &in)", asMETHOD(STextSprite, set_Text), asCALL_THISCALL);
 }
 
+// SSynthSprite -------------------------------------
+
+SSynthSprite::SSynthSprite(int w, int h)
+{
+    Width = w;
+    Height = h;
+}
+
+SSynthSprite::~SSynthSprite()
+{
+    if (Target) delete Target;
+}
+
+void SSynthSprite::Clear()
+{
+    if (Target) delete Target;
+    Target = new SRenderTarget(Width, Height);
+}
+
+void SSynthSprite::Transfer(SSprite *sprite)
+{
+    if (!sprite) return;
+    BEGIN_DRAW_TRANSACTION(Target->GetHandle());
+    sprite->Draw();
+    FINISH_DRAW_TRANSACTION;
+    sprite->Release();
+}
+
+void SSynthSprite::Draw()
+{
+    if (!Target) return;
+    SetDrawBright(Color.R, Color.G, Color.B);
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
+    DrawRotaGraph3F(
+        Transform.X, Transform.Y,
+        Transform.OriginX, Transform.OriginY,
+        Transform.ScaleX, Transform.ScaleY,
+        Transform.Angle, Target->GetHandle(),
+        TRUE, FALSE);
+}
+
+SSynthSprite * SSynthSprite::Clone()
+{
+    auto clone = new SSynthSprite(Width, Height);
+    clone->CopyParameterFrom(this);
+    clone->AddRef();
+    if (Target)
+    {
+        clone->Transfer(this);
+    }
+    return clone;
+}
+
+SSynthSprite *SSynthSprite::Factory(int w, int h)
+{
+    auto result = new SSynthSprite(w, h);
+    result->Clear();
+    result->AddRef();
+    return result;
+}
+
+
+void SSynthSprite::RegisterType(asIScriptEngine * engine)
+{
+    RegisterSpriteBasic<SSynthSprite>(engine, SU_IF_SYHSPRITE);
+    engine->RegisterObjectBehaviour(SU_IF_SYHSPRITE, asBEHAVE_FACTORY, SU_IF_SYHSPRITE "@ f(int, int)", asFUNCTION(SSynthSprite::Factory), asCALL_CDECL);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_SYHSPRITE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, SSynthSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SSynthSprite, SSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "int get_Width()", asMETHOD(SSynthSprite, get_Width), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "int get_Height()", asMETHOD(SSynthSprite, get_Width), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "void Clear()", asMETHOD(SSynthSprite, Clear), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "void Transfer(" SU_IF_SPRITE "@)", asMETHOD(SSynthSprite, Transfer), asCALL_THISCALL);
+}
+
 // SEffectSprite ------------------------------
+
 SEffectSprite::SEffectSprite()
 {
     
@@ -384,4 +483,6 @@ void RegisterScriptSprite(asIScriptEngine * engine)
     SSprite::RegisterType(engine);
     SShape::RegisterType(engine);
     STextSprite::RegisterType(engine);
+    SSynthSprite::RegisterType(engine);
 }
+

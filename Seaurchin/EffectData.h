@@ -14,11 +14,18 @@ struct ParticleData
     float AccAngle;
 };
 
+class ParticleIterator
+{
+
+};
+
 class EffectInstance
 {
 public:
     EffectInstance();
     ~EffectInstance();
+
+    void Update(double delta);
 };
 
 enum EmitterRateType
