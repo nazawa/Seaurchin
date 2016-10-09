@@ -55,6 +55,12 @@ EffectData::~EffectData()
 std::shared_ptr<EffectInstance> EffectData::Instantiate()
 {
     auto result = std::shared_ptr<EffectInstance>(new EffectInstance());
+    sort(Emitters.begin(), Emitters.end(), [](EffectEmitter *a, EffectEmitter *b) { return a->ZIndex - b->ZIndex; });
+    
+    for (auto &em : Emitters)
+    {
+        
+    }
 
     return result;
 }
@@ -67,8 +73,48 @@ EffectInstance::EffectInstance()
 
 EffectInstance::~EffectInstance()
 {
+    for (auto& pl : particles)
+    {
+        auto i = pl.begin();
+        while (i != pl.end())
+        {
+            delete *i;
+            i = pl.erase(i);
+        }
+    }
 }
 
 void EffectInstance::Update(double delta)
 {
+    for (auto& pl : particles)
+    {
+        auto i = pl.begin();
+        while (i != pl.end())
+        {
+            (*i)->X += (*i)->VelX * delta;
+            (*i)->Y += (*i)->VelY * delta;
+            (*i)->Angle += (*i)->VelAngle * delta;
+            (*i)->VelX += (*i)->AccX * delta;
+            (*i)->VelY += (*i)->AccY * delta;
+            (*i)->VelAngle += (*i)->AccAngle * delta;
+            (*i)->LifeLeft -= delta;
+            if ((*i)->LifeLeft < 0)
+            {
+                delete *i;
+                i = pl.erase(i);
+            }
+            else
+            {
+                i++;
+            }
+        }
+    }
+}
+
+void EffectInstance::DrawAll(std::function<void(const ParticleData&, int)> drawFunc)
+{
+    for (int i = 0; i < particles.size(); i++)
+    {
+        for (auto &pi : particles[i]) drawFunc(*pi, imageIndices[i]);
+    }
 }

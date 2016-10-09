@@ -160,6 +160,7 @@ void EffectBuilder::ParseEmitterParameter(EffectEmitter *emitter, const EffectPa
     case hashstr("lifetime"):
         emitter->LifeTime = GetDistribution(param.values[0]);
         break;
+
     }
 }
 
@@ -173,11 +174,13 @@ void EffectBuilder::ParseEmitterParameter(EffectEmitter *emitter, const EffectPa
 
 void EffectBuilder::ParseEmitterParameter(EffectEmitter *emitter, const EffectParameter<double> &param)
 {
-    constexpr auto hash = &crc_ccitt::checksum;
-    switch (hash(param.name.c_str()))
+    switch (hashstr(param.name.c_str()))
     {
-    case hash("wait"):
+    case hashstr("wait"):
         emitter->Wait = param.values[0];
+        break;
+    case hashstr("index"):
+        emitter->ZIndex = (int)param.values[0];
         break;
     }
 }

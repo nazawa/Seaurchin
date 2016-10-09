@@ -12,20 +12,21 @@ struct ParticleData
     float AccX;
     float AccY;
     float AccAngle;
-};
-
-class ParticleIterator
-{
-
+    float LifeLeft;
 };
 
 class EffectInstance
 {
+protected:
+    std::vector<std::list<ParticleData*>> particles;
+    std::vector<int> imageIndices;
+
 public:
     EffectInstance();
     ~EffectInstance();
 
     void Update(double delta);
+    void DrawAll(std::function<void(const ParticleData&, int)> drawFunc);
 };
 
 enum EmitterRateType
@@ -40,6 +41,7 @@ public:
     EffectEmitter();
     ~EffectEmitter();
 
+    int ZIndex;
     double Wait;
     EmitterRateType Type;
     DistributionBase *Rate = 0;
