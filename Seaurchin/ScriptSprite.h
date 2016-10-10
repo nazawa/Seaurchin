@@ -11,6 +11,7 @@
 #define SU_IF_SHAPE "Shape"
 #define SU_IF_TXTSPRITE "TextSprite"
 #define SU_IF_SYHSPRITE "SynthSprite"
+#define SU_IF_CLPSPRITE "ClipSprite"
 
 class ScriptSpriteMover;
 //基底がImageSpriteでもいい気がしてるんだよね正直
@@ -123,6 +124,27 @@ public:
     void Transfer(SSprite *sprite);
     void Draw() override;
     SSynthSprite *Clone();
+
+    static SSynthSprite *Factory(int w, int h);
+    static void RegisterType(asIScriptEngine *engine);
+};
+
+//画像を任意のスプライトから合成してウェイできます
+class SClippingSprite : public SSynthSprite
+{
+protected:
+    double U1;
+    double V1;
+    double U2;
+    double V2;
+    SRenderTarget *ActualTarget = nullptr;
+
+public:
+    SClippingSprite(int w, int h);
+
+    void SetRange(double tx, double ty, double w, double h);
+    void Draw() override;
+    SClippingSprite *Clone();
 
     static SSynthSprite *Factory(int w, int h);
     static void RegisterType(asIScriptEngine *engine);

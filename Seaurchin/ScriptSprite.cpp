@@ -4,6 +4,19 @@
 
 using namespace std;
 
+// ˆê”Ê
+
+void RegisterScriptSprite(asIScriptEngine * engine)
+{
+    SSprite::RegisterType(engine);
+    SShape::RegisterType(engine);
+    STextSprite::RegisterType(engine);
+    SSynthSprite::RegisterType(engine);
+    SClippingSprite::RegisterType(engine);
+}
+
+//SSprite ------------------
+
 void SSprite::CopyParameterFrom(SSprite * original)
 {
     Color = original->Color;
@@ -393,7 +406,7 @@ void SSynthSprite::Draw()
         Transform.OriginX, Transform.OriginY,
         Transform.ScaleX, Transform.ScaleY,
         Transform.Angle, Target->GetHandle(),
-        TRUE, FALSE);
+        HasAlpha ? TRUE : FALSE, FALSE);
 }
 
 SSynthSprite * SSynthSprite::Clone()
@@ -475,14 +488,69 @@ void SEffectSprite::RegisterType(asIScriptEngine * engine)
 {
 }
 
+// SClippingSprite ------------------------------------------
 
-// ˆê”Ê
-
-void RegisterScriptSprite(asIScriptEngine * engine)
+SClippingSprite::SClippingSprite(int w, int h) : SSynthSprite(w, h)
 {
-    SSprite::RegisterType(engine);
-    SShape::RegisterType(engine);
-    STextSprite::RegisterType(engine);
-    SSynthSprite::RegisterType(engine);
+
 }
 
+void SClippingSprite::SetRange(double tx, double ty, double w, double h)
+{
+    U1 = tx;
+    V1 = ty;
+    U2 = w;
+    V2 = h;
+}
+
+void SClippingSprite::Draw()
+{
+    if (!Target) return;
+    double x = Width * U1, y = Height * V1, w = Width * U2, h = Height * V2;
+    SetDrawBright(Color.R, Color.G, Color.B);
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
+    DrawRectRotaGraph3F(
+        Transform.X, Transform.Y,
+        x, y, w, h,
+        Transform.OriginX, Transform.OriginY,
+        Transform.ScaleX, Transform.ScaleY,
+        Transform.Angle, Target->GetHandle(),
+        HasAlpha ? TRUE : FALSE, FALSE);
+}
+
+SClippingSprite *SClippingSprite::Clone()
+{
+    auto clone = new SClippingSprite(Width, Height);
+    clone->CopyParameterFrom(this);
+    clone->AddRef();
+    if (Target)
+    {
+        clone->Transfer(this);
+    }
+    clone->U1 = U1;
+    clone->V1 = V1;
+    clone->U2 = U2;
+    clone->V2 = V2;
+    return clone;
+}
+
+SSynthSprite * SClippingSprite::Factory(int w, int h)
+{
+    auto result = new SSynthSprite(w, h);
+    result->Clear();
+    result->AddRef();
+    return result;
+}
+
+void SClippingSprite::RegisterType(asIScriptEngine * engine)
+{
+    RegisterSpriteBasic<SClippingSprite>(engine, SU_IF_CLPSPRITE);
+    engine->RegisterObjectBehaviour(SU_IF_CLPSPRITE, asBEHAVE_FACTORY, SU_IF_SYHSPRITE "@ f(int, int)", asFUNCTION(SClippingSprite::Factory), asCALL_CDECL);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_CLPSPRITE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, SClippingSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SClippingSprite, SSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "int get_Width()", asMETHOD(SClippingSprite, get_Width), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "int get_Height()", asMETHOD(SClippingSprite, get_Width), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void Clear()", asMETHOD(SClippingSprite, Clear), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void Transfer(" SU_IF_SPRITE "@)", asMETHOD(SClippingSprite, Transfer), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void SetRange(double, double, double, double)", asMETHOD(SClippingSprite, SetRange), asCALL_THISCALL);
+}
