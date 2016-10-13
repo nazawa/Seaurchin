@@ -3,7 +3,7 @@
 #include "Misc.h"
 
 using namespace std;
-
+static constexpr auto hashstr = &crc_ccitt::checksum;
 // ˆê”Ê
 
 void RegisterScriptSprite(asIScriptEngine * engine)
@@ -63,6 +63,23 @@ void SSprite::Release()
     if (--Reference == 0) delete this;
 }
 
+function<bool(SSprite*, Mover&, double)> SSprite::GetCustomAction(const string & name)
+{
+    return nullptr;
+}
+
+void SSprite::ParseCustomMover(Mover *mover, const vector<tuple<string, string>>& params)
+{
+    for (auto& t : params)
+    {
+        switch (hashstr(get<0>(t).c_str()))
+        {
+        case hashstr(""):
+            break;
+        }
+    }
+}
+
 void SSprite::AddMove(const string & move)
 {
     mover->AddMove(move);
@@ -71,7 +88,6 @@ void SSprite::AddMove(const string & move)
 void SSprite::Apply(const string & dict)
 {
     using namespace boost::algorithm;
-    constexpr auto hash = &crc_ccitt::checksum;
     string list = dict;
     list.erase(remove(list.begin(), list.end(), ' '), list.end());
     vector<string> params;
@@ -83,39 +99,39 @@ void SSprite::Apply(const string & dict)
         pr.clear();
         split(pr, p, is_any_of(":"));
         if (pr.size() != 2) continue;
-        switch (hash(pr[0].c_str()))
+        switch (hashstr(pr[0].c_str()))
         {
-        case hash("x"):
+        case hashstr("x"):
             Transform.X = atof(pr[1].c_str());
             break;
-        case hash("y"):
+        case hashstr("y"):
             Transform.Y = atof(pr[1].c_str());
             break;
-        case hash("origX"):
+        case hashstr("origX"):
             Transform.OriginX = atof(pr[1].c_str());
             break;
-        case hash("origY"):
+        case hashstr("origY"):
             Transform.OriginY = atof(pr[1].c_str());
             break;
-        case hash("scaleX"):
+        case hashstr("scaleX"):
             Transform.ScaleX = atof(pr[1].c_str());
             break;
-        case hash("scaleY"):
+        case hashstr("scaleY"):
             Transform.ScaleY = atof(pr[1].c_str());
             break;
-        case hash("angle"):
+        case hashstr("angle"):
             Transform.Angle = atof(pr[1].c_str());
             break;
-        case hash("alpha"):
+        case hashstr("alpha"):
             Color.A = (unsigned char)(atof(pr[1].c_str()) * 255.0);
             break;
-        case hash("r"):
+        case hashstr("r"):
             Color.R = (unsigned char)atoi(pr[1].c_str());
             break;
-        case hash("g"):
+        case hashstr("g"):
             Color.G = (unsigned char)atoi(pr[1].c_str());
             break;
-        case hash("b"):
+        case hashstr("b"):
             Color.B = (unsigned char)atoi(pr[1].c_str());
             break;
         }
@@ -545,7 +561,7 @@ SSynthSprite * SClippingSprite::Factory(int w, int h)
 void SClippingSprite::RegisterType(asIScriptEngine * engine)
 {
     RegisterSpriteBasic<SClippingSprite>(engine, SU_IF_CLPSPRITE);
-    engine->RegisterObjectBehaviour(SU_IF_CLPSPRITE, asBEHAVE_FACTORY, SU_IF_SYHSPRITE "@ f(int, int)", asFUNCTION(SClippingSprite::Factory), asCALL_CDECL);
+    engine->RegisterObjectBehaviour(SU_IF_CLPSPRITE, asBEHAVE_FACTORY, SU_IF_CLPSPRITE "@ f(int, int)", asFUNCTION(SClippingSprite::Factory), asCALL_CDECL);
     engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_CLPSPRITE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, SClippingSprite>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod(SU_IF_CLPSPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SClippingSprite, SSprite>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "int get_Width()", asMETHOD(SClippingSprite, get_Width), asCALL_THISCALL);

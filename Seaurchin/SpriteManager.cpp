@@ -210,3 +210,27 @@ string SpriteManager::ParseMover(Mover * mover, std::string move)
 
     return ms;
 }
+
+tuple<string, vector<tuple<string, string>>> SpriteManager::ParseRaw(const string & move)
+{
+    using namespace boost::algorithm;
+    constexpr auto hash = &crc_ccitt::checksum;
+    smatch match;
+    auto fmtm = move;
+    fmtm.erase(remove(fmtm.begin(), fmtm.end(), ' '), fmtm.end());
+    bool m = regex_match(fmtm, match, srmove);
+    if (!m) return make_tuple("", vector<tuple<string, string>>());
+
+    vector<tuple<string, string>> retp;
+    vector<string> params;
+    auto ms = match[s1].str();
+    split(params, match[s2].str(), is_any_of(","));
+    for (const auto& s : params)
+    {
+        regex_match(s, match, srparam);
+        auto pname = match[s1].str();
+        auto pval = match[s2].str();
+        retp.push_back(make_tuple(pname, pval));
+    }
+    return make_tuple(ms, retp);
+}

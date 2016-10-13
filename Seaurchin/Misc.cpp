@@ -34,3 +34,16 @@ void ScriptSceneWarnOutOf(string type, asIScriptContext *ctx)
     row = ctx->GetLineNumber(0, &col, &secn);
     ctx->GetEngine()->WriteMessage(secn, row, col, asEMsgType::asMSGTYPE_WARNING, ("You can call Yield Function only from " + type + "!").c_str());
 }
+
+double ToDouble(const char *str)
+{
+    double result = 0.0, base = 1.0;
+    int sign = 1;
+    const char *it = str;
+    unsigned char ch = '0';
+
+    it = *it == '-' ? (sign = -sign, ++it) : it;
+    while (((unsigned char)(ch = *(it++) - '0')) <= 9) result = result * 10 + ch;
+    if (*(--it) == '.') while (((unsigned char)(ch = *(++it) - '0')) <= 9) result += (base *= 0.1) * ch;
+    return sign * result;
+}

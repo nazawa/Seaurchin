@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Sprite.h"
+#include "SpriteManager.h"
 #include "ScriptResource.h"
 
 #define SU_IF_COLOR "Color"
@@ -42,6 +43,8 @@ public:
 
     inline void Dismiss() { IsDead = true; }
     inline void Revive() { IsDead = false; }
+    virtual std::function<bool(SSprite*, Mover&, double)> GetCustomAction(const std::string &name);
+    virtual void ParseCustomMover(Mover *mover, const std::vector<std::tuple<std::string, std::string>> &params);
     void AddMove(const std::string &move);
     void Apply(const std::string &dict);
     void Apply(const CScriptDictionary &dict);

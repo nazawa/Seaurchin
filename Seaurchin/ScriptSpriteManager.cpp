@@ -3,7 +3,7 @@
 using namespace std;
 using namespace boost::xpressive;
 
-unordered_map<string, function<bool(SSprite*, Mover&, double)>> ScriptSpriteMover::actions =
+unordered_map<string, MoverFunction> ScriptSpriteMover::actions =
 {
     { "move_to", ScriptSpriteMover::ActionMoveTo },
     { "move_by", ScriptSpriteMover::ActionMoveBy },
@@ -22,15 +22,21 @@ ScriptSpriteMover::ScriptSpriteMover(SSprite *target)
 ScriptSpriteMover::~ScriptSpriteMover()
 {
     for (auto& i : movers) delete get<0>(i);
-
-
+    movers.clear();
 }
 
 void ScriptSpriteMover::AddMove(std::string move)
 {
     Mover *mover = new Mover{ 0 };
-    auto action = actions[SpriteManager::ParseMover(mover, move)];
-    if (!action) return;
+    auto aname = SpriteManager::ParseMover(mover, move);
+    auto action = actions[aname];
+    if (!action)
+    {
+        auto rd = SpriteManager::ParseRaw(move);
+        action = Target->GetCustomAction(get<0>(rd));
+        if (!action) return;
+        Target->ParseCustomMover(mover, get<1>(rd));
+    }
     movers.push_back(make_tuple(mover, action));
 }
 
