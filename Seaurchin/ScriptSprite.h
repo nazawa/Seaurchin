@@ -125,6 +125,7 @@ public:
 
     void Clear();
     void Transfer(SSprite *sprite);
+    void Transfer(SImage *image, double x, double y);
     void Draw() override;
     SSynthSprite *Clone();
 
@@ -142,14 +143,18 @@ protected:
     double V2;
     SRenderTarget *ActualTarget = nullptr;
 
+    static bool ActionMoveRangeTo(SSprite* thisObj, Mover& mover, double delta);
+
 public:
     SClippingSprite(int w, int h);
 
+    std::function<bool(SSprite*, Mover&, double)> GetCustomAction(const std::string &name) override;
+    void ParseCustomMover(Mover *mover, const std::vector<std::tuple<std::string, std::string>> &params) override;
     void SetRange(double tx, double ty, double w, double h);
     void Draw() override;
     SClippingSprite *Clone();
 
-    static SSynthSprite *Factory(int w, int h);
+    static SClippingSprite *Factory(int w, int h);
     static void RegisterType(asIScriptEngine *engine);
 };
 
@@ -157,6 +162,7 @@ class SEffectSprite : public SSprite
 {
 protected:
     
+
 public:
     SEffectSprite();
     ~SEffectSprite();

@@ -92,7 +92,7 @@ void SSprite::Apply(const string & dict)
     list.erase(remove(list.begin(), list.end(), ' '), list.end());
     vector<string> params;
     split(params, list, is_any_of(","));
-    
+
     vector<string> pr;
     for (auto& p : params)
     {
@@ -106,6 +106,9 @@ void SSprite::Apply(const string & dict)
             break;
         case hashstr("y"):
             Transform.Y = atof(pr[1].c_str());
+            break;
+        case hashstr("z"):
+            ZIndex = atoi(pr[1].c_str());
             break;
         case hashstr("origX"):
             Transform.OriginX = atof(pr[1].c_str());
@@ -412,6 +415,15 @@ void SSynthSprite::Transfer(SSprite *sprite)
     sprite->Release();
 }
 
+void SSynthSprite::Transfer(SImage * image, double x, double y)
+{
+    if (!image) return;
+    BEGIN_DRAW_TRANSACTION(Target->GetHandle());
+    DrawGraphF(x, y, image->GetHandle(), HasAlpha ? TRUE : FALSE);
+    FINISH_DRAW_TRANSACTION;
+    image->Release();
+}
+
 void SSynthSprite::Draw()
 {
     if (!Target) return;
@@ -445,7 +457,6 @@ SSynthSprite *SSynthSprite::Factory(int w, int h)
     return result;
 }
 
-
 void SSynthSprite::RegisterType(asIScriptEngine * engine)
 {
     RegisterSpriteBasic<SSynthSprite>(engine, SU_IF_SYHSPRITE);
@@ -455,19 +466,20 @@ void SSynthSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "int get_Width()", asMETHOD(SSynthSprite, get_Width), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "int get_Height()", asMETHOD(SSynthSprite, get_Width), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "void Clear()", asMETHOD(SSynthSprite, Clear), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "void Transfer(" SU_IF_SPRITE "@)", asMETHOD(SSynthSprite, Transfer), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "void Transfer(" SU_IF_SPRITE "@)", asMETHODPR(SSynthSprite, Transfer, (SSprite*), void), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "void Transfer(" SU_IF_IMAGE "@, double, double)", asMETHODPR(SSynthSprite, Transfer, (SImage*, double, double), void), asCALL_THISCALL);
 }
 
 // SEffectSprite ------------------------------
 
 SEffectSprite::SEffectSprite()
 {
-    
+
 }
 
 SEffectSprite::~SEffectSprite()
 {
-    
+
 }
 
 void SEffectSprite::Draw()
@@ -506,9 +518,58 @@ void SEffectSprite::RegisterType(asIScriptEngine * engine)
 
 // SClippingSprite ------------------------------------------
 
+bool SClippingSprite::ActionMoveRangeTo(SSprite * thisObj, Mover & mover, double delta)
+{
+    auto target = static_cast<SClippingSprite*>(thisObj);
+    if (delta == 0)
+    {
+        mover.Extra1 = target->U2;
+        mover.Extra2 = target->V2;
+        return false;
+    }
+    else if (delta >= 0)
+    {
+        target->U2 = mover.Function(mover.Now, mover.Duration, mover.Extra1, mover.X - mover.Extra1);
+        target->V2 = mover.Function(mover.Now, mover.Duration, mover.Extra2, mover.Y - mover.Extra2);
+        return false;
+    }
+    else
+    {
+        target->U2 = mover.X;
+        target->V2 = mover.Y;
+        return true;
+    }
+}
+
 SClippingSprite::SClippingSprite(int w, int h) : SSynthSprite(w, h)
 {
 
+}
+
+function<bool(SSprite*, Mover&, double)> SClippingSprite::GetCustomAction(const string & name)
+{
+    switch (hashstr(name.c_str()))
+    {
+    case hashstr("range_size"):
+        return ActionMoveRangeTo;
+    }
+    return nullptr;
+}
+
+void SClippingSprite::ParseCustomMover(Mover * mover, const vector<tuple<string, string>>& params)
+{
+    for (auto &p : params)
+    {
+        switch (hashstr(get<0>(p).c_str()))
+        {
+        case hashstr("width"):
+            mover->X = ToDouble(get<1>(p).c_str());
+            break;
+        case hashstr("height"):
+            mover->Y = ToDouble(get<1>(p).c_str());
+            break;
+        }
+    }
 }
 
 void SClippingSprite::SetRange(double tx, double ty, double w, double h)
@@ -550,9 +611,9 @@ SClippingSprite *SClippingSprite::Clone()
     return clone;
 }
 
-SSynthSprite * SClippingSprite::Factory(int w, int h)
+SClippingSprite *SClippingSprite::Factory(int w, int h)
 {
-    auto result = new SSynthSprite(w, h);
+    auto result = new SClippingSprite(w, h);
     result->Clear();
     result->AddRef();
     return result;
@@ -567,6 +628,7 @@ void SClippingSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "int get_Width()", asMETHOD(SClippingSprite, get_Width), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "int get_Height()", asMETHOD(SClippingSprite, get_Width), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void Clear()", asMETHOD(SClippingSprite, Clear), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void Transfer(" SU_IF_SPRITE "@)", asMETHOD(SClippingSprite, Transfer), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void Transfer(" SU_IF_SPRITE "@)", asMETHODPR(SClippingSprite, Transfer, (SSprite*), void), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void Transfer(" SU_IF_IMAGE "@, double, double)", asMETHODPR(SClippingSprite, Transfer, (SImage*, double, double), void), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void SetRange(double, double, double, double)", asMETHOD(SClippingSprite, SetRange), asCALL_THISCALL);
 }

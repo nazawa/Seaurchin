@@ -157,6 +157,15 @@ void EffectBuilder::ParseEmitterParameter(EffectEmitter *emitter, const EffectPa
         emitter->InitAccX = GetDistribution(param.values[0]);
         emitter->InitAccY = GetDistribution(param.values[1]);
         break;
+    case hashstr("location"):
+        if (param.values.size() != 2)
+        {
+            WriteDebugConsole("'location' Parameter Doesn't Match!\n");
+            return;
+        }
+        emitter->InitX = GetDistribution(param.values[0]);
+        emitter->InitY = GetDistribution(param.values[1]);
+        break;
     case hashstr("lifetime"):
         emitter->LifeTime = GetDistribution(param.values[0]);
         break;
