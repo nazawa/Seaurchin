@@ -4,7 +4,7 @@
 
 
 #define SU_APP_NAME "Seaurchin"
-#define SU_APP_VERSION "0.05"
+#define SU_APP_VERSION "0.06"
 #define SU_SETTING_FILE "config.json"
 #define SU_DATA_DIR "Data"
 #define SU_IMAGE_DIR "Images"
