@@ -470,52 +470,6 @@ void SSynthSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "void Transfer(" SU_IF_IMAGE "@, double, double)", asMETHODPR(SSynthSprite, Transfer, (SImage*, double, double), void), asCALL_THISCALL);
 }
 
-// SEffectSprite ------------------------------
-
-SEffectSprite::SEffectSprite()
-{
-
-}
-
-SEffectSprite::~SEffectSprite()
-{
-
-}
-
-void SEffectSprite::Draw()
-{
-
-}
-
-void SEffectSprite::Tick(double delta)
-{
-
-}
-
-void SEffectSprite::Play()
-{
-
-}
-
-void SEffectSprite::Reset()
-{
-
-}
-
-void SEffectSprite::Stop()
-{
-
-}
-
-SEffectSprite * SEffectSprite::Factory()
-{
-    return nullptr;
-}
-
-void SEffectSprite::RegisterType(asIScriptEngine * engine)
-{
-}
-
 // SClippingSprite ------------------------------------------
 
 bool SClippingSprite::ActionMoveRangeTo(SSprite * thisObj, Mover & mover, double delta)
@@ -631,4 +585,60 @@ void SClippingSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void Transfer(" SU_IF_SPRITE "@)", asMETHODPR(SClippingSprite, Transfer, (SSprite*), void), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void Transfer(" SU_IF_IMAGE "@, double, double)", asMETHODPR(SClippingSprite, Transfer, (SImage*, double, double), void), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void SetRange(double, double, double, double)", asMETHOD(SClippingSprite, SetRange), asCALL_THISCALL);
+}
+
+// SEffectSprite ------------------------------
+
+SEffectSprite::SEffectSprite(EffectInstance *effect)
+{
+    Instance = effect;
+    IsPlaying = true;
+}
+
+SEffectSprite::~SEffectSprite()
+{
+    if (Instance) delete Instance;
+}
+
+void SEffectSprite::Draw()
+{
+    //TODO: DrawFunc‚ÌŽÀ‘•‚à
+}
+
+void SEffectSprite::Tick(double delta)
+{
+    if (IsPlaying) Instance->Update(delta);
+}
+
+void SEffectSprite::Play()
+{
+    IsPlaying = true;
+}
+
+void SEffectSprite::Reset()
+{
+    //TODO: Reset‘€ì‚ÌŽÀ‘•
+}
+
+void SEffectSprite::Stop()
+{
+    IsPlaying = false;
+}
+
+SEffectSprite *SEffectSprite::Factory(SEffect *effectData)
+{
+    auto result = new SEffectSprite(effectData->data->Instantiate());
+    result->AddRef();
+    return result;
+}
+
+void SEffectSprite::RegisterType(asIScriptEngine * engine)
+{
+    RegisterSpriteBasic<SEffectSprite>(engine, SU_IF_EFXSPRITE);
+    engine->RegisterObjectBehaviour(SU_IF_EFXSPRITE, asBEHAVE_FACTORY, SU_IF_EFXSPRITE "@ f(int, int)", asFUNCTION(SEffectSprite::Factory), asCALL_CDECL);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_EFXSPRITE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, SEffectSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_EFXSPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SEffectSprite, SSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_EFXSPRITE, "void Play()", asMETHOD(SEffectSprite, Play), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_EFXSPRITE, "void Reset()", asMETHOD(SEffectSprite, Reset), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_EFXSPRITE, "void Stop()", asMETHOD(SEffectSprite, Stop), asCALL_THISCALL);
 }

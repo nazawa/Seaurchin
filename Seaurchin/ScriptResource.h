@@ -2,12 +2,14 @@
 
 #include "Debug.h"
 #include "Font.h"
+#include "EffectData.h"
 #include "Misc.h"
 
 #define SU_IF_IMAGE "Image"
 #define SU_IF_FONT "Font"
 #define SU_IF_RENDER "RenderTarget"
 #define SU_IF_SOUND "Sound"
+#define SU_IF_EFXDATA "EffectData"
 
 //interface 自動解放対象
 class ISResouceAutoRelease
@@ -87,9 +89,13 @@ class SSound : public SResource
 //エフェクト
 class SEffect : public SResource
 {
-    SEffect(int handle);
-    ~SEffect() override;
+protected:
+    
+public:
+    EffectData *data;
 
+    SEffect(EffectData *rawdata);
+    ~SEffect() override;
 };
 
 void RegisterScriptResource(asIScriptEngine *engine);

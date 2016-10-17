@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Sprite.h"
+#include "EffectData.h"
 #include "SpriteManager.h"
 #include "ScriptResource.h"
 
@@ -13,6 +14,7 @@
 #define SU_IF_TXTSPRITE "TextSprite"
 #define SU_IF_SYHSPRITE "SynthSprite"
 #define SU_IF_CLPSPRITE "ClipSprite"
+#define SU_IF_EFXSPRITE "EffectSprite"
 
 class ScriptSpriteMover;
 //äÓíÍÇ™ImageSpriteÇ≈Ç‡Ç¢Ç¢ãCÇ™ÇµÇƒÇÈÇÒÇæÇÊÇÀê≥íº
@@ -161,10 +163,11 @@ public:
 class SEffectSprite : public SSprite
 {
 protected:
-    
+    EffectInstance *Instance;
+    bool IsPlaying = true;
 
 public:
-    SEffectSprite();
+    SEffectSprite(EffectInstance *effect);
     ~SEffectSprite();
 
     void Draw() override;
@@ -173,7 +176,7 @@ public:
     void Reset();
     void Stop();
 
-    static SEffectSprite* Factory();
+    static SEffectSprite* Factory(SEffect *effectData);
     static void RegisterType(asIScriptEngine *engine);
 };
 
