@@ -22,6 +22,8 @@ void SResource::Release()
     if (--Reference == 0) delete this;
 }
 
+// SImage ----------------------
+
 void SImage::ObtainSize()
 {
     GetGraphSize(Handle, &Width, &Height);
@@ -72,12 +74,23 @@ SImage * SImage::CreateLoadedImageFromMemory(void * buffer, size_t size)
     return result;
 }
 
+// SRenderTarget -----------------------------
+
 SRenderTarget::SRenderTarget(int w, int h) : SImage(0)
 {
     Handle = MakeScreen(w, h, TRUE);
     Width = w;
     Height = h;
 }
+
+SRenderTarget * SRenderTarget::CreateBlankTarget(int w, int h)
+{
+    auto result = new SRenderTarget(w, h);
+    result->AddRef();
+    return result;
+}
+
+// SFont --------------------------------------
 
 SFont::SFont()
 {
@@ -98,6 +111,7 @@ tuple<double, double, int> SFont::RenderRaw(SRenderTarget * rt, const std::wstri
     if (rt)
     {
         BEGIN_DRAW_TRANSACTION(rt->GetHandle());
+        ClearDrawScreen();
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
         SetDrawBright(255, 255, 255);
     }
@@ -181,4 +195,20 @@ void RegisterScriptResource(asIScriptEngine * engine)
     engine->RegisterObjectBehaviour(SU_IF_FONT, asBEHAVE_ADDREF, "void f()", asMETHOD(SFont, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_FONT, asBEHAVE_RELEASE, "void f()", asMETHOD(SFont, Release), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_FONT, "int get_Size()", asMETHOD(SFont, get_Size), asCALL_THISCALL);
+
+    engine->RegisterObjectType(SU_IF_EFXDATA, 0, asOBJ_REF);
+    //engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_FACTORY, SU_IF_EFXDATA "@ f()", asFUNCTION(SFont::CreateBlankFont), asCALL_CDECL);
+    engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_ADDREF, "void f()", asMETHOD(SEffect, AddRef), asCALL_THISCALL);
+    engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_RELEASE, "void f()", asMETHOD(SEffect, Release), asCALL_THISCALL);
+}
+
+// SEffect --------------------------------
+
+SEffect::SEffect(EffectData *rawdata)
+{
+    data = rawdata;
+}
+
+SEffect::~SEffect()
+{
 }

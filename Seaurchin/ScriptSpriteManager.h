@@ -4,12 +4,14 @@
 #include "ScriptSprite.h"
 #include "Easing.h"
 
+using MoverFunction = std::function<bool(SSprite*, Mover&, double)>;
+
 class ScriptSpriteMover final
 {
 
 private:
-    std::list<std::tuple<Mover*, std::function<bool(SSprite*, Mover&, double)>>> movers;
-    static std::unordered_map<std::string, std::function<bool(SSprite*, Mover&, double)>> actions;
+    std::list<std::tuple<Mover*, MoverFunction>> movers;
+    static std::unordered_map<std::string, MoverFunction> actions;
 
 public:
     SSprite *Target;

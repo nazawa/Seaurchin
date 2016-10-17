@@ -11,6 +11,7 @@
 
 typedef struct
 {
+    std::string name;
     void *object;
     asIScriptContext *context;
     asITypeInfo *type;
@@ -44,6 +45,7 @@ public:
     void Draw() override;
     bool IsDead() override;
 
+    friend void ScriptSceneKillCoroutine(const std::string &name);
 };
 
 class ScriptCoroutineScene : public ScriptScene
@@ -71,4 +73,5 @@ bool ScriptSceneIsKeyHeld(int keynum);
 bool ScriptSceneIsKeyTriggered(int keynum);
 void ScriptSceneAddScene(asIScriptObject *sceneObject);
 void ScriptSceneAddSprite(SSprite *sprite);
-void ScriptSceneRunCoroutine(asIScriptFunction *cofunc);
+void ScriptSceneRunCoroutine(asIScriptFunction *cofunc, const std::string &name);
+void ScriptSceneKillCoroutine(const std::string &name);

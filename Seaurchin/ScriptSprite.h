@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Sprite.h"
+#include "EffectData.h"
+#include "SpriteManager.h"
 #include "ScriptResource.h"
 
 #define SU_IF_COLOR "Color"
@@ -10,6 +12,9 @@
 #define SU_IF_SPRITE "Sprite"
 #define SU_IF_SHAPE "Shape"
 #define SU_IF_TXTSPRITE "TextSprite"
+#define SU_IF_SYHSPRITE "SynthSprite"
+#define SU_IF_CLPSPRITE "ClipSprite"
+#define SU_IF_EFXSPRITE "EffectSprite"
 
 class ScriptSpriteMover;
 //基底がImageSpriteでもいい気がしてるんだよね正直
@@ -19,14 +24,17 @@ protected:
     int Reference;
     ScriptSpriteMover *mover;
 
+    void CopyParameterFrom(SSprite *original);
 
 public:
+    //値(CopyParameterFromで一括)
     Transform2D Transform;
     int32_t ZIndex;
     ColorTint Color;
     bool IsDead = false;
-    SImage *Image = nullptr;
     bool HasAlpha = true;
+    //参照(手動コピー)
+    SImage *Image = nullptr;
     void set_Image(SImage *img);
     const SImage* get_Image();
 
@@ -37,10 +45,12 @@ public:
 
     inline void Dismiss() { IsDead = true; }
     inline void Revive() { IsDead = false; }
+    virtual std::function<bool(SSprite*, Mover&, double)> GetCustomAction(const std::string &name);
+    virtual void ParseCustomMover(Mover *mover, const std::vector<std::tuple<std::string, std::string>> &params);
     void AddMove(const std::string &move);
     void Apply(const std::string &dict);
     void Apply(const CScriptDictionary &dict);
-    void Tick(double delta);
+    virtual void Tick(double delta);
     virtual void Draw();
     SSprite* Clone();
 
@@ -65,6 +75,7 @@ enum SShapeType
     OvalFill,
 };
 
+//任意の多角形などを表示できる
 class SShape : public SSprite
 {
 public:
@@ -78,6 +89,7 @@ public:
     static void RegisterType(asIScriptEngine *engine);
 };
 
+//文字列をスプライトとして扱います
 class STextSprite : public SSprite
 {
 protected:
@@ -92,13 +104,81 @@ public:
 
     ~STextSprite() override;
     void Draw() override;
+    STextSprite *Clone();
 
     static STextSprite* Factory();
     static STextSprite* Factory(SFont *img, const std::string &str);
     static void RegisterType(asIScriptEngine *engine);
 };
 
+//画像を任意のスプライトから合成してウェイできます
+class SSynthSprite : public SSprite
+{
+protected:
+    SRenderTarget *Target = nullptr;
+    int Width = 0;
+    int Height = 0;
 
+public:
+    SSynthSprite(int w, int h);
+    ~SSynthSprite();
+    inline int get_Width() { return Width; }
+    inline int get_Height() { return Height; }
+
+    void Clear();
+    void Transfer(SSprite *sprite);
+    void Transfer(SImage *image, double x, double y);
+    void Draw() override;
+    SSynthSprite *Clone();
+
+    static SSynthSprite *Factory(int w, int h);
+    static void RegisterType(asIScriptEngine *engine);
+};
+
+//画像を任意のスプライトから合成してウェイできます
+class SClippingSprite : public SSynthSprite
+{
+protected:
+    double U1;
+    double V1;
+    double U2;
+    double V2;
+    SRenderTarget *ActualTarget = nullptr;
+
+    static bool ActionMoveRangeTo(SSprite* thisObj, Mover& mover, double delta);
+
+public:
+    SClippingSprite(int w, int h);
+
+    std::function<bool(SSprite*, Mover&, double)> GetCustomAction(const std::string &name) override;
+    void ParseCustomMover(Mover *mover, const std::vector<std::tuple<std::string, std::string>> &params) override;
+    void SetRange(double tx, double ty, double w, double h);
+    void Draw() override;
+    SClippingSprite *Clone();
+
+    static SClippingSprite *Factory(int w, int h);
+    static void RegisterType(asIScriptEngine *engine);
+};
+
+class SEffectSprite : public SSprite
+{
+protected:
+    EffectInstance *Instance;
+    bool IsPlaying = true;
+
+public:
+    SEffectSprite(EffectInstance *effect);
+    ~SEffectSprite();
+
+    void Draw() override;
+    void Tick(double delta) override;
+    void Play();
+    void Reset();
+    void Stop();
+
+    static SEffectSprite* Factory(SEffect *effectData);
+    static void RegisterType(asIScriptEngine *engine);
+};
 
 template<typename T>
 void RegisterSpriteBasic(asIScriptEngine *engine, const char *name)
@@ -132,5 +212,5 @@ To* CastReferenceType(From *from)
 }
 
 //Sprite系全部
-ColorTint GetColorTint(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+//ColorTint GetColorTint(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 void RegisterScriptSprite(asIScriptEngine *engine);

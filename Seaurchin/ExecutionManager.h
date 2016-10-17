@@ -5,6 +5,7 @@
 #include "DxLibResource.h"
 #include "Scene.h"
 #include "ScriptScene.h"
+#include "EffectBuilder.h"
 #include "SkinHolder.h"
 
 class ExecutionManager final
@@ -16,6 +17,11 @@ private:
     std::shared_ptr<KeyState> SharedKeyState;
     std::vector<std::string> SkinNames;
     std::unique_ptr<SkinHolder> Skin;
+    std::unique_ptr<EffectBuilder> SuEffect;
+    std::shared_ptr<std::mt19937> Random;
+
+    Effekseer::Manager *Effect2D;
+    Effekseer::Manager *Effect3D;
 
 public:
     ExecutionManager(std::shared_ptr<Setting> setting);

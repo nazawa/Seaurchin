@@ -4,7 +4,7 @@
 
 
 #define SU_APP_NAME "Seaurchin"
-#define SU_APP_VERSION "0.03"
+#define SU_APP_VERSION "0.06"
 #define SU_SETTING_FILE "config.json"
 #define SU_DATA_DIR "Data"
 #define SU_IMAGE_DIR "Images"
@@ -23,6 +23,8 @@
 
 #define SU_RES_WIDTH 1280
 #define SU_RES_HEIGHT 720
+
+#define SU_EFX_PMAX 1024
 
 //AngelScript‚ÌUserData—p
 #define SU_UDTYPE_SCENE 100
