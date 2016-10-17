@@ -12,7 +12,7 @@ double DistributionFix::Take()
     return Value;
 }
 
-DistributionUniform::DistributionUniform(std::shared_ptr<std::mt19937> mt, double min, double max)
+DistributionUniform::DistributionUniform(shared_ptr<mt19937> mt, double min, double max)
 {
     engine = mt;
     Min = min;
@@ -25,7 +25,7 @@ double DistributionUniform::Take()
     return Dist(*engine);
 }
 
-DistributionNormal::DistributionNormal(shared_ptr<std::mt19937> mt, double mu, double chi2)
+DistributionNormal::DistributionNormal(shared_ptr<mt19937> mt, double mu, double chi2)
 {
     engine = mt;
     Mu = mu;

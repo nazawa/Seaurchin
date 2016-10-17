@@ -63,17 +63,34 @@ bool EffectBuilder::ParseSource(std::string source)
             // Effect / Dist
             if (get<0>(eel))
             {
+                auto ep = get<0>(eel).get();
+                switch (hashstr(ep.name.c_str()))
+                {
 
+                }
             }
             // Effect / String
             if (get<1>(eel))
             {
-
+                auto ep = get<1>(eel).get();
+                switch (hashstr(ep.name.c_str()))
+                {
+                case hashstr("type"):
+                    if (ep.values[0] == "loop") nfx->Type = EffectType::LoopEffect;
+                    if (ep.values[0] == "oneshot") nfx->Type = EffectType::OneshotEffect;
+                    break;
+                }
             }
             // Effect / Number
             if (get<2>(eel))
             {
-
+                auto ep = get<2>(eel).get();
+                switch (hashstr(ep.name.c_str()))
+                {
+                case hashstr("looptime"):
+                    nfx->LoopTime = ep.values[0];
+                    break;
+                }
             }
             // Effect / Emitter
             if (get<3>(eel))
@@ -115,11 +132,11 @@ void EffectBuilder::ParseEmitterParameter(EffectEmitter *emitter, const EffectPa
         break;
 
     case hashstr("burst"):
-        emitter->Type = EmitterRateType::Oneshot;
+        emitter->Type = EmitterRateType::BurstEmission;
         emitter->Rate = GetDistribution(param.values[0]);
         break;
     case hashstr("rate"):
-        emitter->Type = EmitterRateType::Loop;
+        emitter->Type = EmitterRateType::RateEmission;
         emitter->Rate = GetDistribution(param.values[0]);
         break;
     case hashstr("velocity"):
@@ -140,9 +157,19 @@ void EffectBuilder::ParseEmitterParameter(EffectEmitter *emitter, const EffectPa
         emitter->InitAccX = GetDistribution(param.values[0]);
         emitter->InitAccY = GetDistribution(param.values[1]);
         break;
+    case hashstr("location"):
+        if (param.values.size() != 2)
+        {
+            WriteDebugConsole("'location' Parameter Doesn't Match!\n");
+            return;
+        }
+        emitter->InitX = GetDistribution(param.values[0]);
+        emitter->InitY = GetDistribution(param.values[1]);
+        break;
     case hashstr("lifetime"):
         emitter->LifeTime = GetDistribution(param.values[0]);
         break;
+
     }
 }
 
@@ -156,11 +183,13 @@ void EffectBuilder::ParseEmitterParameter(EffectEmitter *emitter, const EffectPa
 
 void EffectBuilder::ParseEmitterParameter(EffectEmitter *emitter, const EffectParameter<double> &param)
 {
-    constexpr auto hash = &crc_ccitt::checksum;
-    switch (hash(param.name.c_str()))
+    switch (hashstr(param.name.c_str()))
     {
-    case hash("wait"):
+    case hashstr("wait"):
         emitter->Wait = param.values[0];
+        break;
+    case hashstr("index"):
+        emitter->ZIndex = (int)param.values[0];
         break;
     }
 }

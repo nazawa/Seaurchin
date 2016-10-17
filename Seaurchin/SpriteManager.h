@@ -46,6 +46,7 @@ public:
     //Scriptî≈Ç≈Ç‡égóp
     static std::unordered_map <std::string, Easing::EasingFunction> easings;
     static std::string ParseMover(Mover* mover, std::string move);
+    static std::tuple<std::string, std::vector<std::tuple<std::string, std::string>>> ParseRaw(const std::string &move);
     static bool CheckPattern(std::string move);
 };
 

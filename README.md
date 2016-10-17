@@ -1,5 +1,5 @@
 # Seaurchin
-Chunithm Simulator
+某スライドして手を跳ね上げる音ゲーシミュレーター
 
 ## 仕様ライブラリとか
 * DXライブラリ

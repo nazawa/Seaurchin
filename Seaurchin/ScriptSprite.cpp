@@ -3,6 +3,28 @@
 #include "Misc.h"
 
 using namespace std;
+static constexpr auto hashstr = &crc_ccitt::checksum;
+// 一般
+
+void RegisterScriptSprite(asIScriptEngine * engine)
+{
+    SSprite::RegisterType(engine);
+    SShape::RegisterType(engine);
+    STextSprite::RegisterType(engine);
+    SSynthSprite::RegisterType(engine);
+    SClippingSprite::RegisterType(engine);
+}
+
+//SSprite ------------------
+
+void SSprite::CopyParameterFrom(SSprite * original)
+{
+    Color = original->Color;
+    Transform = original->Transform;
+    ZIndex = original->ZIndex;
+    IsDead = original->IsDead;
+    HasAlpha = original->HasAlpha;
+}
 
 void SSprite::set_Image(SImage * img)
 {
@@ -41,6 +63,23 @@ void SSprite::Release()
     if (--Reference == 0) delete this;
 }
 
+function<bool(SSprite*, Mover&, double)> SSprite::GetCustomAction(const string & name)
+{
+    return nullptr;
+}
+
+void SSprite::ParseCustomMover(Mover *mover, const vector<tuple<string, string>>& params)
+{
+    for (auto& t : params)
+    {
+        switch (hashstr(get<0>(t).c_str()))
+        {
+        case hashstr(""):
+            break;
+        }
+    }
+}
+
 void SSprite::AddMove(const string & move)
 {
     mover->AddMove(move);
@@ -49,51 +88,53 @@ void SSprite::AddMove(const string & move)
 void SSprite::Apply(const string & dict)
 {
     using namespace boost::algorithm;
-    constexpr auto hash = &crc_ccitt::checksum;
     string list = dict;
     list.erase(remove(list.begin(), list.end(), ' '), list.end());
     vector<string> params;
     split(params, list, is_any_of(","));
-    
+
     vector<string> pr;
     for (auto& p : params)
     {
         pr.clear();
         split(pr, p, is_any_of(":"));
         if (pr.size() != 2) continue;
-        switch (hash(pr[0].c_str()))
+        switch (hashstr(pr[0].c_str()))
         {
-        case hash("x"):
+        case hashstr("x"):
             Transform.X = atof(pr[1].c_str());
             break;
-        case hash("y"):
+        case hashstr("y"):
             Transform.Y = atof(pr[1].c_str());
             break;
-        case hash("origX"):
+        case hashstr("z"):
+            ZIndex = atoi(pr[1].c_str());
+            break;
+        case hashstr("origX"):
             Transform.OriginX = atof(pr[1].c_str());
             break;
-        case hash("origY"):
+        case hashstr("origY"):
             Transform.OriginY = atof(pr[1].c_str());
             break;
-        case hash("scaleX"):
+        case hashstr("scaleX"):
             Transform.ScaleX = atof(pr[1].c_str());
             break;
-        case hash("scaleY"):
+        case hashstr("scaleY"):
             Transform.ScaleY = atof(pr[1].c_str());
             break;
-        case hash("angle"):
+        case hashstr("angle"):
             Transform.Angle = atof(pr[1].c_str());
             break;
-        case hash("alpha"):
+        case hashstr("alpha"):
             Color.A = (unsigned char)(atof(pr[1].c_str()) * 255.0);
             break;
-        case hash("r"):
+        case hashstr("r"):
             Color.R = (unsigned char)atoi(pr[1].c_str());
             break;
-        case hash("g"):
+        case hashstr("g"):
             Color.G = (unsigned char)atoi(pr[1].c_str());
             break;
-        case hash("b"):
+        case hashstr("b"):
             Color.B = (unsigned char)atoi(pr[1].c_str());
             break;
         }
@@ -142,17 +183,13 @@ SSprite * SSprite::Clone()
 {
     //コピコンで良くないかこれ
     auto clone = new SSprite();
+    clone->AddRef();
+    clone->CopyParameterFrom(this);
     if (Image)
     {
         Image->AddRef();
         clone->set_Image(Image);
     }
-    clone->Color = Color;
-    clone->Transform = Transform;
-    clone->ZIndex = ZIndex;
-    clone->IsDead = IsDead;
-    clone->HasAlpha = true;
-    clone->AddRef();
     return clone;
 }
 
@@ -304,6 +341,24 @@ void STextSprite::Draw()
         TRUE, FALSE);
 }
 
+STextSprite * STextSprite::Clone()
+{
+    //やっぱりコピコンで良くないかこれ
+    auto clone = new STextSprite();
+    clone->CopyParameterFrom(this);
+    clone->AddRef();
+    if (Font)
+    {
+        Font->AddRef();
+        clone->set_Font(Font);
+    }
+    if (Target)
+    {
+        clone->set_Text(Text);
+    }
+    return clone;
+}
+
 STextSprite * STextSprite::Factory()
 {
     auto result = new STextSprite();
@@ -327,61 +382,263 @@ void STextSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectBehaviour(SU_IF_TXTSPRITE, asBEHAVE_FACTORY, SU_IF_TXTSPRITE "@ f(" SU_IF_FONT "@, const string &in)", asFUNCTIONPR(STextSprite::Factory, (SFont*, const string&), STextSprite*), asCALL_CDECL);
     engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_TXTSPRITE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, STextSprite>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<STextSprite, SSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_TXTSPRITE, SU_IF_TXTSPRITE "@ Clone()", asMETHOD(STextSprite, Clone), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetFont(" SU_IF_FONT "@)", asMETHOD(STextSprite, set_Font), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetText(const string &in)", asMETHOD(STextSprite, set_Text), asCALL_THISCALL);
 }
 
-// SEffectSprite ------------------------------
-SEffectSprite::SEffectSprite()
+// SSynthSprite -------------------------------------
+
+SSynthSprite::SSynthSprite(int w, int h)
 {
-    
+    Width = w;
+    Height = h;
+}
+
+SSynthSprite::~SSynthSprite()
+{
+    if (Target) delete Target;
+}
+
+void SSynthSprite::Clear()
+{
+    if (Target) delete Target;
+    Target = new SRenderTarget(Width, Height);
+}
+
+void SSynthSprite::Transfer(SSprite *sprite)
+{
+    if (!sprite) return;
+    BEGIN_DRAW_TRANSACTION(Target->GetHandle());
+    sprite->Draw();
+    FINISH_DRAW_TRANSACTION;
+    sprite->Release();
+}
+
+void SSynthSprite::Transfer(SImage * image, double x, double y)
+{
+    if (!image) return;
+    BEGIN_DRAW_TRANSACTION(Target->GetHandle());
+    DrawGraphF(x, y, image->GetHandle(), HasAlpha ? TRUE : FALSE);
+    FINISH_DRAW_TRANSACTION;
+    image->Release();
+}
+
+void SSynthSprite::Draw()
+{
+    if (!Target) return;
+    SetDrawBright(Color.R, Color.G, Color.B);
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
+    DrawRotaGraph3F(
+        Transform.X, Transform.Y,
+        Transform.OriginX, Transform.OriginY,
+        Transform.ScaleX, Transform.ScaleY,
+        Transform.Angle, Target->GetHandle(),
+        HasAlpha ? TRUE : FALSE, FALSE);
+}
+
+SSynthSprite * SSynthSprite::Clone()
+{
+    auto clone = new SSynthSprite(Width, Height);
+    clone->CopyParameterFrom(this);
+    clone->AddRef();
+    if (Target)
+    {
+        clone->Transfer(this);
+    }
+    return clone;
+}
+
+SSynthSprite *SSynthSprite::Factory(int w, int h)
+{
+    auto result = new SSynthSprite(w, h);
+    result->Clear();
+    result->AddRef();
+    return result;
+}
+
+void SSynthSprite::RegisterType(asIScriptEngine * engine)
+{
+    RegisterSpriteBasic<SSynthSprite>(engine, SU_IF_SYHSPRITE);
+    engine->RegisterObjectBehaviour(SU_IF_SYHSPRITE, asBEHAVE_FACTORY, SU_IF_SYHSPRITE "@ f(int, int)", asFUNCTION(SSynthSprite::Factory), asCALL_CDECL);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_SYHSPRITE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, SSynthSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SSynthSprite, SSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "int get_Width()", asMETHOD(SSynthSprite, get_Width), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "int get_Height()", asMETHOD(SSynthSprite, get_Width), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "void Clear()", asMETHOD(SSynthSprite, Clear), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "void Transfer(" SU_IF_SPRITE "@)", asMETHODPR(SSynthSprite, Transfer, (SSprite*), void), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SYHSPRITE, "void Transfer(" SU_IF_IMAGE "@, double, double)", asMETHODPR(SSynthSprite, Transfer, (SImage*, double, double), void), asCALL_THISCALL);
+}
+
+// SClippingSprite ------------------------------------------
+
+bool SClippingSprite::ActionMoveRangeTo(SSprite * thisObj, Mover & mover, double delta)
+{
+    auto target = static_cast<SClippingSprite*>(thisObj);
+    if (delta == 0)
+    {
+        mover.Extra1 = target->U2;
+        mover.Extra2 = target->V2;
+        return false;
+    }
+    else if (delta >= 0)
+    {
+        target->U2 = mover.Function(mover.Now, mover.Duration, mover.Extra1, mover.X - mover.Extra1);
+        target->V2 = mover.Function(mover.Now, mover.Duration, mover.Extra2, mover.Y - mover.Extra2);
+        return false;
+    }
+    else
+    {
+        target->U2 = mover.X;
+        target->V2 = mover.Y;
+        return true;
+    }
+}
+
+SClippingSprite::SClippingSprite(int w, int h) : SSynthSprite(w, h)
+{
+
+}
+
+function<bool(SSprite*, Mover&, double)> SClippingSprite::GetCustomAction(const string & name)
+{
+    switch (hashstr(name.c_str()))
+    {
+    case hashstr("range_size"):
+        return ActionMoveRangeTo;
+    }
+    return nullptr;
+}
+
+void SClippingSprite::ParseCustomMover(Mover * mover, const vector<tuple<string, string>>& params)
+{
+    for (auto &p : params)
+    {
+        switch (hashstr(get<0>(p).c_str()))
+        {
+        case hashstr("width"):
+            mover->X = ToDouble(get<1>(p).c_str());
+            break;
+        case hashstr("height"):
+            mover->Y = ToDouble(get<1>(p).c_str());
+            break;
+        }
+    }
+}
+
+void SClippingSprite::SetRange(double tx, double ty, double w, double h)
+{
+    U1 = tx;
+    V1 = ty;
+    U2 = w;
+    V2 = h;
+}
+
+void SClippingSprite::Draw()
+{
+    if (!Target) return;
+    double x = Width * U1, y = Height * V1, w = Width * U2, h = Height * V2;
+    SetDrawBright(Color.R, Color.G, Color.B);
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
+    DrawRectRotaGraph3F(
+        Transform.X, Transform.Y,
+        x, y, w, h,
+        Transform.OriginX, Transform.OriginY,
+        Transform.ScaleX, Transform.ScaleY,
+        Transform.Angle, Target->GetHandle(),
+        HasAlpha ? TRUE : FALSE, FALSE);
+}
+
+SClippingSprite *SClippingSprite::Clone()
+{
+    auto clone = new SClippingSprite(Width, Height);
+    clone->CopyParameterFrom(this);
+    clone->AddRef();
+    if (Target)
+    {
+        clone->Transfer(this);
+    }
+    clone->U1 = U1;
+    clone->V1 = V1;
+    clone->U2 = U2;
+    clone->V2 = V2;
+    return clone;
+}
+
+SClippingSprite *SClippingSprite::Factory(int w, int h)
+{
+    auto result = new SClippingSprite(w, h);
+    result->Clear();
+    result->AddRef();
+    return result;
+}
+
+void SClippingSprite::RegisterType(asIScriptEngine * engine)
+{
+    RegisterSpriteBasic<SClippingSprite>(engine, SU_IF_CLPSPRITE);
+    engine->RegisterObjectBehaviour(SU_IF_CLPSPRITE, asBEHAVE_FACTORY, SU_IF_CLPSPRITE "@ f(int, int)", asFUNCTION(SClippingSprite::Factory), asCALL_CDECL);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_CLPSPRITE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, SClippingSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SClippingSprite, SSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "int get_Width()", asMETHOD(SClippingSprite, get_Width), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "int get_Height()", asMETHOD(SClippingSprite, get_Width), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void Clear()", asMETHOD(SClippingSprite, Clear), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void Transfer(" SU_IF_SPRITE "@)", asMETHODPR(SClippingSprite, Transfer, (SSprite*), void), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void Transfer(" SU_IF_IMAGE "@, double, double)", asMETHODPR(SClippingSprite, Transfer, (SImage*, double, double), void), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_CLPSPRITE, "void SetRange(double, double, double, double)", asMETHOD(SClippingSprite, SetRange), asCALL_THISCALL);
+}
+
+// SEffectSprite ------------------------------
+
+SEffectSprite::SEffectSprite(EffectInstance *effect)
+{
+    Instance = effect;
+    IsPlaying = true;
 }
 
 SEffectSprite::~SEffectSprite()
 {
-    
+    if (Instance) delete Instance;
 }
 
 void SEffectSprite::Draw()
 {
-
+    //TODO: DrawFuncの実装も
 }
 
 void SEffectSprite::Tick(double delta)
 {
-
+    if (IsPlaying) Instance->Update(delta);
 }
 
 void SEffectSprite::Play()
 {
-
+    IsPlaying = true;
 }
 
 void SEffectSprite::Reset()
 {
-
+    //TODO: Reset操作の実装
 }
 
 void SEffectSprite::Stop()
 {
-
+    IsPlaying = false;
 }
 
-SEffectSprite * SEffectSprite::Factory()
+SEffectSprite *SEffectSprite::Factory(SEffect *effectData)
 {
-    return nullptr;
+    auto result = new SEffectSprite(effectData->data->Instantiate());
+    result->AddRef();
+    return result;
 }
 
 void SEffectSprite::RegisterType(asIScriptEngine * engine)
 {
-}
-
-
-// 一般
-
-void RegisterScriptSprite(asIScriptEngine * engine)
-{
-    SSprite::RegisterType(engine);
-    SShape::RegisterType(engine);
-    STextSprite::RegisterType(engine);
+    RegisterSpriteBasic<SEffectSprite>(engine, SU_IF_EFXSPRITE);
+    engine->RegisterObjectBehaviour(SU_IF_EFXSPRITE, asBEHAVE_FACTORY, SU_IF_EFXSPRITE "@ f(int, int)", asFUNCTION(SEffectSprite::Factory), asCALL_CDECL);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_EFXSPRITE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, SEffectSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_EFXSPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SEffectSprite, SSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_EFXSPRITE, "void Play()", asMETHOD(SEffectSprite, Play), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_EFXSPRITE, "void Reset()", asMETHOD(SEffectSprite, Reset), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_EFXSPRITE, "void Stop()", asMETHOD(SEffectSprite, Stop), asCALL_THISCALL);
 }
