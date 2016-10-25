@@ -4,6 +4,7 @@ using namespace std;
 
 EffectEmitter::EffectEmitter()
 {
+    Name = "";
 }
 
 EffectEmitter::~EffectEmitter()

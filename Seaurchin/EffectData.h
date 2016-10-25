@@ -75,6 +75,7 @@ public:
     EffectEmitter();
     ~EffectEmitter();
 
+    std::string Name;
     int ZIndex;
     double Wait;
     EmitterRateType Type;

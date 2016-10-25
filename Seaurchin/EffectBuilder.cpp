@@ -177,7 +177,9 @@ void EffectBuilder::ParseEmitterParameter(EffectEmitter *emitter, const EffectPa
 {
     switch (hashstr(param.name.c_str()))
     {
-
+    case hashstr("texture"):
+        emitter->Name = param.values[0];
+        break;
     }
 }
 
