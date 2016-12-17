@@ -80,12 +80,6 @@ public:
     static SFont* CreateLoadedFontFromFile(const std::string &file);
 };
 
-//音声
-class SSound : public SResource
-{
-
-};
-
 //エフェクト
 class SEffect : public SResource
 {

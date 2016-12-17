@@ -23,23 +23,12 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     InterfacesRegisterSceneFunction(ScriptInterface->GetEngine());
     InterfacesRegisterGlobalFunction(ScriptInterface->GetEngine());
 
-    Effect2D = GetEffekseer2DManager();
-    Effect3D = GetEffekseer3DManager();
-
     SharedSetting = setting;
     SharedKeyState = shared_ptr<KeyState>(new KeyState());
 
     random_device seed;
     Random = shared_ptr<mt19937>(new mt19937(seed()));
     SuEffect = unique_ptr<EffectBuilder>(new EffectBuilder(Random));
-    SuEffect->ParseSource(R"(
-effect Unko {
-    emitter {
-        accel fix(0), fix(1);
-        velocity uniform(-1, 1), normal(-1, 0.5);
-    }
-}
-    )");
 }
 
 void ExecutionManager::EnumerateSkins()

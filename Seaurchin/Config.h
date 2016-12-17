@@ -5,13 +5,18 @@
 
 #define SU_APP_NAME "Seaurchin"
 #define SU_APP_VERSION "0.06"
+
 #define SU_SETTING_FILE "config.json"
+#define SU_CACHE_MUSIC_FILE "musics.mp"
+
 #define SU_DATA_DIR "Data"
 #define SU_IMAGE_DIR "Images"
 #define SU_SKIN_DIR "Skins"
 #define SU_FONT_DIR "Fonts"
 #define SU_CACHE_DIR "Cache"
+#define SU_MUSIC_DIR "Music"
 #define SU_SCRIPT_DIR "Scripts"
+
 #define SU_SKIN_MAIN_FILE "Skin.as"
 #define SU_SKIN_TITLE_FILE "Title.as"
 #define SU_SKIN_SELECT_FILE "Select.as"

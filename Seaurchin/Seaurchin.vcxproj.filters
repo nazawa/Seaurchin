@@ -129,6 +129,12 @@
     <ClCompile Include="EffectFunction.cpp">
       <Filter>インターフェース\C++</Filter>
     </ClCompile>
+    <ClCompile Include="MusicsManager.cpp">
+      <Filter>インターフェース\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>インターフェース\C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -255,6 +261,12 @@
       <Filter>インターフェース\C++</Filter>
     </ClInclude>
     <ClInclude Include="EffectFunction.h">
+      <Filter>インターフェース\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="MusicsManager.h">
+      <Filter>インターフェース\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundManager.h">
       <Filter>インターフェース\C++</Filter>
     </ClInclude>
   </ItemGroup>

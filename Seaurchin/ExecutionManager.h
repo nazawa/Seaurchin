@@ -20,8 +20,6 @@ private:
     std::unique_ptr<EffectBuilder> SuEffect;
     std::shared_ptr<std::mt19937> Random;
 
-    Effekseer::Manager *Effect2D;
-    Effekseer::Manager *Effect3D;
 
 public:
     ExecutionManager(std::shared_ptr<Setting> setting);
