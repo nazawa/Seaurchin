@@ -180,6 +180,48 @@ SFont * SFont::CreateLoadedFontFromFile(const string & file)
     return result;
 }
 
+// SEffect --------------------------------
+
+SEffect::SEffect(EffectData *rawdata)
+{
+    data = rawdata;
+}
+
+SEffect::~SEffect()
+{
+}
+
+SSound::SSound(HSAMPLE hs)
+{
+    sample = hs;
+}
+
+SSound::~SSound()
+{
+    BASS_SampleFree(sample);
+}
+
+void SSound::Play()
+{
+
+}
+
+void SSound::StopAll()
+{
+}
+
+SSound * SSound::CreateSound()
+{
+    return nullptr;
+}
+
+SSound * SSound::CreateSoundFromFile(const std::string & file, int simul)
+{
+    auto hs = BASS_SampleLoad(FALSE, ConvertUTF8ToShiftJis(file).c_str(), 0, 0, simul, BASS_SAMPLE_OVER_POS);
+    return new SSound(hs);
+}
+
+
 void RegisterScriptResource(asIScriptEngine * engine)
 {
     engine->RegisterObjectType(SU_IF_IMAGE, 0, asOBJ_REF);
@@ -200,15 +242,4 @@ void RegisterScriptResource(asIScriptEngine * engine)
     //engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_FACTORY, SU_IF_EFXDATA "@ f()", asFUNCTION(SFont::CreateBlankFont), asCALL_CDECL);
     engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_ADDREF, "void f()", asMETHOD(SEffect, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_RELEASE, "void f()", asMETHOD(SEffect, Release), asCALL_THISCALL);
-}
-
-// SEffect --------------------------------
-
-SEffect::SEffect(EffectData *rawdata)
-{
-    data = rawdata;
-}
-
-SEffect::~SEffect()
-{
 }

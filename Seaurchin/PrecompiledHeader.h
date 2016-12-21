@@ -80,3 +80,5 @@ const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 #include <png.h>
 
 #include <bass.h>
+#include <bassmix.h>
+#include <bass_fx.h>

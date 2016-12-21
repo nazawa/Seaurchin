@@ -49,8 +49,6 @@ void Initialize()
     //SetUseDirect3DVersion(DX_DIRECT3D_9);
     if (DxLib_Init() == -1) abort();
     WriteDebugConsole(TEXT("DxLib_Init\n"));
-    if (!BASS_Init(-1, 44100, 0, GetMainWindowHandle(), NULL)) abort();
-    WriteDebugConsole(TEXT("BASS_Init\n"));
 
     SetDrawScreen(DX_SCREEN_BACK);
     SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
@@ -89,6 +87,5 @@ void Terminate()
 {
     TerminateDebugFeature();
     setting->Save();
-    BASS_Free();
     DxLib_End();
 }

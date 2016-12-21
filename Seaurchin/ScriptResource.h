@@ -92,4 +92,19 @@ public:
     ~SEffect() override;
 };
 
+class SSound : public SResource {
+protected:
+    HSAMPLE sample;
+
+public:
+    SSound(HSAMPLE hs);
+    ~SSound() override;
+
+    void Play();
+    void StopAll();
+
+    static SSound* CreateSound();
+    static SSound* CreateSoundFromFile(const std::string &file, int simul);
+};
+
 void RegisterScriptResource(asIScriptEngine *engine);

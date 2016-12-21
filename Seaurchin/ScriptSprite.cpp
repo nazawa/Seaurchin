@@ -152,7 +152,8 @@ void SSprite::Apply(const CScriptDictionary & dict)
         auto key = i.GetKey();
         aps << key << ":";
         double dv = 0;
-        aps << i.GetValue(dv) << ", ";
+        i.GetValue(dv);
+        aps << dv << ", ";
         i++;
     }
 
