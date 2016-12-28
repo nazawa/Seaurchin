@@ -1,5 +1,6 @@
 #include "ScriptResource.h"
 #include "Interfaces.h"
+#include "ExecutionManager.h"
 #include "Misc.h"
 
 using namespace std;
@@ -180,8 +181,57 @@ SFont * SFont::CreateLoadedFontFromFile(const string & file)
     return result;
 }
 
-void RegisterScriptResource(asIScriptEngine * engine)
+// SEffect --------------------------------
+
+SEffect::SEffect(EffectData *rawdata)
 {
+    data = rawdata;
+}
+
+SEffect::~SEffect()
+{
+}
+
+// SSound -----------------------------------
+SSound::SSound(SoundManager *mng, SoundSample *smp)
+{
+	manager = mng;
+	sample = smp;
+}
+
+SSound::~SSound()
+{
+	StopAll();
+	if (sample) manager->ReleaseSound(sample);
+	sample = nullptr;
+}
+
+void SSound::Play()
+{
+	manager->Play(sample);
+}
+
+void SSound::StopAll()
+{
+	manager->Stop(sample);
+}
+
+SSound * SSound::CreateSound(SoundManager *smanager)
+{
+    return new SSound(smanager, nullptr);
+}
+
+SSound * SSound::CreateSoundFromFile(SoundManager *smanager, const std::string & file, int simul)
+{
+    auto hs = smanager->LoadSampleFromFile(file.c_str(), simul);
+    return new SSound(smanager, hs);
+}
+
+
+void RegisterScriptResource(ExecutionManager *exm)
+{
+	auto engine = exm->GetScriptInterface()->GetEngine();
+
     engine->RegisterObjectType(SU_IF_IMAGE, 0, asOBJ_REF);
     engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_FACTORY, SU_IF_IMAGE "@ f()", asFUNCTION(SImage::CreateBlankImage), asCALL_CDECL);
     engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_ADDREF, "void f()", asMETHOD(SImage, AddRef), asCALL_THISCALL);
@@ -200,15 +250,10 @@ void RegisterScriptResource(asIScriptEngine * engine)
     //engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_FACTORY, SU_IF_EFXDATA "@ f()", asFUNCTION(SFont::CreateBlankFont), asCALL_CDECL);
     engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_ADDREF, "void f()", asMETHOD(SEffect, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_RELEASE, "void f()", asMETHOD(SEffect, Release), asCALL_THISCALL);
-}
 
-// SEffect --------------------------------
-
-SEffect::SEffect(EffectData *rawdata)
-{
-    data = rawdata;
-}
-
-SEffect::~SEffect()
-{
+	engine->RegisterObjectType(SU_IF_SOUND, 0, asOBJ_REF);
+	engine->RegisterObjectBehaviour(SU_IF_SOUND, asBEHAVE_ADDREF, "void f()", asMETHOD(SSound, AddRef), asCALL_THISCALL);
+	engine->RegisterObjectBehaviour(SU_IF_SOUND, asBEHAVE_RELEASE, "void f()", asMETHOD(SSound, Release), asCALL_THISCALL);
+	engine->RegisterObjectMethod(SU_IF_SOUND, "void Play()", asMETHOD(SSound, Play), asCALL_THISCALL);
+	engine->RegisterObjectMethod(SU_IF_SOUND, "void StopAll()", asMETHOD(SSound, StopAll), asCALL_THISCALL);
 }

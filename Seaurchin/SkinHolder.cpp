@@ -1,5 +1,6 @@
 #include "SkinHolder.h"
 #include "Setting.h"
+#include "ExecutionManager.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -133,8 +134,10 @@ SFont* SkinHolder::GetSkinFont(const string &key)
     return it->second;
 }
 
-void RegisterScriptSkin(asIScriptEngine *engine)
+void RegisterScriptSkin(ExecutionManager *exm)
 {
+	auto engine = exm->GetScriptInterface()->GetEngine();
+
     engine->RegisterObjectType(SU_IF_SKIN, 0, asOBJ_REF);
     engine->RegisterObjectBehaviour(SU_IF_SKIN, asBEHAVE_ADDREF, "void f()", asMETHOD(SkinHolder, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_SKIN, asBEHAVE_RELEASE, "void f()", asMETHOD(SkinHolder, Release), asCALL_THISCALL);

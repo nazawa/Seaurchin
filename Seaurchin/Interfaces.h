@@ -1,7 +1,6 @@
 #pragma once
 
 #define SU_IF_KEY "Key"
-
 #define SU_IF_TF2D "Transform2D"
 
 #define SU_IF_IMAGE "Image"
@@ -53,8 +52,7 @@ void InterfacesRegisterSharedClass(asIScriptEngine *engine, std::string classnam
     engine->RegisterObjectMethod(classname.c_str(), (classname + " &opAssign(const " + classname + " &in)").c_str(), asFUNCTION(asAssign<std::shared_ptr<T>>), asCALL_CDECL_OBJFIRST);
 }
 
-void InterfacesRegisterEnum(asIScriptEngine *engine);
-//void InterfacesRegisterObject(asIScriptEngine *engine);
-
-void InterfacesRegisterGlobalFunction(asIScriptEngine *engine);
-void InterfacesRegisterSceneFunction(asIScriptEngine *engine);
+class ExecutionManager;
+void InterfacesRegisterEnum(ExecutionManager *exm);
+void InterfacesRegisterGlobalFunction(ExecutionManager *exm);
+void InterfacesRegisterSceneFunction(ExecutionManager *exm);

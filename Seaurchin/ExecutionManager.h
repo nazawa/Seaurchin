@@ -7,6 +7,7 @@
 #include "ScriptScene.h"
 #include "EffectBuilder.h"
 #include "SkinHolder.h"
+#include "SoundManager.h"
 
 class ExecutionManager final
 {
@@ -19,9 +20,8 @@ private:
     std::unique_ptr<SkinHolder> Skin;
     std::unique_ptr<EffectBuilder> SuEffect;
     std::shared_ptr<std::mt19937> Random;
+	std::shared_ptr<SoundManager> Sound;
 
-    Effekseer::Manager *Effect2D;
-    Effekseer::Manager *Effect3D;
 
 public:
     ExecutionManager(std::shared_ptr<Setting> setting);
@@ -35,6 +35,7 @@ public:
     inline int GetSceneCount() { return Scenes.size(); }
     inline KeyState* GetKeyState() { return SharedKeyState.get(); }
     inline AngelScript* GetScriptInterface() { return ScriptInterface.get(); }
+	inline SoundManager* GetSoundManager() { return Sound.get(); }
 
     void ExecuteSkin();
     void ExecuteSystemMenu();

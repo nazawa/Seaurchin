@@ -194,8 +194,10 @@ bool ScriptCoroutineScene::IsDead()
     return finished;
 }
 
-void RegisterScriptScene(asIScriptEngine * engine)
+void RegisterScriptScene(ExecutionManager *exm)
 {
+	auto engine = exm->GetScriptInterface()->GetEngine();
+
     engine->RegisterFuncdef("void " SU_IF_COROUTINE "()");
 
     engine->RegisterInterface(SU_IF_SCENE);

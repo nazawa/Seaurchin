@@ -3,6 +3,7 @@
 #include "Debug.h"
 #include "Font.h"
 #include "EffectData.h"
+#include "SoundManager.h"
 #include "Misc.h"
 
 #define SU_IF_IMAGE "Image"
@@ -80,12 +81,6 @@ public:
     static SFont* CreateLoadedFontFromFile(const std::string &file);
 };
 
-//音声
-class SSound : public SResource
-{
-
-};
-
 //エフェクト
 class SEffect : public SResource
 {
@@ -98,4 +93,21 @@ public:
     ~SEffect() override;
 };
 
-void RegisterScriptResource(asIScriptEngine *engine);
+class SSound : public SResource {
+protected:
+	SoundManager *manager;
+	SoundSample *sample;
+
+public:
+    SSound(SoundManager *mng, SoundSample *smp);
+    ~SSound() override;
+
+    void Play();
+    void StopAll();
+
+    static SSound* CreateSound(SoundManager *smanager);
+    static SSound* CreateSoundFromFile(SoundManager *smanager, const std::string &file, int simul);
+};
+
+class ExecutionManager;
+void RegisterScriptResource(ExecutionManager *exm);

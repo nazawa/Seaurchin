@@ -3,6 +3,19 @@
 //Windows
 #include <Windows.h>
 #include <Shlwapi.h>
+/*
+#include <mmdeviceapi.h>
+#include <Audioclient.h>
+#include <audiopolicy.h>
+#include <endpointvolume.h>
+#include <functiondiscoverykeys_devpkey.h>
+#include <xaudio2.h>
+const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
+const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
+const IID IID_IAudioClient = __uuidof(IAudioClient);
+const IID IID_IAudioClock = __uuidof(IAudioClock);
+const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
+*/
 
 //C Runtime
 #define _USE_MATH_DEFINES
@@ -42,6 +55,7 @@
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/clamp.hpp>
 #include <boost/crc.hpp>
 #include <boost/fusion/include/std_tuple.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -49,7 +63,7 @@
 
 //Libraries
 #include <DxLib.h>
-#include <EffekseerForDXLib.h>
+//#include <EffekseerForDXLib.h>
 
 #include <angelscript.h>
 #include <scriptbuilder\scriptbuilder.h>
@@ -65,3 +79,7 @@
 
 #include <zlib.h>
 #include <png.h>
+
+#include <bass.h>
+#include <bassmix.h>
+#include <bass_fx.h>

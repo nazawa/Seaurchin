@@ -1,13 +1,16 @@
 #include "ScriptSprite.h"
 #include "ScriptSpriteManager.h"
+#include "ExecutionManager.h"
 #include "Misc.h"
 
 using namespace std;
 static constexpr auto hashstr = &crc_ccitt::checksum;
 // ˆê”Ê
 
-void RegisterScriptSprite(asIScriptEngine * engine)
+void RegisterScriptSprite(ExecutionManager *exm)
 {
+	auto engine = exm->GetScriptInterface()->GetEngine();
+
     SSprite::RegisterType(engine);
     SShape::RegisterType(engine);
     STextSprite::RegisterType(engine);
@@ -152,7 +155,8 @@ void SSprite::Apply(const CScriptDictionary & dict)
         auto key = i.GetKey();
         aps << key << ":";
         double dv = 0;
-        aps << i.GetValue(dv) << ", ";
+        i.GetValue(dv);
+        aps << dv << ", ";
         i++;
     }
 
