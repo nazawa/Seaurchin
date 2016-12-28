@@ -1,5 +1,6 @@
 #include "ScriptResource.h"
 #include "Interfaces.h"
+#include "ExecutionManager.h"
 #include "Misc.h"
 
 using namespace std;
@@ -191,39 +192,46 @@ SEffect::~SEffect()
 {
 }
 
-SSound::SSound(HSAMPLE hs)
+// SSound -----------------------------------
+SSound::SSound(SoundManager *mng, SoundSample *smp)
 {
-    sample = hs;
+	manager = mng;
+	sample = smp;
 }
 
 SSound::~SSound()
 {
-    BASS_SampleFree(sample);
+	StopAll();
+	if (sample) manager->ReleaseSound(sample);
+	sample = nullptr;
 }
 
 void SSound::Play()
 {
-
+	manager->Play(sample);
 }
 
 void SSound::StopAll()
 {
+	manager->Stop(sample);
 }
 
-SSound * SSound::CreateSound()
+SSound * SSound::CreateSound(SoundManager *smanager)
 {
-    return nullptr;
+    return new SSound(smanager, nullptr);
 }
 
-SSound * SSound::CreateSoundFromFile(const std::string & file, int simul)
+SSound * SSound::CreateSoundFromFile(SoundManager *smanager, const std::string & file, int simul)
 {
-    auto hs = BASS_SampleLoad(FALSE, ConvertUTF8ToShiftJis(file).c_str(), 0, 0, simul, BASS_SAMPLE_OVER_POS);
-    return new SSound(hs);
+    auto hs = smanager->LoadSampleFromFile(file.c_str(), simul);
+    return new SSound(smanager, hs);
 }
 
 
-void RegisterScriptResource(asIScriptEngine * engine)
+void RegisterScriptResource(ExecutionManager *exm)
 {
+	auto engine = exm->GetScriptInterface()->GetEngine();
+
     engine->RegisterObjectType(SU_IF_IMAGE, 0, asOBJ_REF);
     engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_FACTORY, SU_IF_IMAGE "@ f()", asFUNCTION(SImage::CreateBlankImage), asCALL_CDECL);
     engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_ADDREF, "void f()", asMETHOD(SImage, AddRef), asCALL_THISCALL);
@@ -242,4 +250,10 @@ void RegisterScriptResource(asIScriptEngine * engine)
     //engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_FACTORY, SU_IF_EFXDATA "@ f()", asFUNCTION(SFont::CreateBlankFont), asCALL_CDECL);
     engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_ADDREF, "void f()", asMETHOD(SEffect, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_RELEASE, "void f()", asMETHOD(SEffect, Release), asCALL_THISCALL);
+
+	engine->RegisterObjectType(SU_IF_SOUND, 0, asOBJ_REF);
+	engine->RegisterObjectBehaviour(SU_IF_SOUND, asBEHAVE_ADDREF, "void f()", asMETHOD(SSound, AddRef), asCALL_THISCALL);
+	engine->RegisterObjectBehaviour(SU_IF_SOUND, asBEHAVE_RELEASE, "void f()", asMETHOD(SSound, Release), asCALL_THISCALL);
+	engine->RegisterObjectMethod(SU_IF_SOUND, "void Play()", asMETHOD(SSound, Play), asCALL_THISCALL);
+	engine->RegisterObjectMethod(SU_IF_SOUND, "void StopAll()", asMETHOD(SSound, StopAll), asCALL_THISCALL);
 }

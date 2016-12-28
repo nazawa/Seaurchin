@@ -7,14 +7,18 @@
 #include "ExecutionManager.h"
 #include "ScriptFunction.h"
 
-void InterfacesRegisterSceneFunction(asIScriptEngine *engine)
+void InterfacesRegisterSceneFunction(ExecutionManager *exm)
 {
+	auto engine = exm->GetScriptInterface()->GetEngine();
+
     engine->RegisterGlobalFunction("void YieldTime(double)", asFUNCTION(YieldTime), asCALL_CDECL);
     engine->RegisterGlobalFunction("void YieldFrame(int64)", asFUNCTION(YieldFrames), asCALL_CDECL);
 }
 
-void InterfacesRegisterGlobalFunction(asIScriptEngine *engine)
+void InterfacesRegisterGlobalFunction(ExecutionManager *exm)
 {
+	auto engine = exm->GetScriptInterface()->GetEngine();
+
     engine->RegisterGlobalFunction("void WriteDebugConsole(const string &in)", asFUNCTION(WriteDebugConsoleU), asCALL_CDECL);
     engine->RegisterGlobalFunction(SU_IF_FONT "@ LoadSystemFont(const string & in)", asFUNCTION(LoadSystemFont), asCALL_CDECL);
     //engine->RegisterGlobalFunction(SU_IF_VFONT " CreateVirtualFont(const string & in, int)", asFUNCTION(CreateVirtualFont), asCALL_CDECL);
@@ -23,8 +27,10 @@ void InterfacesRegisterGlobalFunction(asIScriptEngine *engine)
     //engine->RegisterGlobalFunction("void DrawRawString(" SU_IF_VFONT ", const string & in, double, double)", asFUNCTION(DrawRawString), asCALL_CDECL);
 }
 
-void InterfacesRegisterEnum(asIScriptEngine * engine)
+void InterfacesRegisterEnum(ExecutionManager *exm)
 {
+	auto engine = exm->GetScriptInterface()->GetEngine();
+
     engine->RegisterEnum(SU_IF_KEY);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_BACK", KEY_INPUT_BACK);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_TAB", KEY_INPUT_TAB);

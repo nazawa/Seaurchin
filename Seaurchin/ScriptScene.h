@@ -67,7 +67,8 @@ public:
 
 };
 
-void RegisterScriptScene(asIScriptEngine *engine);
+class ExecutionManager;
+void RegisterScriptScene(ExecutionManager *exm);
 
 bool ScriptSceneIsKeyHeld(int keynum);
 bool ScriptSceneIsKeyTriggered(int keynum);

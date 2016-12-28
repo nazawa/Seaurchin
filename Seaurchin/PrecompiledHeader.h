@@ -55,6 +55,7 @@ const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/clamp.hpp>
 #include <boost/crc.hpp>
 #include <boost/fusion/include/std_tuple.hpp>
 #include <boost/spirit/include/qi.hpp>

@@ -33,5 +33,6 @@ public:
     SFont* GetSkinFont(const std::string &key);
 };
 
-void RegisterScriptSkin(asIScriptEngine *engine);
+class ExecutionManager;
+void RegisterScriptSkin(ExecutionManager *exm);
 SkinHolder* GetSkinObject();

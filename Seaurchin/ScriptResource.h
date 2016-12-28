@@ -3,6 +3,7 @@
 #include "Debug.h"
 #include "Font.h"
 #include "EffectData.h"
+#include "SoundManager.h"
 #include "Misc.h"
 
 #define SU_IF_IMAGE "Image"
@@ -94,17 +95,19 @@ public:
 
 class SSound : public SResource {
 protected:
-    HSAMPLE sample;
+	SoundManager *manager;
+	SoundSample *sample;
 
 public:
-    SSound(HSAMPLE hs);
+    SSound(SoundManager *mng, SoundSample *smp);
     ~SSound() override;
 
     void Play();
     void StopAll();
 
-    static SSound* CreateSound();
-    static SSound* CreateSoundFromFile(const std::string &file, int simul);
+    static SSound* CreateSound(SoundManager *smanager);
+    static SSound* CreateSoundFromFile(SoundManager *smanager, const std::string &file, int simul);
 };
 
-void RegisterScriptResource(asIScriptEngine *engine);
+class ExecutionManager;
+void RegisterScriptResource(ExecutionManager *exm);
