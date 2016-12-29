@@ -55,6 +55,11 @@ SFont* LoadSystemFont(const std::string & file)
     return SFont::CreateLoadedFontFromFile(p.string());
 }
 
+SSound *LoadSystemSound(SoundManager *smng, const std::string & file) {
+	path p = Setting::GetRootDirectory() / SU_DATA_DIR / SU_SOUND_DIR / ConvertUTF8ToShiftJis(file);
+	return SSound::CreateSoundFromFile(smng, p.string(), 4);
+}
+
 void CreateImageFont(const std::string & fileName, const std::string & saveName, int size)
 {
     Font::CreateAndSave(fileName, saveName, size, 1024, 1024);

@@ -15,6 +15,7 @@
 #define SU_FONT_DIR "Fonts"
 #define SU_CACHE_DIR "Cache"
 #define SU_MUSIC_DIR "Music"
+#define SU_SOUND_DIR "Sound"
 #define SU_SCRIPT_DIR "Scripts"
 
 #define SU_SKIN_MAIN_FILE "Skin.as"

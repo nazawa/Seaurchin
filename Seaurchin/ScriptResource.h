@@ -95,7 +95,7 @@ public:
 
 class SSound : public SResource {
 protected:
-	SoundManager *manager;
+	SoundManager *manager = nullptr;
 	SoundSample *sample;
 
 public:

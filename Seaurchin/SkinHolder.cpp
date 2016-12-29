@@ -118,6 +118,11 @@ void SkinHolder::LoadSkinFont(const string &key, const string &filename)
     Fonts[key] = SFont::CreateLoadedFontFromFile((SkinRoot / SU_FONT_DIR / filename).string());
 }
 
+void SkinHolder::LoadSkinSound(SoundManager * smng, const std::string & key, const std::string & filename)
+{
+	Sounds[key] = SSound::CreateSoundFromFile(smng, (SkinRoot / SU_SOUND_DIR / filename).string(), 8);
+}
+
 SImage* SkinHolder::GetSkinImage(const string &key)
 {
     auto it = Images.find(key);
@@ -134,6 +139,14 @@ SFont* SkinHolder::GetSkinFont(const string &key)
     return it->second;
 }
 
+SSound* SkinHolder::GetSkinSound(const std::string & key)
+{
+	auto it = Sounds.find(key);
+	if (it == Sounds.end()) return nullptr;
+	it->second->AddRef();
+	return it->second;
+}
+
 void RegisterScriptSkin(ExecutionManager *exm)
 {
 	auto engine = exm->GetScriptInterface()->GetEngine();
@@ -143,8 +156,10 @@ void RegisterScriptSkin(ExecutionManager *exm)
     engine->RegisterObjectBehaviour(SU_IF_SKIN, asBEHAVE_RELEASE, "void f()", asMETHOD(SkinHolder, Release), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadImage(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinImage), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadFont(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinFont), asCALL_THISCALL);
+	engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadSound(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinSound), asCALL_CDECL_OBJFIRST, exm->GetSoundManager());
     engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_IMAGE "@ GetImage(const string &in)", asMETHOD(SkinHolder, GetSkinImage), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_FONT "@ GetFont(const string &in)", asMETHOD(SkinHolder, GetSkinFont), asCALL_THISCALL);
+	engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_SOUND "@ GetSound(const string &in)", asMETHOD(SkinHolder, GetSkinFont), asCALL_THISCALL);
 
     engine->RegisterGlobalFunction(SU_IF_SKIN "@ GetSkin()", asFUNCTION(GetSkinObject), asCALL_CDECL);
 }

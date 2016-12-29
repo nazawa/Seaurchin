@@ -203,6 +203,7 @@ SSound::~SSound()
 {
 	StopAll();
 	if (sample) manager->ReleaseSound(sample);
+	manager->ReleaseSound(sample);
 	sample = nullptr;
 }
 
