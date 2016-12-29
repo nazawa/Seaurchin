@@ -14,7 +14,13 @@ using namespace std;
 
 ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
 {
-    ScriptInterface = shared_ptr<AngelScript>(new AngelScript());
+    random_device seed;
+
+    ScriptInterface = make_shared<AngelScript>();
+    Sound = make_shared<SoundManager>();
+    Random = make_shared<mt19937>(seed());
+    SuEffect = unique_ptr<EffectBuilder>(new EffectBuilder(Random));
+
     InterfacesRegisterEnum(this);
     RegisterScriptResource(this);
     RegisterScriptSprite(this);
@@ -24,12 +30,7 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     InterfacesRegisterGlobalFunction(this);
 
     SharedSetting = setting;
-    SharedKeyState = shared_ptr<KeyState>(new KeyState());
-
-    random_device seed;
-    Random = shared_ptr<mt19937>(new mt19937(seed()));
-    SuEffect = unique_ptr<EffectBuilder>(new EffectBuilder(Random));
-	Sound = shared_ptr<SoundManager>(new SoundManager());
+    SharedKeyState = make_shared<KeyState>();
 }
 
 void ExecutionManager::EnumerateSkins()
@@ -73,7 +74,7 @@ void ExecutionManager::ExecuteSkin()
         WriteDebugConsole(("Can't Find Skin " + sn + "!\n").c_str());
         return;
     }
-    Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, ScriptInterface));
+    Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, ScriptInterface, Sound));
     Skin->Initialize();
     auto obj = Skin->ExecuteSkinScript(SU_SKIN_TITLE_FILE);
     auto s = CreateSceneFromScriptObject(obj);
@@ -134,6 +135,8 @@ void ExecutionManager::ExecuteSystemMenu()
 void ExecutionManager::Tick(double delta)
 {
     UpdateKeyState();
+
+    //ÉVÅ[ÉìëÄçÏ
     sort(Scenes.begin(), Scenes.end(), [](shared_ptr<Scene> sa, shared_ptr<Scene> sb) { return sa->GetIndex() < sb->GetIndex(); });
     auto i = Scenes.begin();
     while (i != Scenes.end())
@@ -147,6 +150,14 @@ void ExecutionManager::Tick(double delta)
         {
             i++;
         }
+    }
+
+    //å„èàóù
+    static double ps = 0;
+    ps += delta;
+    if (ps >= 1.0) {
+        ps = 0;
+        Sound->Update();
     }
     ScriptInterface->GetEngine()->GarbageCollect(asGC_ONE_STEP);
 }

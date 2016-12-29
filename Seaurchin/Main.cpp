@@ -31,7 +31,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 void PreInitialize(HINSTANCE hInstance)
 {
     setting = shared_ptr<Setting>(new Setting(hInstance));
-    manager = unique_ptr<ExecutionManager>(new ExecutionManager(setting));
 
     InitializeDebugFeature();
     ChangeWindowMode(TRUE);
@@ -44,9 +43,6 @@ void PreInitialize(HINSTANCE hInstance)
 
 void Initialize()
 {
-    setting->Load(SU_SETTING_FILE);
-
-    //SetUseDirect3DVersion(DX_DIRECT3D_9);
     if (DxLib_Init() == -1) abort();
     WriteDebugConsole(TEXT("DxLib_Init\n"));
 
@@ -54,8 +50,13 @@ void Initialize()
     SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
     SetUseZBuffer3D(TRUE);
     SetWriteZBuffer3D(TRUE);
-    //if (GetUseDirect3DVersion() == DX_DIRECT3D_11) WriteDebugConsole(TEXT("Using D3D11!\n"));
 
+    setting->Load(SU_SETTING_FILE);
+    manager = unique_ptr<ExecutionManager>(new ExecutionManager(setting));
+}
+
+void Run()
+{
     if (CheckHitKey(KEY_INPUT_F2))
     {
         manager->ExecuteSystemMenu();
@@ -66,11 +67,8 @@ void Initialize()
         manager->ExecuteSkin();
     }
     manager->AddScene(shared_ptr<Scene>(new SceneDebug()));
-    
-}
 
-void Run()
-{
+
     auto start = high_resolution_clock::now();
     auto pstart = start;
     while (ProcessMessage() != -1)
