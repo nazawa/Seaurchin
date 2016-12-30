@@ -1,6 +1,5 @@
 #pragma once
 
-
 typedef struct
 {
     uint16_t texture;

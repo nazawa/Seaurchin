@@ -197,6 +197,7 @@
     </ClCompile>
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneDebug.cpp" />
+    <ClCompile Include="SceneDeveloperMode.cpp" />
     <ClCompile Include="ScriptResource.cpp" />
     <ClCompile Include="ScriptScene.cpp" />
     <ClCompile Include="ScriptSprite.cpp" />
@@ -204,8 +205,6 @@
     <ClCompile Include="Setting.cpp" />
     <ClCompile Include="SkinHolder.cpp" />
     <ClCompile Include="SoundManager.cpp" />
-    <ClCompile Include="Sprite.cpp" />
-    <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="ScriptFunction.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -220,14 +219,10 @@
     <ClInclude Include="..\..\..\DXLib\include\DxDataTypeWin.h" />
     <ClInclude Include="..\..\..\DXLib\include\DxFunctionWin.h" />
     <ClInclude Include="..\..\..\DXLib\include\DxLib.h" />
-    <ClInclude Include="..\..\..\EffekseerForDXLib\include\Effekseer.h" />
-    <ClInclude Include="..\..\..\EffekseerForDXLib\include\EffekseerForDXLib.h" />
-    <ClInclude Include="..\..\..\EffekseerForDXLib\include\EffekseerRendererDX9.h" />
     <ClInclude Include="AngelScriptManager.h" />
     <ClInclude Include="as_smart_ptr_wrapper.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="DxLibResource.h" />
     <ClInclude Include="Easing.h" />
     <ClInclude Include="EffectBuilder.h" />
     <ClInclude Include="EffectData.h" />
@@ -243,6 +238,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneDebug.h" />
+    <ClInclude Include="SceneDeveloperMode.h" />
     <ClInclude Include="ScriptResource.h" />
     <ClInclude Include="ScriptScene.h" />
     <ClInclude Include="ScriptSprite.h" />
@@ -250,9 +246,8 @@
     <ClInclude Include="Setting.h" />
     <ClInclude Include="SkinHolder.h" />
     <ClInclude Include="SoundManager.h" />
-    <ClInclude Include="Sprite.h" />
-    <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="ScriptFunction.h" />
+    <ClInclude Include="ScriptSpriteMisc.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Seaurchin.rc" />

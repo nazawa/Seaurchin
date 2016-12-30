@@ -81,12 +81,6 @@
     <ClCompile Include="Scene.cpp">
       <Filter>インターフェース\C++</Filter>
     </ClCompile>
-    <ClCompile Include="Sprite.cpp">
-      <Filter>インターフェース\C++</Filter>
-    </ClCompile>
-    <ClCompile Include="SpriteManager.cpp">
-      <Filter>インターフェース\C++</Filter>
-    </ClCompile>
     <ClCompile Include="ScriptScene.cpp">
       <Filter>インターフェース\AngelScript</Filter>
     </ClCompile>
@@ -134,6 +128,9 @@
     </ClCompile>
     <ClCompile Include="SoundManager.cpp">
       <Filter>インターフェース\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneDeveloperMode.cpp">
+      <Filter>ビルトインScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -197,12 +194,6 @@
     <ClInclude Include="Scene.h">
       <Filter>インターフェース\C++</Filter>
     </ClInclude>
-    <ClInclude Include="Sprite.h">
-      <Filter>インターフェース\C++</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteManager.h">
-      <Filter>インターフェース\C++</Filter>
-    </ClInclude>
     <ClInclude Include="ScriptSprite.h">
       <Filter>インターフェース\AngelScript</Filter>
     </ClInclude>
@@ -224,9 +215,6 @@
     <ClInclude Include="AngelScriptManager.h">
       <Filter>インターフェース\AngelScript</Filter>
     </ClInclude>
-    <ClInclude Include="DxLibResource.h">
-      <Filter>インターフェース\C++</Filter>
-    </ClInclude>
     <ClInclude Include="SkinHolder.h">
       <Filter>インターフェース\AngelScript</Filter>
     </ClInclude>
@@ -238,15 +226,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptdictionary\scriptdictionary.h">
       <Filter>AngelScript</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\EffekseerForDXLib\include\Effekseer.h">
-      <Filter>DxLib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\EffekseerForDXLib\include\EffekseerRendererDX9.h">
-      <Filter>DxLib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\EffekseerForDXLib\include\EffekseerForDXLib.h">
-      <Filter>DxLib</Filter>
     </ClInclude>
     <ClInclude Include="EffectBuilder.h">
       <Filter>インターフェース\C++</Filter>
@@ -268,6 +247,12 @@
     </ClInclude>
     <ClInclude Include="SoundManager.h">
       <Filter>インターフェース\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneDeveloperMode.h">
+      <Filter>ビルトインScene</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptSpriteMisc.h">
+      <Filter>インターフェース\AngelScript</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

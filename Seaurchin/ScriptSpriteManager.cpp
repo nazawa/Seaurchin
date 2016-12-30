@@ -2,6 +2,45 @@
 
 using namespace std;
 using namespace boost::xpressive;
+auto& srset = boost::xpressive::set;
+
+sregex ScriptSpriteMover::srparam = (s1 = +_w) >> ':' >> (s2 = +_w | (!(srset = '+', '-') >> +_d >> !('.' >> +_d)));
+sregex ScriptSpriteMover::srmove = bos >> (s1 = +_w) >> !('(' >> (s2 = ScriptSpriteMover::srparam >> *(',' >> ScriptSpriteMover::srparam)) >> ')') >> eos;
+
+unordered_map<string, Easing::EasingFunction> ScriptSpriteMover::easings =
+{
+    { "linear", Easing::Linear },
+    { "in_quad", Easing::InQuad },
+    { "out_quad", Easing::OutQuad },
+    { "inout_quad", Easing::InOutQuad },
+    { "in_cubic", Easing::InCubic },
+    { "out_cubic", Easing::OutCubic },
+    { "inout_cubic", Easing::InOutCubic },
+    { "in_quart", Easing::InQuart },
+    { "out_quart", Easing::OutQuart },
+    { "inout_quart", Easing::InOutQuart },
+    { "in_quint", Easing::InQuint },
+    { "out_quint", Easing::OutQuint },
+    { "inout_quint", Easing::InOutQuint },
+    { "in_sine", Easing::InSine },
+    { "out_sine", Easing::OutSine },
+    { "inout_sine", Easing::InOutSine },
+    { "in_expo", Easing::InExpo },
+    { "out_expo", Easing::OutExpo },
+    { "inout_expo", Easing::InOutExpo },
+    { "in_circle", Easing::InCircle },
+    { "out_circle", Easing::OutCircle },
+    { "inout_circle", Easing::InOutCircle },
+    { "in_elastic", Easing::InElastic },
+    { "out_elastic", Easing::OutElastic },
+    { "inout_elastic", Easing::InOutElastic },
+    { "in_back", Easing::InBack },
+    { "out_back", Easing::OutBack },
+    { "inout_back", Easing::InOutBack },
+    { "in_bounce", Easing::InBounce },
+    { "out_bounce", Easing::OutBounce },
+    { "inout_bounce", Easing::InOutBounce }
+};
 
 unordered_map<string, MoverFunction> ScriptSpriteMover::actions =
 {
@@ -25,14 +64,96 @@ ScriptSpriteMover::~ScriptSpriteMover()
     movers.clear();
 }
 
+bool ScriptSpriteMover::CheckPattern(std::string move)
+{
+    using namespace boost::algorithm;
+    smatch match;
+    move.erase(remove(move.begin(), move.end(), ' '), move.end());
+    bool m = regex_match(move, match, srmove);
+    return m;
+}
+
+string ScriptSpriteMover::ParseMover(Mover * mover, std::string move)
+{
+    using namespace boost::algorithm;
+    constexpr auto hash = &crc_ccitt::checksum;
+    smatch match;
+    move.erase(remove(move.begin(), move.end(), ' '), move.end());
+
+    mover->Function = Easing::Linear;
+
+    bool m = regex_match(move, match, srmove);
+    if (!m) return "";
+    auto ms = match[s1].str();
+    vector<string> params;
+    split(params, match[s2].str(), is_any_of(","));
+    for (const auto& s : params)
+    {
+        regex_match(s, match, srparam);
+        auto pname = match[s1].str();
+        auto pval = match[s2].str();
+        switch (hash(pname.c_str()))
+        {
+        case hash("x"):
+        case hash("r"):
+            mover->X = atof(pval.c_str());
+            break;
+        case hash("y"):
+        case hash("g"):
+            mover->Y = atof(pval.c_str());
+            break;
+        case hash("z"):
+        case hash("b"):
+            mover->Z = atof(pval.c_str());
+            break;
+        case hash("time"):
+            mover->Duration = atof(pval.c_str());
+            break;
+        case hash("wait"):
+            mover->Wait = atof(pval.c_str());
+            break;
+        case hash("ease"):
+            mover->Function = easings[pval];
+            break;
+        }
+    }
+
+    return ms;
+}
+
+tuple<string, vector<tuple<string, string>>> ScriptSpriteMover::ParseRaw(const string & move)
+{
+    using namespace boost::algorithm;
+    constexpr auto hash = &crc_ccitt::checksum;
+    smatch match;
+    auto fmtm = move;
+    fmtm.erase(remove(fmtm.begin(), fmtm.end(), ' '), fmtm.end());
+    bool m = regex_match(fmtm, match, srmove);
+    if (!m) return make_tuple("", vector<tuple<string, string>>());
+
+    vector<tuple<string, string>> retp;
+    vector<string> params;
+    auto ms = match[s1].str();
+    split(params, match[s2].str(), is_any_of(","));
+    for (const auto& s : params)
+    {
+        regex_match(s, match, srparam);
+        auto pname = match[s1].str();
+        auto pval = match[s2].str();
+        retp.push_back(make_tuple(pname, pval));
+    }
+    return make_tuple(ms, retp);
+}
+
+
 void ScriptSpriteMover::AddMove(std::string move)
 {
     Mover *mover = new Mover{ 0 };
-    auto aname = SpriteManager::ParseMover(mover, move);
+    auto aname = ParseMover(mover, move);
     auto action = actions[aname];
     if (!action)
     {
-        auto rd = SpriteManager::ParseRaw(move);
+        auto rd = ParseRaw(move);
         action = Target->GetCustomAction(get<0>(rd));
         if (!action) return;
         Target->ParseCustomMover(mover, get<1>(rd));

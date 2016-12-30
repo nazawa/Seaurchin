@@ -33,8 +33,6 @@ void SSprite::set_Image(SImage * img)
 {
     if (Image) Image->Release();
     Image = img;
-
-    //Image->AddRef();
 }
 
 const SImage * SSprite::get_Image()
@@ -215,6 +213,26 @@ SSprite * SSprite::Factory(SImage * img)
 ColorTint GetColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     return ColorTint{ a, r, g, b };
+}
+
+void SpriteCtorTransform2D(void *memory)
+{
+    new(memory) Transform2D();
+}
+
+void SpriteDtorTransform2D(void *memory)
+{
+    // nothing to do
+}
+
+void SpriteCtorColorTint(void *memory)
+{
+    new(memory) ColorTint();
+}
+
+void SpriteDtorColorTint(void *memory)
+{
+    // nothing to do
 }
 
 //“¯Žž‚ÉColor‚ÆTransform2D‚à

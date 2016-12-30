@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Sprite.h"
 #include "EffectData.h"
-#include "SpriteManager.h"
+#include "ScriptSpriteMisc.h"
 #include "ScriptResource.h"
 
 #define SU_IF_COLOR "Color"
@@ -17,6 +16,7 @@
 #define SU_IF_EFXSPRITE "EffectSprite"
 
 class ScriptSpriteMover;
+struct Mover;
 //Šî’ê‚ªImageSprite‚Å‚à‚¢‚¢‹C‚ª‚µ‚Ä‚é‚ñ‚¾‚æ‚Ë³’¼
 class SSprite
 {
@@ -213,5 +213,10 @@ To* CastReferenceType(From *from)
 
 //SpriteŒn‘S•”
 //ColorTint GetColorTint(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+void SpriteCtorTransform2D(void *memory);
+void SpriteDtorTransform2D(void *memory);
+void SpriteCtorColorTint(void *memory);
+void SpriteDtorColorTint(void *memory);
+
 class ExecutionManager;
 void RegisterScriptSprite(ExecutionManager *exm);
