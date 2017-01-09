@@ -28,6 +28,9 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     RegisterScriptSkin(this);
     InterfacesRegisterSceneFunction(this);
     InterfacesRegisterGlobalFunction(this);
+    this->GetScriptInterface()->GetEngine()->RegisterGlobalFunction(
+        "void Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), void),
+        asCALL_THISCALL_ASGLOBAL, this);
 
     SharedSetting = setting;
     SharedKeyState = make_shared<KeyState>();
@@ -77,6 +80,18 @@ void ExecutionManager::ExecuteSkin()
     Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, ScriptInterface, Sound));
     Skin->Initialize();
     auto obj = Skin->ExecuteSkinScript(SU_SKIN_TITLE_FILE);
+    auto s = CreateSceneFromScriptObject(obj);
+    if (!s)
+    {
+        WriteDebugConsole("Entry Point Not Found!\n");
+        return;
+    }
+    AddScene(s);
+}
+
+void ExecutionManager::ExecuteSkin(const string &file)
+{
+    auto obj = Skin->ExecuteSkinScript(file);
     auto s = CreateSceneFromScriptObject(obj);
     if (!s)
     {
@@ -137,6 +152,8 @@ void ExecutionManager::Tick(double delta)
     UpdateKeyState();
 
     //ÉVÅ[ÉìëÄçÏ
+    for (auto& scene : ScenesPending) Scenes.push_back(scene);
+    ScenesPending.clear();
     sort(Scenes.begin(), Scenes.end(), [](shared_ptr<Scene> sa, shared_ptr<Scene> sb) { return sa->GetIndex() < sb->GetIndex(); });
     auto i = Scenes.begin();
     while (i != Scenes.end())
@@ -179,7 +196,7 @@ void ExecutionManager::UpdateKeyState()
 
 void ExecutionManager::AddScene(shared_ptr<Scene> scene)
 {
-    Scenes.push_back(scene);
+    ScenesPending.push_back(scene);
     scene->SetManager(this);
     scene->Initialize();
 }

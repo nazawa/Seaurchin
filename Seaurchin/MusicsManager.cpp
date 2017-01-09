@@ -25,11 +25,26 @@ void MusicsManager::Initialize()
 
 void MusicsManager::Reload(bool recreateCache)
 {
-    if (recreateCache) CreateMusicCache();
+    if (recreateCache) {
+        thread loadthread([this] { CreateMusicCache(); });
+        loadthread.detach();
+    }
+}
+
+bool MusicsManager::IsReloading()
+{
+    FlagMutex.lock();
+    bool state = Loading;
+    FlagMutex.unlock();
+    return state;
 }
 
 void MusicsManager::CreateMusicCache()
 {
+    FlagMutex.lock();
+    Loading = true;
+    FlagMutex.unlock();
+
     path mlpath = Setting::GetRootDirectory() / SU_MUSIC_DIR;
     for (const auto& fdata : make_iterator_range(directory_iterator(sepath), {}))
     {
@@ -39,9 +54,16 @@ void MusicsManager::CreateMusicCache()
         WriteDebugConsole("\n");
         for (const auto& mdir : make_iterator_range(directory_iterator(fdata), {}))
         {
-
+            if (!is_directory(mdir)) continue;
+            WriteDebugConsole("Music Dir Found: ");
+            WriteDebugConsole(mdir.path().filename().string().c_str());
+            WriteDebugConsole("\n");
         }
     }
+
+    FlagMutex.lock();
+    Loading = false;
+    FlagMutex.unlock();
 }
 
 // CategoryInfo ---------------------------

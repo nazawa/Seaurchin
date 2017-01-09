@@ -15,6 +15,7 @@ private:
     std::shared_ptr<Setting> SharedSetting;
     std::shared_ptr<AngelScript> ScriptInterface;
     std::vector<std::shared_ptr<Scene>> Scenes;
+    std::vector<std::shared_ptr<Scene>> ScenesPending;
     std::shared_ptr<KeyState> SharedKeyState;
     std::vector<std::string> SkinNames;
     std::unique_ptr<SkinHolder> Skin;
@@ -38,6 +39,7 @@ public:
 	inline SoundManager* GetSoundManager() { return Sound.get(); }
 
     void ExecuteSkin();
+    void ExecuteSkin(const std::string &file);
     void ExecuteSystemMenu();
 
 private:

@@ -206,6 +206,7 @@
     <ClCompile Include="SkinHolder.cpp" />
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="ScriptFunction.cpp" />
+    <ClCompile Include="SusAnalyzer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptarray\scriptarray.h" />
@@ -248,6 +249,7 @@
     <ClInclude Include="SoundManager.h" />
     <ClInclude Include="ScriptFunction.h" />
     <ClInclude Include="ScriptSpriteMisc.h" />
+    <ClInclude Include="SusAnalyzer.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Seaurchin.rc" />

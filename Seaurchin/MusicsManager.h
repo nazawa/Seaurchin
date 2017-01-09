@@ -32,6 +32,11 @@ class MusicsManager final
 {
 private:
     std::shared_ptr<Setting> SharedSetting;
+
+    bool Loading = false;
+    std::mutex FlagMutex;
+    std::vector<std::shared_ptr<CategoryInfo>> Categories;
+
     void CreateMusicCache();
 
 public:
@@ -40,5 +45,6 @@ public:
 
     void Initialize();
     void Reload(bool recreateCache);
+    bool IsReloading();
 
 };

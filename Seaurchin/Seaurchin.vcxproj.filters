@@ -132,6 +132,9 @@
     <ClCompile Include="SceneDeveloperMode.cpp">
       <Filter>ビルトインScene</Filter>
     </ClCompile>
+    <ClCompile Include="SusAnalyzer.cpp">
+      <Filter>インターフェース\C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -253,6 +256,9 @@
     </ClInclude>
     <ClInclude Include="ScriptSpriteMisc.h">
       <Filter>インターフェース\AngelScript</Filter>
+    </ClInclude>
+    <ClInclude Include="SusAnalyzer.h">
+      <Filter>インターフェース\C++</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

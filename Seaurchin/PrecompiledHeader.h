@@ -33,6 +33,7 @@
 #include <tuple>
 #include <random>
 #include <exception>
+#include <future>
 
 //Boost
 #include <boost/property_tree/ptree.hpp>
