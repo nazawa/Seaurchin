@@ -16,10 +16,13 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
 {
     random_device seed;
 
+    SharedSetting = setting;
     ScriptInterface = make_shared<AngelScript>();
     Sound = make_shared<SoundManager>();
     Random = make_shared<mt19937>(seed());
     SuEffect = unique_ptr<EffectBuilder>(new EffectBuilder(Random));
+    SharedKeyState = make_shared<KeyState>();
+    Musics = make_shared<MusicsManager>(SharedSetting);
 
     InterfacesRegisterEnum(this);
     RegisterScriptResource(this);
@@ -31,9 +34,6 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     this->GetScriptInterface()->GetEngine()->RegisterGlobalFunction(
         "void Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), void),
         asCALL_THISCALL_ASGLOBAL, this);
-
-    SharedSetting = setting;
-    SharedKeyState = make_shared<KeyState>();
 }
 
 void ExecutionManager::EnumerateSkins()
@@ -53,6 +53,9 @@ void ExecutionManager::EnumerateSkins()
     ostringstream ss;
     ss << "Found " << SkinNames.size() << " Skins" << endl;
     WriteDebugConsole(ss.str().c_str());
+
+    Musics->Initialize();
+    Musics->Reload(true);
 }
 
 bool ExecutionManager::CheckSkinStructure(boost::filesystem::path name)

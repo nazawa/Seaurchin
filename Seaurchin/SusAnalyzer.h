@@ -34,10 +34,11 @@ struct SusNoteData {
 };
 
 struct SusMetaData {
-    std::string Title;
-    std::string Artist;
-    std::string Genre;
-    std::string Designer;
+    std::string UTitle;
+    std::string USubTitle;
+    std::string UArtist;
+    std::string UDesigner;
+    std::string USongId;
     uint32_t Level;
     uint32_t DifficultyType;
 };
@@ -51,11 +52,14 @@ private:
     uint32_t TicksPerBeat;
     std::function<void(uint32_t, std::string, std::string)> ErrorCallback = nullptr;
     std::vector<std::tuple<SusNoteTime, SusNoteData>> Notes;
+    std::unordered_map<uint32_t, double> BpmDefinitions;
 
     void ProcessCommand(boost::xpressive::smatch result);
     void ProcessData(boost::xpressive::smatch result);
 
 public:
+    SusMetaData SharedMetaData;
+
     SusAnalyzer(uint32_t tpb);
     ~SusAnalyzer();
 

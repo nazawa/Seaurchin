@@ -1,15 +1,17 @@
 #pragma once
 
+#include "SusAnalyzer.h"
 #include "Setting.h"
 
-class ScoreData final
-{
-
-};
-
-class MusicInfo final
-{
-
+struct MusicMetaInfo final {
+    boost::filesystem::path Path;
+    std::string SongId;
+    std::string Name;
+    std::string DifficultyName;
+    std::string Artist;
+    std::string Designer;
+    uint32_t Level;
+    uint32_t Difficulty;
 };
 
 class CategoryInfo final
@@ -21,6 +23,8 @@ private:
 
 
 public:
+    std::vector<std::shared_ptr<MusicMetaInfo>> Musics;
+
     CategoryInfo(boost::filesystem::path path);
     ~CategoryInfo();
 
@@ -35,6 +39,7 @@ private:
 
     bool Loading = false;
     std::mutex FlagMutex;
+    std::unique_ptr<SusAnalyzer> Analyzer;
     std::vector<std::shared_ptr<CategoryInfo>> Categories;
 
     void CreateMusicCache();
