@@ -31,10 +31,18 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     RegisterScriptSkin(this);
     InterfacesRegisterSceneFunction(this);
     InterfacesRegisterGlobalFunction(this);
-    this->GetScriptInterface()->GetEngine()->RegisterGlobalFunction(
-        "void Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), void),
-        asCALL_THISCALL_ASGLOBAL, this);
+    RegisterGlobalManagementFunction();
 }
+
+void ExecutionManager::RegisterGlobalManagementFunction()
+{
+    auto engine = ScriptInterface->GetEngine();
+    MusicSelectionCursor::RegisterScriptInterface(engine);
+
+    engine->RegisterGlobalFunction("void Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), void), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterGlobalFunction("void ReloadMusic()", asMETHOD(ExecutionManager, ReloadMusic), asCALL_THISCALL_ASGLOBAL, this);
+}
+
 
 void ExecutionManager::EnumerateSkins()
 {
@@ -247,3 +255,6 @@ shared_ptr<ScriptScene> ExecutionManager::CreateSceneFromScriptObject(asIScriptO
     }
 }
 
+void ExecutionManager::ReloadMusic() {
+    Musics->Reload(true);
+}

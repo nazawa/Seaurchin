@@ -43,9 +43,11 @@ public:
     void ExecuteSkin();
     void ExecuteSkin(const std::string &file);
     void ExecuteSystemMenu();
+    void ReloadMusic();
 
 private:
     bool CheckSkinStructure(boost::filesystem::path name);
     void UpdateKeyState();
+    void RegisterGlobalManagementFunction();
 };
 
