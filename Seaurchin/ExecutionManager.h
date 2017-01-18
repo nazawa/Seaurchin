@@ -7,6 +7,7 @@
 #include "ScriptScene.h"
 #include "EffectBuilder.h"
 #include "SkinHolder.h"
+#include "MusicsManager.h"
 #include "SoundManager.h"
 
 class ExecutionManager final
@@ -15,12 +16,14 @@ private:
     std::shared_ptr<Setting> SharedSetting;
     std::shared_ptr<AngelScript> ScriptInterface;
     std::vector<std::shared_ptr<Scene>> Scenes;
+    std::vector<std::shared_ptr<Scene>> ScenesPending;
     std::shared_ptr<KeyState> SharedKeyState;
     std::vector<std::string> SkinNames;
     std::unique_ptr<SkinHolder> Skin;
     std::unique_ptr<EffectBuilder> SuEffect;
     std::shared_ptr<std::mt19937> Random;
 	std::shared_ptr<SoundManager> Sound;
+    std::shared_ptr<MusicsManager> Musics;
 
 
 public:
@@ -38,10 +41,13 @@ public:
 	inline SoundManager* GetSoundManager() { return Sound.get(); }
 
     void ExecuteSkin();
+    void ExecuteSkin(const std::string &file);
     void ExecuteSystemMenu();
+    void ReloadMusic();
 
 private:
     bool CheckSkinStructure(boost::filesystem::path name);
     void UpdateKeyState();
+    void RegisterGlobalManagementFunction();
 };
 

@@ -8,7 +8,7 @@
 * FreeType
 * libpng
 * LZMA SDK
-* Effekseer
+* BASS Audio Library
 
 # ライセンス
 本体はMIT License
@@ -125,4 +125,23 @@
 > Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 > 
 > This notice may not be removed or altered from any source distribution.
-
+> 
+> ### Bass Audio Library
+> TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, BASS IS PROVIDED
+> "AS IS", WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED,
+> INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY
+> AND/OR FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS SHALL NOT BE HELD
+> LIABLE FOR ANY DAMAGE THAT MAY RESULT FROM THE USE OF BASS. YOU USE
+> BASS ENTIRELY AT YOUR OWN RISK.
+> 
+> Usage of BASS indicates that you agree to the above conditions.
+> 
+> All trademarks and other registered names contained in the BASS
+> package are the property of their respective owners.
+> 
+> MP3 technology is patented, and Thomson license the use of their and
+> Fraunhofer's patents. The inclusion of an MP3 decoder (eg. BASS) in a
+> commercial product requires an MP3 patent licence. Contact Thomson for
+> details:
+> 
+> 	www.mp3licensing.com

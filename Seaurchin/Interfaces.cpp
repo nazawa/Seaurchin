@@ -2,7 +2,6 @@
 
 #include "Config.h"
 #include "Debug.h"
-#include "Sprite.h"
 #include "ScriptScene.h"
 #include "ExecutionManager.h"
 #include "ScriptFunction.h"
@@ -20,11 +19,11 @@ void InterfacesRegisterGlobalFunction(ExecutionManager *exm)
 	auto engine = exm->GetScriptInterface()->GetEngine();
 
     engine->RegisterGlobalFunction("void WriteDebugConsole(const string &in)", asFUNCTION(WriteDebugConsoleU), asCALL_CDECL);
-    engine->RegisterGlobalFunction(SU_IF_FONT "@ LoadSystemFont(const string & in)", asFUNCTION(LoadSystemFont), asCALL_CDECL);
     //engine->RegisterGlobalFunction(SU_IF_VFONT " CreateVirtualFont(const string & in, int)", asFUNCTION(CreateVirtualFont), asCALL_CDECL);
+	engine->RegisterGlobalFunction(SU_IF_FONT "@ LoadSystemFont(const string & in)", asFUNCTION(LoadSystemFont), asCALL_CDECL);
     engine->RegisterGlobalFunction(SU_IF_IMAGE "@ LoadSystemImage(const string &in)", asFUNCTION(LoadSystemImage), asCALL_CDECL);
+	//engine->RegisterGlobalFunction(SU_IF_SOUND "@ LoadSystemSound(const string &in)", asFUNCTION(LoadSystemSound), asCALL_CDECL_OBJFIRST, exm->GetSoundManager());
     engine->RegisterGlobalFunction("void CreateImageFont(const string &in, const string &in, int)", asFUNCTION(CreateImageFont), asCALL_CDECL);
-    //engine->RegisterGlobalFunction("void DrawRawString(" SU_IF_VFONT ", const string & in, double, double)", asFUNCTION(DrawRawString), asCALL_CDECL);
 }
 
 void InterfacesRegisterEnum(ExecutionManager *exm)

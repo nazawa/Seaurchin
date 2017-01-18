@@ -1,10 +1,5 @@
 #pragma once
 
-
-#include "DxLibResource.h"
-#include "Config.h"
-#include "Debug.h"
-
 typedef struct
 {
     double X = 0.0;
@@ -169,61 +164,3 @@ public:
     static constexpr ColorTint Yellow = { 0xFF, 0xFF, 0xFF, 0x00 };
     static constexpr ColorTint YellowGreen = { 0xFF, 0x9A, 0xCD, 0x32 };
 };
-
-/*
-Sprite(AS互換、スマポ仕様)
-全ての基底
-*/
-class Sprite
-{
-protected:
-    int ReferenceCount;
-public:
-    Transform2D Transform;
-    ColorTint Tint = Colors::White;
-    int ZIndex;
-
-    Sprite();
-    Sprite(int number);
-    virtual ~Sprite();
-
-    virtual void Tick(float delta);
-    virtual void Draw();
-};
-
-class ImageSprite : public Sprite
-{
-public:
-    std::shared_ptr<Image> Source;
-    void Draw() override;
-};
-
-class TextSprite : public Sprite
-{
-private:
-    int handle;
-    std::shared_ptr<RenderTarget> cache;
-
-public:
-    std::shared_ptr<Font> Font;
-    std::string Text;           //UTF-8状態
-
-    void Draw() override;
-    void Refresh();
-    void SetText(const std::string& str);
-};
-
-class Shape : public Sprite
-{
-public:
-    double Width;
-    double Height;
-};
-
-void SpriteCtorTransform2D(void *memory);
-void SpriteDtorTransform2D(void *memory);
-void SpriteCtorColorTint(void *memory);
-void SpriteDtorColorTint(void *memory);
-std::shared_ptr<Sprite> SpriteFactorySprite(int number);
-std::shared_ptr<ImageSprite> SpriteFactoryImageSprite();
-std::shared_ptr<TextSprite> SpriteFactoryTextSprite();

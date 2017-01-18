@@ -71,6 +71,10 @@ bool ScriptScene::IsDead()
     return false;
 }
 
+void ScriptScene::Disappear()
+{
+}
+
 void ScriptScene::TickCoroutine(double delta)
 {
     //coroutines
@@ -194,6 +198,11 @@ bool ScriptCoroutineScene::IsDead()
     return finished;
 }
 
+void ScriptCoroutineScene::Disappear()
+{
+    finished = true;
+}
+
 void RegisterScriptScene(ExecutionManager *exm)
 {
 	auto engine = exm->GetScriptInterface()->GetEngine();
@@ -214,6 +223,7 @@ void RegisterScriptScene(ExecutionManager *exm)
     engine->RegisterGlobalFunction("bool IsKeyTriggered(int)", asFUNCTION(ScriptSceneIsKeyTriggered), asCALL_CDECL);
     engine->RegisterGlobalFunction("void RunCoroutine(" SU_IF_COROUTINE "@, const string &in)", asFUNCTION(ScriptSceneRunCoroutine), asCALL_CDECL);
     engine->RegisterGlobalFunction("void KillCoroutine(const string &in)", asFUNCTION(ScriptSceneKillCoroutine), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void Disappear()", asFUNCTION(ScriptSceneDisappear), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddSprite(" SU_IF_SPRITE "@)", asFUNCTION(ScriptSceneAddSprite), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddScene(" SU_IF_SCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddScene(" SU_IF_COSCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
@@ -337,4 +347,16 @@ void ScriptSceneKillCoroutine(const std::string &name)
             }
         }
     }
+}
+
+void ScriptSceneDisappear()
+{
+    auto ctx = asGetActiveContext();
+    auto psc = static_cast<ScriptCoroutineScene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
+    if (!psc)
+    {
+        ScriptSceneWarnOutOf("Scene Class", ctx);
+        return;
+    }
+    psc->Disappear();
 }

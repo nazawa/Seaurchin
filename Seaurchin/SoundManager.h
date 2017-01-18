@@ -48,8 +48,8 @@ public:
 //こいつのポインタをOBJFIRSTで渡すのギルティーじゃない？
 class SoundManager final {
 private:
-	HPLUGIN hPluginMix;
-	HPLUGIN hPluginEffect;
+	HPLUGIN hPluginMix = 0;
+	HPLUGIN hPluginEffect = 0;
 
 	HSTREAM MasterMixerChannel;
 	std::set<HCHANNEL> ConnectedChannels;

@@ -44,6 +44,7 @@ public:
     void Tick(double delta) override;
     void Draw() override;
     bool IsDead() override;
+    virtual void Disappear();
 
     friend void ScriptSceneKillCoroutine(const std::string &name);
 };
@@ -64,6 +65,7 @@ public:
     void Tick(double delta) override;
     void Initialize() override;
     bool IsDead() override;
+    void Disappear() override;
 
 };
 
@@ -76,3 +78,4 @@ void ScriptSceneAddScene(asIScriptObject *sceneObject);
 void ScriptSceneAddSprite(SSprite *sprite);
 void ScriptSceneRunCoroutine(asIScriptFunction *cofunc, const std::string &name);
 void ScriptSceneKillCoroutine(const std::string &name);
+void ScriptSceneDisappear();
