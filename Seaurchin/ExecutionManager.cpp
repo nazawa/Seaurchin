@@ -41,6 +41,7 @@ void ExecutionManager::RegisterGlobalManagementFunction()
 
     engine->RegisterGlobalFunction("void Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), void), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("void ReloadMusic()", asMETHOD(ExecutionManager, ReloadMusic), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterGlobalFunction(SU_IF_MSCURSOR "@ CreateMusicCursor()", asMETHOD(ExecutionManager, CreateCursor), asCALL_THISCALL_ASGLOBAL, this);
 }
 
 
@@ -61,9 +62,6 @@ void ExecutionManager::EnumerateSkins()
     ostringstream ss;
     ss << "Found " << SkinNames.size() << " Skins" << endl;
     WriteDebugConsole(ss.str().c_str());
-
-    Musics->Initialize();
-    Musics->Reload(true);
 }
 
 bool ExecutionManager::CheckSkinStructure(boost::filesystem::path name)
@@ -78,7 +76,6 @@ bool ExecutionManager::CheckSkinStructure(boost::filesystem::path name)
     if (!exists(name / SU_SCRIPT_DIR / SU_SKIN_RESULT_FILE)) return false;
     return true;
 }
-
 
 void ExecutionManager::ExecuteSkin()
 {
@@ -257,4 +254,18 @@ shared_ptr<ScriptScene> ExecutionManager::CreateSceneFromScriptObject(asIScriptO
 
 void ExecutionManager::ReloadMusic() {
     Musics->Reload(true);
+}
+
+MusicSelectionCursor * ExecutionManager::CreateCursor()
+{
+    return Musics->CreateCursor();
+}
+
+std::tuple<bool, LRESULT> ExecutionManager::CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg) {
+    default:
+        return make_tuple(false, (LRESULT)nullptr);
+    }
+    return std::tuple<bool, LRESULT>();
 }

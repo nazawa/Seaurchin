@@ -45,7 +45,9 @@ bool MusicsManager::IsReloading()
 
 MusicSelectionCursor * MusicsManager::CreateCursor()
 {
-    return new MusicSelectionCursor(this);
+    auto cursor = new MusicSelectionCursor(this);
+    cursor->AddRef();
+    return cursor;
 }
 
 void MusicsManager::CreateMusicCache()
@@ -129,7 +131,7 @@ std::string MusicSelectionCursor::GetCategoryName(int32_t relativeIndex)
 {
     if (Manager->Categories.size() == 0) return "Unavailable";
     int32_t actual = relativeIndex + CategoryIndex;
-    while (actual >= 0) actual += Manager->Categories.size();
+    while (actual < 0) actual += Manager->Categories.size();
     return Manager->Categories[actual % Manager->Categories.size()]->GetName();
 }
 
@@ -138,7 +140,7 @@ std::string MusicSelectionCursor::GetMusicName(int32_t relativeIndex)
     auto current = Manager->Categories[CategoryIndex];
     if (current->Musics.size() == 0) return "Unavailable!";
     int32_t actual = relativeIndex + MusicIndex;
-    while (actual >= 0) actual += current->Musics.size();
+    while (actual < 0) actual += current->Musics.size();
     return current->Musics[actual % current->Musics.size()]->Name;
 }
 
@@ -199,12 +201,12 @@ int MusicSelectionCursor::Previous()
     switch (State) {
     case 0:
         if (Manager->Categories.size() == 0) return -1;
-        CategoryIndex = (CategoryIndex + 1) % Manager->Categories.size();
+        CategoryIndex = (CategoryIndex + Manager->Categories.size() - 1) % Manager->Categories.size();
         return 1;
     case 1: {
         auto current = Manager->Categories[CategoryIndex];
         if (current->Musics.size() == 0) return -1;
-        MusicIndex = (MusicIndex + 1) % current->Musics.size();
+        MusicIndex = (MusicIndex + current->Musics.size() - 1) % current->Musics.size();
     }
     default:
         return 0;

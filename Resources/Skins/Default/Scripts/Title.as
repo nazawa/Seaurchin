@@ -35,6 +35,7 @@ class Title : CoroutineScene {
     @imgAngelScript = skin.GetImage("LogoAngelScript");
     @imgSeaurchin = skin.GetImage("LogoSeaurchin");
     @imgCursorMenu = skin.GetImage("CursorMenu");
+    @smCursor = skin.GetSound("SoundCursor");
   }
   
   //ここからコルーチン
@@ -75,6 +76,7 @@ class Title : CoroutineScene {
   Sprite@ spLogo, spCursor;
   ClipSprite @spTitle;
   array<Sprite@> menu(3);
+  Sound @smCursor;
   int mcur = 0;
   void TitleRipple() {
     @spLogo = Sprite(imgSeaurchin);
@@ -140,11 +142,17 @@ class Title : CoroutineScene {
     while(true) {
       if (IsKeyTriggered(Key::INPUT_UP)) {
         mcur = (mcur + 2) % 3;
+        smCursor.Play();
         spCursor.AddMove("move_to(time:0.1, x:480, y:" + (400 + 64 * mcur) + ")");
       }
       if (IsKeyTriggered(Key::INPUT_DOWN)) {
         mcur = (mcur + 1) % 3;
+        smCursor.Play();
         spCursor.AddMove("move_to(time:0.1, x:480, y:" + (400 + 64 * mcur) + ")");
+      }
+      if (IsKeyTriggered(Key::INPUT_RETURN)) {
+        Disappear();
+        Execute("Select.as");
       }
       YieldFrame(1);
     }

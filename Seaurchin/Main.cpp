@@ -12,10 +12,12 @@ void PreInitialize(HINSTANCE hInstance);
 void Initialize();
 void Run();
 void Terminate();
+LRESULT CALLBACK CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 shared_ptr<Setting> setting;
 unique_ptr<ExecutionManager> manager;
-
+WNDPROC dxlibWndProc;
+HWND hDxlibWnd;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -45,7 +47,11 @@ void Initialize()
 {
     if (DxLib_Init() == -1) abort();
     WriteDebugConsole(TEXT("DxLib_Init\n"));
-
+    //WndProc·‚µ‘Ö‚¦
+    hDxlibWnd = GetMainWindowHandle();
+    dxlibWndProc = (WNDPROC)GetWindowLong(hDxlibWnd, GWL_WNDPROC);
+    SetWindowLong(hDxlibWnd, GWL_WNDPROC, (LONG)CustomWindowProc);
+    //D3DÝ’è
     SetDrawScreen(DX_SCREEN_BACK);
     SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
     SetUseZBuffer3D(TRUE);
@@ -86,4 +92,18 @@ void Terminate()
     TerminateDebugFeature();
     setting->Save();
     DxLib_End();
+}
+
+LRESULT CALLBACK CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    bool processed;
+    LRESULT result;
+    tie(processed, result) = manager->CustomWindowProc(hWnd, msg, wParam, lParam);
+    
+    if (processed) {
+        return result;
+    }
+    else {
+        return CallWindowProc(dxlibWndProc, hWnd, msg, wParam, lParam);
+    }
 }

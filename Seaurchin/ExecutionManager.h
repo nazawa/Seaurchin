@@ -40,10 +40,12 @@ public:
     inline AngelScript* GetScriptInterface() { return ScriptInterface.get(); }
 	inline SoundManager* GetSoundManager() { return Sound.get(); }
 
+    std::tuple<bool, LRESULT> CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void ExecuteSkin();
     void ExecuteSkin(const std::string &file);
     void ExecuteSystemMenu();
     void ReloadMusic();
+    MusicSelectionCursor *CreateCursor();
 
 private:
     bool CheckSkinStructure(boost::filesystem::path name);

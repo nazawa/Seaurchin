@@ -16,6 +16,7 @@ void RegisterScriptSprite(ExecutionManager *exm)
     STextSprite::RegisterType(engine);
     SSynthSprite::RegisterType(engine);
     SClippingSprite::RegisterType(engine);
+    SNinePatchSprite::RegisterType(engine);
 }
 
 //SSprite ------------------
@@ -50,8 +51,9 @@ SSprite::SSprite()
 
 SSprite::~SSprite()
 {
-    WriteDebugConsole("Destructing ScriptSprite\n");
+    //WriteDebugConsole("Destructing ScriptSprite\n");
     if (Image) Image->Release();
+    Image = nullptr;
 }
 
 void SSprite::AddRef()
@@ -663,4 +665,82 @@ void SEffectSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectMethod(SU_IF_EFXSPRITE, "void Play()", asMETHOD(SEffectSprite, Play), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_EFXSPRITE, "void Reset()", asMETHOD(SEffectSprite, Reset), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_EFXSPRITE, "void Stop()", asMETHOD(SEffectSprite, Stop), asCALL_THISCALL);
+}
+
+// SNinePatchSprite
+
+SNinePatchSprite::SNinePatchSprite()
+{
+}
+
+SNinePatchSprite::~SNinePatchSprite()
+{
+    if (Image) Image->Release();
+    Image = nullptr;
+}
+
+SNinePatchImage * SNinePatchSprite::get_Image()
+{
+    Image->AddRef();
+    return Image;
+}
+
+void SNinePatchSprite::set_Image(SNinePatchImage * image)
+{
+    if (Image) Image->Release();
+    Image = image;
+}
+
+void SNinePatchSprite::SetDrawMethod(NinePatchType type, float sx, float sy)
+{
+    Type = type;
+    PatchScaleX = sx;
+    PatchScaleY = sy;
+}
+
+void SNinePatchSprite::Draw()
+{
+}
+
+SNinePatchSprite * SNinePatchSprite::Clone()
+{
+    auto clone = new SNinePatchSprite();
+    clone->AddRef();
+    clone->CopyParameterFrom(this);
+    if (Image) {
+        Image->AddRef();
+        clone->set_Image(this->Image);
+    }
+    return clone;
+}
+
+SNinePatchSprite * SNinePatchSprite::Factory()
+{
+    auto result = new SNinePatchSprite();
+    result->AddRef();
+    return result;
+}
+
+SNinePatchSprite * SNinePatchSprite::Factory(SNinePatchImage * img)
+{
+    auto result = new SNinePatchSprite();
+    result->AddRef();
+    result->set_Image(img);
+    return result;
+}
+
+void SNinePatchSprite::RegisterType(asIScriptEngine * engine)
+{
+    engine->RegisterEnum(SU_IF_9TYPE);
+    engine->RegisterEnumValue(SU_IF_9TYPE, "StretchByRatio", NinePatchType::StretchByRatio);
+    engine->RegisterEnumValue(SU_IF_9TYPE, "StretchByPixel", NinePatchType::StretchByPixel);
+    engine->RegisterEnumValue(SU_IF_9TYPE, "StretchByRepeat", NinePatchType::Repeat);
+
+    RegisterSpriteBasic<SEffectSprite>(engine, SU_IF_9SPRITE);
+    engine->RegisterObjectBehaviour(SU_IF_9SPRITE, asBEHAVE_FACTORY, SU_IF_9SPRITE "@ f()", asFUNCTIONPR(SNinePatchSprite::Factory, (), SNinePatchSprite*), asCALL_CDECL);
+    engine->RegisterObjectBehaviour(SU_IF_9SPRITE, asBEHAVE_FACTORY, SU_IF_9SPRITE "@ f(" SU_IF_IMAGE "@)", asFUNCTIONPR(SNinePatchSprite::Factory, (SNinePatchImage*), SNinePatchSprite*), asCALL_CDECL);
+    engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_9SPRITE "@ opCast()", asFUNCTION((CastReferenceType<SSprite, SNinePatchSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_9SPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SNinePatchSprite, SSprite>)), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(SU_IF_9SPRITE, SU_IF_9SPRITE "@ Clone()", asMETHOD(SNinePatchSprite, Clone), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_9SPRITE, "void SetDrawMethod(" SU_IF_9TYPE ", float, float)", asMETHOD(SNinePatchSprite, SetDrawMethod), asCALL_THISCALL);
 }
