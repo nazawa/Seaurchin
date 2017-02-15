@@ -154,6 +154,7 @@ int MusicSelectionCursor::Enter()
         VariantIndex = 0;
         return 1;
     case 1:
+        //‘I‹ÈI—¹
         return 2;
     default:
         return 0;

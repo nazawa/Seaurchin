@@ -24,7 +24,9 @@ private:
     std::shared_ptr<std::mt19937> Random;
 	std::shared_ptr<SoundManager> Sound;
     std::shared_ptr<MusicsManager> Musics;
-
+   
+    HIMC hImc;
+    DWORD ImmConversion, ImmSentence;
 
 public:
     ExecutionManager(std::shared_ptr<Setting> setting);
@@ -32,6 +34,8 @@ public:
     void EnumerateSkins();
     void Tick(double delta);
     void Draw();
+    void Initialize();
+    void Shutdown();
     void AddScene(std::shared_ptr<Scene> scene);
     std::shared_ptr<ScriptScene> CreateSceneFromScriptType(asITypeInfo *type);
     std::shared_ptr<ScriptScene> CreateSceneFromScriptObject(asIScriptObject *obj);

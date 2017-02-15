@@ -24,6 +24,10 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     SharedKeyState = make_shared<KeyState>();
     Musics = make_shared<MusicsManager>(SharedSetting);
 
+}
+
+void ExecutionManager::Initialize()
+{
     InterfacesRegisterEnum(this);
     RegisterScriptResource(this);
     RegisterScriptSprite(this);
@@ -32,6 +36,17 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     InterfacesRegisterSceneFunction(this);
     InterfacesRegisterGlobalFunction(this);
     RegisterGlobalManagementFunction();
+    /*
+    hImc = ImmGetContext(GetMainWindowHandle());
+    if (!ImmGetOpenStatus(hImc)) ImmSetOpenStatus(hImc, TRUE);
+    ImmGetConversionStatus(hImc, &ImmConversion, &ImmSentence);
+    ImmSetConversionStatus(hImc, IME_CMODE_NATIVE | IME_CMODE_FULLSHAPE, ImmSentence);
+    */
+}
+
+void ExecutionManager::Shutdown()
+{
+    //if (hImc) ImmReleaseContext(GetMainWindowHandle(), hImc);
 }
 
 void ExecutionManager::RegisterGlobalManagementFunction()
@@ -263,9 +278,33 @@ MusicSelectionCursor * ExecutionManager::CreateCursor()
 
 std::tuple<bool, LRESULT> ExecutionManager::CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    ostringstream buffer;
     switch (msg) {
+    /*
+        //IME
+    case WM_INPUTLANGCHANGE:
+        WriteDebugConsole("Input Language Changed\n");
+        buffer << "CharSet:" << wParam << ", Locale:" << LOWORD(lParam);
+        WriteDebugConsole(buffer.str().c_str());
+        return make_tuple(true, TRUE);
+    case WM_IME_SETCONTEXT:
+        WriteDebugConsole("Input Set Context\n");
+        return make_tuple(false, 0);
+    case WM_IME_STARTCOMPOSITION:
+        WriteDebugConsole("Input Start Composition\n");
+        return make_tuple(false, 0);
+    case WM_IME_COMPOSITION:
+        WriteDebugConsole("Input Conposition\n");
+        return make_tuple(false, 0);
+    case WM_IME_ENDCOMPOSITION:
+        WriteDebugConsole("Input End Composition\n");
+        return make_tuple(false, 0);
+    case WM_IME_NOTIFY:
+        WriteDebugConsole("Input Notify\n");
+        return make_tuple(false, 0);
+        */
     default:
         return make_tuple(false, (LRESULT)nullptr);
     }
-    return std::tuple<bool, LRESULT>();
+    
 }

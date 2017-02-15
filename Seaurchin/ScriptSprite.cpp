@@ -336,6 +336,7 @@ void STextSprite::Refresh()
 
 void STextSprite::set_Font(SFont * font)
 {
+    if (Font) Font->Release();
     Font = font;
     Refresh();
 }
@@ -410,6 +411,78 @@ void STextSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetFont(" SU_IF_FONT "@)", asMETHOD(STextSprite, set_Font), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetText(const string &in)", asMETHOD(STextSprite, set_Text), asCALL_THISCALL);
 }
+
+// STextInput ---------------------------------------
+
+STextInput::STextInput()
+{
+    //TODO: デフォルト値の引数化
+    InputHandle = MakeKeyInput(1024, TRUE, FALSE, FALSE, FALSE, FALSE);
+}
+
+STextInput::~STextInput()
+{
+    if (InputHandle) DeleteKeyInput(InputHandle);
+}
+
+void STextInput::set_Font(SFont * font)
+{
+    if (Font) Font->Release();
+    Font = font;
+}
+
+void STextInput::Activate()
+{
+    SetActiveKeyInput(InputHandle);
+}
+
+void STextInput::Draw()
+{
+    int wcc = MultiByteToWideChar(CP_OEMCP, 0, CurrentRawString.c_str(), 1024, nullptr, 0);
+    wchar_t *widestr = new wchar_t[wcc];
+    MultiByteToWideChar(CP_OEMCP, 0, CurrentRawString.c_str(), 1024, widestr, 0);
+    for (int i = 0; i < wcc; i++) {
+
+    }
+    delete[] widestr;
+}
+
+void STextInput::Tick(double delta)
+{
+    TCHAR buffer[1024] = { 0 };
+    switch (CheckKeyInput(InputHandle)) {
+    case 0:
+        GetKeyInputString(buffer, InputHandle);
+        CurrentRawString = buffer;
+        Cursor = GetKeyInputCursorPosition(InputHandle);
+        GetKeyInputSelectArea(&SelectionStart, &SelectionEnd, InputHandle);
+        return;
+    case 1:
+    case 2:
+        SelectionStart = SelectionEnd = Cursor = -1;
+        return;
+    }
+}
+
+std::string STextInput::GetUTF8String()
+{
+    return std::string();
+}
+
+STextInput * STextInput::Factory()
+{
+    return nullptr;
+}
+
+STextInput * STextInput::Factory(SFont * img)
+{
+    return nullptr;
+}
+
+void STextInput::RegisterType(asIScriptEngine * engine)
+{
+}
+
 
 // SSynthSprite -------------------------------------
 

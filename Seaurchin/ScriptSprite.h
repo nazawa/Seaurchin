@@ -113,6 +113,32 @@ public:
     static void RegisterType(asIScriptEngine *engine);
 };
 
+//文字入力を扱うスプライトです
+//他と違ってDXライブラリのリソースをナマで取得するのであんまりボコボコ使わないでください。
+class STextInput : public SSprite {
+protected:
+    int InputHandle = 0;
+    SFont *Font = nullptr;
+    int SelectionStart = -1, SelectionEnd = -1;
+    int Cursor = 0;
+    std::string CurrentRawString = "";
+
+public:
+    STextInput();
+    ~STextInput() override;
+    void set_Font(SFont *font);
+    
+    void Activate();
+    void Draw() override;
+    void Tick(double delta) override;
+
+    std::string GetUTF8String();
+
+    static STextInput* Factory();
+    static STextInput* Factory(SFont *img);
+    static void RegisterType(asIScriptEngine *engine);
+};
+
 //画像を任意のスプライトから合成してウェイできます
 class SSynthSprite : public SSprite
 {

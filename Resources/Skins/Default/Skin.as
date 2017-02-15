@@ -1,5 +1,9 @@
 [EntryPoint]
 void InitializeSkin(Skin@ skin) {
+  //システム(というか組み込みのプレイ画面)用リソース名には先頭に*をつける
+  skin.LoadImage("*Note-Tap", "Note-Tap.png");
+  skin.LoadImage("*Note-ExTap", "Note-ExTap.png");
+  
   skin.LoadImage("White", "White.png");               //つなぎ
   skin.LoadImage("TitleBack", "Background.png");          //1280x720
   skin.LoadImage("LogoSeaurchin", "SeaurchinLogo.png");   //320x320
@@ -17,4 +21,5 @@ void InitializeSkin(Skin@ skin) {
   skin.LoadFont("Latin128", "Latin128.sif");
   
   skin.LoadSound("SoundCursor", "button01a.mp3");
+  
 }

@@ -182,9 +182,6 @@
     <ClInclude Include="SceneDebug.h">
       <Filter>ビルトインScene</Filter>
     </ClInclude>
-    <ClInclude Include="as_smart_ptr_wrapper.h">
-      <Filter>AngelScript</Filter>
-    </ClInclude>
     <ClInclude Include="ExecutionManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

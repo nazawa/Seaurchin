@@ -59,6 +59,7 @@ void Initialize()
 
     setting->Load(SU_SETTING_FILE);
     manager = unique_ptr<ExecutionManager>(new ExecutionManager(setting));
+    manager->Initialize();
 }
 
 void Run()
@@ -89,6 +90,7 @@ void Run()
 
 void Terminate()
 {
+    manager->Shutdown();
     TerminateDebugFeature();
     setting->Save();
     DxLib_End();
