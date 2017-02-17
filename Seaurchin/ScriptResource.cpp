@@ -38,7 +38,6 @@ SImage::SImage(int ih)
 SImage::~SImage()
 {
     DeleteGraph(Handle);
-    WriteDebugConsole(":‚ ‚Ÿ‚ñ?Å‹ß‚¾‚ç‚µ‚Ë‚¥‚È?\n");
     Handle = 0;
 }
 
@@ -89,6 +88,26 @@ SRenderTarget * SRenderTarget::CreateBlankTarget(int w, int h)
     auto result = new SRenderTarget(w, h);
     result->AddRef();
     return result;
+}
+
+// SNinePatchImage ----------------------------
+SNinePatchImage::SNinePatchImage(int ih) : SImage(ih)
+{
+}
+
+SNinePatchImage::~SNinePatchImage()
+{
+    DeleteGraph(Handle);
+    Handle = 0;
+    LeftSideWidth = TopSideHeight = BodyWidth = BodyHeight = 0;
+}
+
+void SNinePatchImage::SetArea(int leftw, int toph, int bodyw, int bodyh)
+{
+    LeftSideWidth = leftw;
+    TopSideHeight = toph;
+    BodyWidth = bodyw;
+    BodyHeight = bodyh;
 }
 
 // SFont --------------------------------------
@@ -195,26 +214,26 @@ SEffect::~SEffect()
 // SSound -----------------------------------
 SSound::SSound(SoundManager *mng, SoundSample *smp)
 {
-	manager = mng;
-	sample = smp;
+    manager = mng;
+    sample = smp;
 }
 
 SSound::~SSound()
 {
-	StopAll();
-	if (sample) manager->ReleaseSound(sample);
-	manager->ReleaseSound(sample);
-	sample = nullptr;
+    StopAll();
+    if (sample) manager->ReleaseSound(sample);
+    manager->ReleaseSound(sample);
+    sample = nullptr;
 }
 
 void SSound::Play()
 {
-	manager->Play(sample);
+    manager->Play(sample);
 }
 
 void SSound::StopAll()
 {
-	manager->Stop(sample);
+    manager->Stop(sample);
 }
 
 SSound * SSound::CreateSound(SoundManager *smanager)
@@ -231,7 +250,7 @@ SSound * SSound::CreateSoundFromFile(SoundManager *smanager, const std::string &
 
 void RegisterScriptResource(ExecutionManager *exm)
 {
-	auto engine = exm->GetScriptInterface()->GetEngine();
+    auto engine = exm->GetScriptInterface()->GetEngine();
 
     engine->RegisterObjectType(SU_IF_IMAGE, 0, asOBJ_REF);
     engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_FACTORY, SU_IF_IMAGE "@ f()", asFUNCTION(SImage::CreateBlankImage), asCALL_CDECL);
@@ -252,9 +271,16 @@ void RegisterScriptResource(ExecutionManager *exm)
     engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_ADDREF, "void f()", asMETHOD(SEffect, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_EFXDATA, asBEHAVE_RELEASE, "void f()", asMETHOD(SEffect, Release), asCALL_THISCALL);
 
-	engine->RegisterObjectType(SU_IF_SOUND, 0, asOBJ_REF);
-	engine->RegisterObjectBehaviour(SU_IF_SOUND, asBEHAVE_ADDREF, "void f()", asMETHOD(SSound, AddRef), asCALL_THISCALL);
-	engine->RegisterObjectBehaviour(SU_IF_SOUND, asBEHAVE_RELEASE, "void f()", asMETHOD(SSound, Release), asCALL_THISCALL);
-	engine->RegisterObjectMethod(SU_IF_SOUND, "void Play()", asMETHOD(SSound, Play), asCALL_THISCALL);
-	engine->RegisterObjectMethod(SU_IF_SOUND, "void StopAll()", asMETHOD(SSound, StopAll), asCALL_THISCALL);
+    engine->RegisterObjectType(SU_IF_SOUND, 0, asOBJ_REF);
+    engine->RegisterObjectBehaviour(SU_IF_SOUND, asBEHAVE_ADDREF, "void f()", asMETHOD(SSound, AddRef), asCALL_THISCALL);
+    engine->RegisterObjectBehaviour(SU_IF_SOUND, asBEHAVE_RELEASE, "void f()", asMETHOD(SSound, Release), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SOUND, "void Play()", asMETHOD(SSound, Play), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SOUND, "void StopAll()", asMETHOD(SSound, StopAll), asCALL_THISCALL);
+
+    engine->RegisterObjectType(SU_IF_9IMAGE, 0, asOBJ_REF);
+    //engine->RegisterObjectBehaviour(SU_IF_9IMAGE, asBEHAVE_FACTORY, SU_IF_IMAGE "@ f()", asFUNCTION(SNinePatchImage::CreateBlankImage), asCALL_CDECL);
+    engine->RegisterObjectBehaviour(SU_IF_9IMAGE, asBEHAVE_ADDREF, "void f()", asMETHOD(SNinePatchImage, AddRef), asCALL_THISCALL);
+    engine->RegisterObjectBehaviour(SU_IF_9IMAGE, asBEHAVE_RELEASE, "void f()", asMETHOD(SNinePatchImage, Release), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_9IMAGE, "int get_Width()", asMETHOD(SNinePatchImage, get_Width), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_9IMAGE, "int get_Height()", asMETHOD(SNinePatchImage, get_Height), asCALL_THISCALL);
 }

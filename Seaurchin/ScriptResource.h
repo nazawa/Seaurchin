@@ -11,6 +11,7 @@
 #define SU_IF_RENDER "RenderTarget"
 #define SU_IF_SOUND "Sound"
 #define SU_IF_EFXDATA "EffectData"
+#define SU_IF_9IMAGE "NinePatchImage"
 
 //interface 自動解放対象
 class ISResouceAutoRelease
@@ -60,6 +61,21 @@ public:
     SRenderTarget(int w, int h);
 
     static SRenderTarget* CreateBlankTarget(int w, int h);
+};
+
+//9patch描画用
+class SNinePatchImage : public SImage {
+protected:
+    int LeftSideWidth = 8;
+    int TopSideHeight = 8;
+    int BodyWidth = 32;
+    int BodyHeight = 32;
+
+public:
+    SNinePatchImage(int ih);
+    ~SNinePatchImage() override;
+    void SetArea(int leftw, int toph, int bodyw, int bodyh);
+    std::tuple<int, int, int, int> GetArea() { return std::make_tuple(LeftSideWidth, TopSideHeight, BodyWidth, BodyHeight); }
 };
 
 //フォント

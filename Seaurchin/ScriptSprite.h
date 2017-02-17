@@ -7,6 +7,7 @@
 #define SU_IF_COLOR "Color"
 #define SU_IF_TF2D "Transform2D"
 #define SU_IF_SHAPETYPE "ShapeType"
+#define SU_IF_9TYPE "NinePatchType"
 
 #define SU_IF_SPRITE "Sprite"
 #define SU_IF_SHAPE "Shape"
@@ -14,6 +15,7 @@
 #define SU_IF_SYHSPRITE "SynthSprite"
 #define SU_IF_CLPSPRITE "ClipSprite"
 #define SU_IF_EFXSPRITE "EffectSprite"
+#define SU_IF_9SPRITE "NinePatchSprite"
 
 class ScriptSpriteMover;
 struct Mover;
@@ -111,6 +113,32 @@ public:
     static void RegisterType(asIScriptEngine *engine);
 };
 
+//文字入力を扱うスプライトです
+//他と違ってDXライブラリのリソースをナマで取得するのであんまりボコボコ使わないでください。
+class STextInput : public SSprite {
+protected:
+    int InputHandle = 0;
+    SFont *Font = nullptr;
+    int SelectionStart = -1, SelectionEnd = -1;
+    int Cursor = 0;
+    std::string CurrentRawString = "";
+
+public:
+    STextInput();
+    ~STextInput() override;
+    void set_Font(SFont *font);
+    
+    void Activate();
+    void Draw() override;
+    void Tick(double delta) override;
+
+    std::string GetUTF8String();
+
+    static STextInput* Factory();
+    static STextInput* Factory(SFont *img);
+    static void RegisterType(asIScriptEngine *engine);
+};
+
 //画像を任意のスプライトから合成してウェイできます
 class SSynthSprite : public SSprite
 {
@@ -177,6 +205,35 @@ public:
     void Stop();
 
     static SEffectSprite* Factory(SEffect *effectData);
+    static void RegisterType(asIScriptEngine *engine);
+};
+
+enum NinePatchType : uint32_t {
+    StretchByRatio = 1,
+    StretchByPixel,
+    Repeat,
+    RepeatAndStretch,
+};
+
+class SNinePatchSprite : public SSprite {
+protected:
+    SNinePatchImage *Image = nullptr;
+    NinePatchType Type;
+    float PatchScaleX = 1.0;
+    float PatchScaleY = 1.0;
+
+public:
+    SNinePatchSprite();
+    ~SNinePatchSprite();
+    SNinePatchImage *get_Image();
+    void set_Image(SNinePatchImage *image);
+
+    void SetDrawMethod(NinePatchType type, float sx, float sy);
+    void Draw() override;
+    SNinePatchSprite *Clone();
+
+    static SNinePatchSprite* Factory();
+    static SNinePatchSprite* Factory(SNinePatchImage *img);
     static void RegisterType(asIScriptEngine *engine);
 };
 

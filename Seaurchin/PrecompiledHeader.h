@@ -3,6 +3,7 @@
 //Windows
 #include <Windows.h>
 #include <Shlwapi.h>
+#include <Imm.h>
 
 //C Runtime
 #define _USE_MATH_DEFINES

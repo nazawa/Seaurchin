@@ -24,7 +24,9 @@ private:
     std::shared_ptr<std::mt19937> Random;
 	std::shared_ptr<SoundManager> Sound;
     std::shared_ptr<MusicsManager> Musics;
-
+   
+    HIMC hImc;
+    DWORD ImmConversion, ImmSentence;
 
 public:
     ExecutionManager(std::shared_ptr<Setting> setting);
@@ -32,6 +34,8 @@ public:
     void EnumerateSkins();
     void Tick(double delta);
     void Draw();
+    void Initialize();
+    void Shutdown();
     void AddScene(std::shared_ptr<Scene> scene);
     std::shared_ptr<ScriptScene> CreateSceneFromScriptType(asITypeInfo *type);
     std::shared_ptr<ScriptScene> CreateSceneFromScriptObject(asIScriptObject *obj);
@@ -40,10 +44,12 @@ public:
     inline AngelScript* GetScriptInterface() { return ScriptInterface.get(); }
 	inline SoundManager* GetSoundManager() { return Sound.get(); }
 
+    std::tuple<bool, LRESULT> CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void ExecuteSkin();
     void ExecuteSkin(const std::string &file);
     void ExecuteSystemMenu();
     void ReloadMusic();
+    MusicSelectionCursor *CreateCursor();
 
 private:
     bool CheckSkinStructure(boost::filesystem::path name);

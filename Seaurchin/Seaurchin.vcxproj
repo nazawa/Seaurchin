@@ -97,7 +97,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Programming\DXLib\lib;C:\Programming\AngelScript\angelscript\lib;C:\Programming\Boost\lib;C:\Programming\FreeType\objs\vc2010\Win32;C:\Programming\BASS\c;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>shlwapi.lib;avrt.lib;xaudio2.lib;bass.lib;bass_fx.lib;bassmix.lib;angelscriptd.lib;freetype27d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shlwapi.lib;imm32.lib;avrt.lib;xaudio2.lib;bass.lib;bass_fx.lib;bassmix.lib;angelscriptd.lib;freetype27d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
@@ -140,7 +140,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Programming\DXLib\lib;C:\Programming\AngelScript\angelscript\lib;C:\Programming\Boost\lib;C:\Programming\FreeType\objs\vc2010\Win32;C:\Programming\BASS\c;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>shlwapi.lib;avrt.lib;xaudio2.lib;bass.lib;bass_fx.lib;bassmix.lib;angelscript.lib;freetype27.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shlwapi.lib;imm32.lib;avrt.lib;xaudio2.lib;bass.lib;bass_fx.lib;bassmix.lib;angelscript.lib;freetype27.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
@@ -221,7 +221,6 @@
     <ClInclude Include="..\..\..\DXLib\include\DxFunctionWin.h" />
     <ClInclude Include="..\..\..\DXLib\include\DxLib.h" />
     <ClInclude Include="AngelScriptManager.h" />
-    <ClInclude Include="as_smart_ptr_wrapper.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Easing.h" />
