@@ -41,6 +41,9 @@ void PreInitialize(HINSTANCE hInstance)
     SetWaitVSyncFlag(FALSE);
     SetWindowIconID(IDI_ICON1);
     SetGraphMode(SU_RES_WIDTH, SU_RES_HEIGHT, 32);
+	SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
+	SetUseZBuffer3D(TRUE);
+	SetWriteZBuffer3D(TRUE);
 }
 
 void Initialize()
@@ -53,9 +56,6 @@ void Initialize()
     SetWindowLong(hDxlibWnd, GWL_WNDPROC, (LONG)CustomWindowProc);
     //D3DÝ’è
     SetDrawScreen(DX_SCREEN_BACK);
-    SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
-    SetUseZBuffer3D(TRUE);
-    SetWriteZBuffer3D(TRUE);
 
     setting->Load(SU_SETTING_FILE);
     manager = unique_ptr<ExecutionManager>(new ExecutionManager(setting));
