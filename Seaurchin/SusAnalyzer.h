@@ -1,36 +1,55 @@
 #pragma once
 
-enum SusNoteType : uint8_t {
-    Undefined = 0,
+enum SusNoteType : uint16_t {
+	Undefined = 0,  // BPMノーツなど
     Tap,
     ExTap,
-    HoldStart,
-    HoldEnd,
-    Air,
-    Action,
-    SlideStart,
-    SlideChange,
-    SlideControl,
-    SlideEnd,
-    //此処までで0x0A
+	Flick,
+	Air,
 
-    //補助属性 主にAirがからむ系に
-    Up = 0b00010000,
-    Down = 0b00100000,
-    Left = 0b01000000,
-    Right = 0b10000000,
+    Hold,
+    Slide,
+	AirAction,
+
+    Start,
+    Step,
+	Control,
+    End,
+
+    Up,
+    Down,
+    Left,
+    Right,
 };
 
-struct SusNoteTime {
+struct SusRelativeNoteTime {
     uint32_t Measure;
     uint32_t Tick;
 };
 
-struct SusNoteData {
-    SusNoteType Type;
+struct SusRawNoteData {
+    std::bitset<16> Type;
+    union {
+        uint16_t DefinitionNumber;
+        struct {
+            uint8_t StartLane;
+            uint8_t Length;
+        } NotePosition;
+    };
+    uint8_t Extra;
+};
+
+struct SusDrawableNoteData {
+    std::bitset<16> Type;
     uint8_t StartLane;
     uint8_t Length;
-    uint8_t Extra;
+
+    //描画"始める"時刻
+    double StartTime;
+    //描画が"続く"時刻
+    double Duration;
+    //スライド・AA用制御データ
+    SusDrawableNoteData *ExtraData;
 };
 
 struct SusMetaData {
@@ -51,11 +70,13 @@ private:
 
     uint32_t TicksPerBeat;
     std::function<void(uint32_t, std::string, std::string)> ErrorCallback = nullptr;
-    std::vector<std::tuple<SusNoteTime, SusNoteData>> Notes;
+    std::vector<std::tuple<SusRelativeNoteTime, SusRawNoteData>> Notes;
     std::unordered_map<uint32_t, double> BpmDefinitions;
+	std::unordered_map<uint32_t, float> BeatsDefinitions;
 
-    void ProcessCommand(boost::xpressive::smatch result);
-    void ProcessData(boost::xpressive::smatch result);
+    void ProcessCommand(const boost::xpressive::smatch &result);
+    void ProcessData(const boost::xpressive::smatch &result);
+	float GetBeatsAt(uint32_t measure);
 
 public:
     SusMetaData SharedMetaData;
@@ -64,6 +85,6 @@ public:
     ~SusAnalyzer();
 
     void Reset();
-    void LoadFromFile(std::string fileName);
+    void LoadFromFile(const std::string &fileName, bool analyzeOnlyMetaData = false);
     void RenderScoreData();
 };

@@ -70,9 +70,9 @@ void MusicsManager::CreateMusicCache()
                 if (is_directory(file)) continue;
                 if (file.path().extension() != ".sus") continue;     //‚±‚ê‘å•¶Žš‚Ç‚¤‚·‚ñ‚Ì
                 Analyzer->Reset();
-                Analyzer->LoadFromFile(file.path().string());
+                Analyzer->LoadFromFile(file.path().string(), true);
                 auto info = make_shared<MusicMetaInfo>();
-                info->Path = mdir / file;
+                info->Path = file;
                 info->SongId = Analyzer->SharedMetaData.USongId;
                 info->Name = Analyzer->SharedMetaData.UTitle;
                 info->DifficultyName = Analyzer->SharedMetaData.USubTitle;
@@ -153,9 +153,12 @@ int MusicSelectionCursor::Enter()
         MusicIndex = 0;
         VariantIndex = 0;
         return 1;
-    case 1:
+    case 1: {
         //‘I‹ÈI—¹
+        auto current = Manager->Categories[CategoryIndex];
+        Manager->Analyzer->LoadFromFile(current->Musics[MusicIndex]->Path.string(), false);
         return 2;
+    }
     default:
         return 0;
     }

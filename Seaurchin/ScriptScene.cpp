@@ -182,7 +182,8 @@ void ScriptCoroutineScene::Tick(double delta)
         break;
     }
     auto result = runningContext->Execute();
-    if (result != asEXECUTION_SUSPENDED) finished = true;
+    if (result != asEXECUTION_SUSPENDED) 
+        finished = true;
 }
 
 void ScriptCoroutineScene::Initialize()

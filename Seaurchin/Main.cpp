@@ -40,6 +40,7 @@ void PreInitialize(HINSTANCE hInstance)
     SetAlwaysRunFlag(TRUE);
     SetWaitVSyncFlag(FALSE);
     SetWindowIconID(IDI_ICON1);
+    SetUseFPUPreserveFlag(TRUE);
     SetGraphMode(SU_RES_WIDTH, SU_RES_HEIGHT, 32);
 	SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
 	SetUseZBuffer3D(TRUE);
