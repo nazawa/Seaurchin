@@ -74,4 +74,5 @@ public:
 	void Play(SoundStream *sample);
 	void Stop(SoundStream *sample);
 	void SetVolume(SoundStream *sample, float volume);
+    double GetPosition(SoundStream *sample);
 };

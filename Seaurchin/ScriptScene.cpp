@@ -206,7 +206,7 @@ void ScriptCoroutineScene::Disappear()
 
 void RegisterScriptScene(ExecutionManager *exm)
 {
-	auto engine = exm->GetScriptInterface()->GetEngine();
+	auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
 
     engine->RegisterFuncdef("void " SU_IF_COROUTINE "()");
 
@@ -241,7 +241,7 @@ bool ScriptSceneIsKeyHeld(int keynum)
         ScriptSceneWarnOutOf("Scene Class", ctx);
         return false;
     }
-    return psc->GetManager()->GetKeyState()->Current[keynum];
+    return psc->GetManager()->GetKeyStateUnsafe()->Current[keynum];
 }
 
 bool ScriptSceneIsKeyTriggered(int keynum)
@@ -253,7 +253,7 @@ bool ScriptSceneIsKeyTriggered(int keynum)
         ScriptSceneWarnOutOf("Scene Class", ctx);
         return false;
     }
-    return  psc->GetManager()->GetKeyState()->Trigger[keynum];
+    return  psc->GetManager()->GetKeyStateUnsafe()->Trigger[keynum];
 }
 
 void ScriptSceneAddScene(asIScriptObject *sceneObject)

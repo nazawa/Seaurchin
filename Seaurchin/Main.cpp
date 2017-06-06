@@ -42,7 +42,6 @@ void PreInitialize(HINSTANCE hInstance)
     SetWindowIconID(IDI_ICON1);
     SetUseFPUPreserveFlag(TRUE);
     SetGraphMode(SU_RES_WIDTH, SU_RES_HEIGHT, 32);
-	SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
 	SetUseZBuffer3D(TRUE);
 	SetWriteZBuffer3D(TRUE);
 }
@@ -51,6 +50,7 @@ void Initialize()
 {
     if (DxLib_Init() == -1) abort();
     WriteDebugConsole(TEXT("DxLib_Init\n"));
+    
     //WndProcç∑Çµë÷Ç¶
     hDxlibWnd = GetMainWindowHandle();
     dxlibWndProc = (WNDPROC)GetWindowLong(hDxlibWnd, GWL_WNDPROC);

@@ -150,7 +150,7 @@ SSound* SkinHolder::GetSkinSound(const std::string & key)
 
 void RegisterScriptSkin(ExecutionManager *exm)
 {
-	auto engine = exm->GetScriptInterface()->GetEngine();
+	auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
 
     engine->RegisterObjectType(SU_IF_SKIN, 0, asOBJ_REF);
     engine->RegisterObjectBehaviour(SU_IF_SKIN, asBEHAVE_ADDREF, "void f()", asMETHOD(SkinHolder, AddRef), asCALL_THISCALL);

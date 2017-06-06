@@ -240,7 +240,7 @@ SSound * SSound::CreateSoundFromFile(SoundManager *smanager, const std::string &
 
 void RegisterScriptResource(ExecutionManager *exm)
 {
-	auto engine = exm->GetScriptInterface()->GetEngine();
+	auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
 
 	engine->RegisterObjectType(SU_IF_IMAGE, 0, asOBJ_REF);
 	engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_FACTORY, SU_IF_IMAGE "@ f()", asFUNCTION(SImage::CreateBlankImage), asCALL_CDECL);

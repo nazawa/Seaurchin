@@ -8,6 +8,7 @@
 #include "ScriptResource.h"
 #include "ScriptScene.h"
 #include "ScriptSprite.h"
+#include "ScenePlayer.h"
 
 using namespace boost::filesystem;
 using namespace std;
@@ -33,6 +34,7 @@ void ExecutionManager::Initialize()
     RegisterScriptSprite(this);
     RegisterScriptScene(this);
     RegisterScriptSkin(this);
+    RegisterPlayerScene(this);
     InterfacesRegisterSceneFunction(this);
     InterfacesRegisterGlobalFunction(this);
     RegisterGlobalManagementFunction();
@@ -57,6 +59,7 @@ void ExecutionManager::RegisterGlobalManagementFunction()
     engine->RegisterGlobalFunction("void Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), void), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("void ReloadMusic()", asMETHOD(ExecutionManager, ReloadMusic), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction(SU_IF_MSCURSOR "@ CreateMusicCursor()", asMETHOD(ExecutionManager, CreateCursor), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterGlobalFunction(SU_IF_SCENE_PLAYER "@ CreatePlayer()", asMETHOD(ExecutionManager, CreatePlayer), asCALL_THISCALL_ASGLOBAL, this);
 }
 
 
@@ -274,6 +277,14 @@ void ExecutionManager::ReloadMusic() {
 MusicSelectionCursor * ExecutionManager::CreateCursor()
 {
     return Musics->CreateCursor();
+}
+
+ScenePlayer * ExecutionManager::CreatePlayer()
+{
+    auto player = new ScenePlayer;
+    player->SetManager(this);
+    player->AddRef();
+    return player;
 }
 
 std::tuple<bool, LRESULT> ExecutionManager::CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

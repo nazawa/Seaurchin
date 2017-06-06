@@ -162,3 +162,10 @@ void SoundManager::SetVolume(SoundStream * stream, float volume)
 {
     BASS_ChannelSetAttribute(stream->hStream, BASS_ATTRIB_VOL, clamp(volume, 0.0f, 1.0f));
 }
+
+double SoundManager::GetPosition(SoundStream * sample)
+{
+    auto pos = BASS_ChannelGetPosition(sample->hStream, BASS_POS_BYTE);
+    return BASS_ChannelBytes2Seconds(sample->hStream, pos);
+}
+

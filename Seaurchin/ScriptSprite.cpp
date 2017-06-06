@@ -9,7 +9,7 @@ static constexpr auto hashstr = &crc_ccitt::checksum;
 
 void RegisterScriptSprite(ExecutionManager *exm)
 {
-	auto engine = exm->GetScriptInterface()->GetEngine();
+	auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
 
     SSprite::RegisterType(engine);
     SShape::RegisterType(engine);

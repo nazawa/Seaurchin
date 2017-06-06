@@ -9,6 +9,7 @@
 #include "SkinHolder.h"
 #include "MusicsManager.h"
 #include "SoundManager.h"
+#include "ScenePlayer.h"
 
 class ExecutionManager final
 {
@@ -40,9 +41,12 @@ public:
     std::shared_ptr<ScriptScene> CreateSceneFromScriptType(asITypeInfo *type);
     std::shared_ptr<ScriptScene> CreateSceneFromScriptObject(asIScriptObject *obj);
     inline int GetSceneCount() { return Scenes.size(); }
-    inline KeyState* GetKeyState() { return SharedKeyState.get(); }
-    inline AngelScript* GetScriptInterface() { return ScriptInterface.get(); }
-	inline SoundManager* GetSoundManager() { return Sound.get(); }
+
+    inline std::shared_ptr<MusicsManager> GetMusicsManager() { return Musics; }
+    inline std::shared_ptr<KeyState> GetKeyStateSafe() { return SharedKeyState; }
+    inline KeyState* GetKeyStateUnsafe() { return SharedKeyState.get(); }
+    inline AngelScript* GetScriptInterfaceUnsafe() { return ScriptInterface.get(); }
+	inline SoundManager* GetSoundManagerUnsafe() { return Sound.get(); }
 
     std::tuple<bool, LRESULT> CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void ExecuteSkin();
@@ -50,6 +54,7 @@ public:
     void ExecuteSystemMenu();
     void ReloadMusic();
     MusicSelectionCursor *CreateCursor();
+    ScenePlayer *CreatePlayer();
 
 private:
     bool CheckSkinStructure(boost::filesystem::path name);

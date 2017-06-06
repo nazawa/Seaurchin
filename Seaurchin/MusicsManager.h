@@ -7,11 +7,13 @@
 
 struct MusicMetaInfo final {
     boost::filesystem::path Path;
+    boost::filesystem::path WavePath;
     std::string SongId;
     std::string Name;
     std::string DifficultyName;
     std::string Artist;
     std::string Designer;
+    double WaveOffset;
     uint32_t Level;
     uint32_t Difficulty;
 };
@@ -46,16 +48,19 @@ private:
     std::mutex FlagMutex;
     std::unique_ptr<SusAnalyzer> Analyzer;
     std::vector<std::shared_ptr<CategoryInfo>> Categories;
-
     void CreateMusicCache();
 
 public:
+    std::shared_ptr<MusicMetaInfo> Selected;
+
     MusicsManager(std::shared_ptr<Setting> setting);
     ~MusicsManager();
 
     void Initialize();
     void Reload(bool recreateCache);
     bool IsReloading();
+    void RenderSelectedScore(std::vector<SusDrawableNoteData> &data);
+    // inline std::shared_ptr<MusicMetaInfo> GetSelectedMusicMetaInfo() { return Selected; }
     
     MusicSelectionCursor *CreateCursor();
 };

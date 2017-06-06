@@ -94,6 +94,8 @@ void SusAnalyzer::Reset()
     SharedMetaData.UArtist = u8"";
     SharedMetaData.USubTitle = u8"";
     SharedMetaData.UDesigner = u8"";
+    SharedMetaData.UWaveFileName = u8"";
+    SharedMetaData.WaveOffset = 0.00;
     SharedMetaData.Level = 0;
     SharedMetaData.DifficultyType = 0;
 
@@ -131,7 +133,6 @@ void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
         return get<0>(a).Measure < get<0>(b).Measure;
     });
 
-    if (!analyzeOnlyMetaData) RenderScoreData();
     file.close();
 }
 
@@ -169,6 +170,16 @@ void SusAnalyzer::ProcessCommand(const xp::smatch &result)
             break;
         case hashstr("SONGID"):
             SharedMetaData.USongId = ConvertRawString(result[2]);
+            break;
+        case hashstr("WAVE"):
+            SharedMetaData.UWaveFileName = ConvertRawString(result[2]);
+            break;
+        case hashstr("WAVEOFFSET"):
+            SharedMetaData.WaveOffset = ConvertFloat(result[2]);
+            break;
+        default:
+            if (ErrorCallback) ErrorCallback(0, "Error", "SUSコマンドが無効です。");
+            break;
     }
 
 }
@@ -334,7 +345,7 @@ float SusAnalyzer::GetBeatsAt(uint32_t measure)
     return result;
 }
 
-void SusAnalyzer::RenderScoreData()
+void SusAnalyzer::RenderScoreData(vector<SusDrawableNoteData> &data)
 {
     auto GetAbsoluteTime = [&](uint32_t meas, uint32_t tick) {
         double time = 0.0;
@@ -370,7 +381,6 @@ void SusAnalyzer::RenderScoreData()
     // ショート: はみ出しは全部アウト
     // ホールド: ケツ無しアウト(ケツ連は無視)、Step/Control問答無用アウト、ケツ違いアウト
     // スライド、AA: ケツ無しアウト(ケツ連は無視)
-    vector<SusDrawableNoteData> data(Notes.size());
     data.clear();
     for (auto& note : Notes) {
         auto time = get<0>(note);

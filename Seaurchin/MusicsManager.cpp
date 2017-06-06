@@ -43,6 +43,11 @@ bool MusicsManager::IsReloading()
     return state;
 }
 
+void MusicsManager::RenderSelectedScore(std::vector<SusDrawableNoteData> &data)
+{
+    Analyzer->RenderScoreData(data);
+}
+
 MusicSelectionCursor * MusicsManager::CreateCursor()
 {
     auto cursor = new MusicSelectionCursor(this);
@@ -78,6 +83,8 @@ void MusicsManager::CreateMusicCache()
                 info->DifficultyName = Analyzer->SharedMetaData.USubTitle;
                 info->Artist = Analyzer->SharedMetaData.UArtist;
                 info->Designer = Analyzer->SharedMetaData.UDesigner;
+                info->WavePath = path(file).parent_path() / Analyzer->SharedMetaData.UWaveFileName;
+                info->WaveOffset = Analyzer->SharedMetaData.WaveOffset;
                 category->Musics.push_back(info);
             }
         }
@@ -156,6 +163,7 @@ int MusicSelectionCursor::Enter()
     case 1: {
         //‘I‹ÈI—¹
         auto current = Manager->Categories[CategoryIndex];
+        Manager->Selected = current->Musics[MusicIndex];
         Manager->Analyzer->LoadFromFile(current->Musics[MusicIndex]->Path.string(), false);
         return 2;
     }

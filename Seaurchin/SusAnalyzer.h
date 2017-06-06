@@ -58,6 +58,8 @@ struct SusMetaData {
     std::string UArtist;
     std::string UDesigner;
     std::string USongId;
+    std::string UWaveFileName;
+    double WaveOffset;
     uint32_t Level;
     uint32_t DifficultyType;
 };
@@ -86,5 +88,5 @@ public:
 
     void Reset();
     void LoadFromFile(const std::string &fileName, bool analyzeOnlyMetaData = false);
-    void RenderScoreData();
+    void RenderScoreData(std::vector<SusDrawableNoteData> &data);
 };

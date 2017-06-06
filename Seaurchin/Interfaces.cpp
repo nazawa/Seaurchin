@@ -8,7 +8,7 @@
 
 void InterfacesRegisterSceneFunction(ExecutionManager *exm)
 {
-	auto engine = exm->GetScriptInterface()->GetEngine();
+	auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
 
     engine->RegisterGlobalFunction("void YieldTime(double)", asFUNCTION(YieldTime), asCALL_CDECL);
     engine->RegisterGlobalFunction("void YieldFrame(int64)", asFUNCTION(YieldFrames), asCALL_CDECL);
@@ -16,7 +16,7 @@ void InterfacesRegisterSceneFunction(ExecutionManager *exm)
 
 void InterfacesRegisterGlobalFunction(ExecutionManager *exm)
 {
-	auto engine = exm->GetScriptInterface()->GetEngine();
+	auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
 
     engine->RegisterGlobalFunction("void WriteDebugConsole(const string &in)", asFUNCTION(WriteDebugConsoleU), asCALL_CDECL);
     //engine->RegisterGlobalFunction(SU_IF_VFONT " CreateVirtualFont(const string & in, int)", asFUNCTION(CreateVirtualFont), asCALL_CDECL);
@@ -28,7 +28,7 @@ void InterfacesRegisterGlobalFunction(ExecutionManager *exm)
 
 void InterfacesRegisterEnum(ExecutionManager *exm)
 {
-	auto engine = exm->GetScriptInterface()->GetEngine();
+	auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
 
     engine->RegisterEnum(SU_IF_KEY);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_BACK", KEY_INPUT_BACK);

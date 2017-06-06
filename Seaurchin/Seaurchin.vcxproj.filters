@@ -135,6 +135,9 @@
     <ClCompile Include="SusAnalyzer.cpp">
       <Filter>インターフェース\C++</Filter>
     </ClCompile>
+    <ClCompile Include="ScenePlayer.cpp">
+      <Filter>ビルトインScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -256,6 +259,9 @@
     </ClInclude>
     <ClInclude Include="SusAnalyzer.h">
       <Filter>インターフェース\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="ScenePlayer.h">
+      <Filter>ビルトインScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
