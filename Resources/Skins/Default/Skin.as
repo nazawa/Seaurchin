@@ -3,6 +3,9 @@ void InitializeSkin(Skin@ skin) {
   //システム(というか組み込みのプレイ画面)用リソース名には先頭に*をつける
   skin.LoadImage("*Note-Tap", "Note-Tap.png");
   skin.LoadImage("*Note-ExTap", "Note-ExTap.png");
+  skin.LoadImage("*Note-Air", "Note-Air.png");
+  skin.LoadImage("*Note-Flick", "Note-Flick.png");
+  skin.LoadImage("*Lane-Ground", "Lane-Ground.png");
   
   skin.LoadImage("White", "White.png");               //つなぎ
   skin.LoadImage("TitleBack", "Background.png");          //1280x720

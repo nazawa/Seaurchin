@@ -3,6 +3,43 @@
 
 using namespace std;
 
+static VERTEX3D Vertices[] = {
+    {
+        VGet(-500, 0, 2000),
+        VGet(0, 1, 0),
+        GetColorU8(255, 255, 255, 255),
+        GetColorU8(0, 0, 0, 0),
+        0.0f, 1.0f,
+        0.0f, 0.0f
+    },
+    {
+        VGet(500, 0, 2000),
+        VGet(0, 1, 0),
+        GetColorU8(255, 255, 255, 255),
+        GetColorU8(0, 0, 0, 0),
+        1.0f, 1.0f,
+        0.0f, 0.0f
+    },
+    {
+        VGet(500, 0, 0),
+        VGet(0, 1, 0),
+        GetColorU8(255, 255, 255, 255),
+        GetColorU8(0, 0, 0, 0),
+        1.0f, 0.0f,
+        0.0f, 0.0f
+    },
+    {
+        VGet(-500, 0, 0),
+        VGet(0, 1, 0),
+        GetColorU8(255, 255, 255, 255),
+        GetColorU8(0, 0, 0, 0),
+        0.0f, 0.0f,
+        0.0f, 0.0f
+    }
+};
+
+static uint16_t VertexIndices[] = { 0, 1, 3, 3, 1, 2 };
+
 void RegisterPlayerScene(ExecutionManager * exm)
 {
     auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
@@ -50,6 +87,9 @@ void ScenePlayer::SetPlayerResource(const string & name, SResource * resource)
 
 void ScenePlayer::Finalize()
 {
+    for (auto& res : resources) res.second->Release();
+    manager->GetSoundManagerUnsafe()->Stop(bgmStream);
+    manager->GetSoundManagerUnsafe()->ReleaseSound(bgmStream);
     DeleteGraph(hGroundBuffer);
     DeleteGraph(hAirBuffer);
 }
@@ -102,49 +142,11 @@ void ScenePlayer::Draw()
             DrawRectRotaGraph3F((slane * 2 + i) * 32.0f, 2048.0f * relpos, 64 * type, (0), 64, 64, 0, 32.0f, 0.5f, 0.5f, 0, handleToDraw, TRUE, FALSE);
         }
     }
-    // DrawModiGraph(0, 0, 1024, 0, 1024, 2048, 0, 2048, resources["Tap"]->GetHandle(), TRUE);
     FINISH_DRAW_TRANSACTION;
 
-    // ê≥ÇµÇ¢ï˚å¸ÇÕâEâÒÇË
-    /*
-    0---14
-    |  / |
-    | /  |
-    |/   |
-    23---5
-    */
-
-
-    VERTEX3D Vertices[4] = { 0 };
-    Vertices[0].pos = VGet(-500, 0, 2000);
-    Vertices[0].u = 0.0f;
-    Vertices[0].v = 1.0f;
-    Vertices[0].norm = VGet(0, 1, 0);
-    Vertices[0].dif = GetColorU8(255, 255, 255, 255);
-
-    Vertices[1].pos = VGet(500, 0, 2000);
-    Vertices[1].u = 1.0f;
-    Vertices[1].v = 1.0f;
-    Vertices[1].norm = VGet(0, 1, 0);
-    Vertices[1].dif = GetColorU8(255, 255, 255, 255);
-
-    Vertices[2].pos = VGet(500, 0, 0);
-    Vertices[2].u = 1.0f;
-    Vertices[2].v = 0.0f;
-    Vertices[2].norm = VGet(0, 1, 0);
-    Vertices[2].dif = GetColorU8(255, 255, 255, 255);
-
-    Vertices[3].pos = VGet(-500, 0, 0);
-    Vertices[3].u = 0.0f;
-    Vertices[3].v = 0.0f;
-    Vertices[3].norm = VGet(0, 1, 0);
-    Vertices[3].dif = GetColorU8(255, 255, 255, 255);
-
-    uint16_t indices[] = { 0, 1, 3, 3, 1, 2 };
-    //ClearDrawScreen();
     SetUseLighting(FALSE);
     SetCameraPositionAndTarget_UpVecY(VGet(0, 500, -400), VGet(0, 0, 600));
-    DrawPolygonIndexed3D(Vertices, 4, indices, 2, hGroundBuffer, TRUE);
+    DrawPolygonIndexed3D(Vertices, 4, VertexIndices, 2, hGroundBuffer, TRUE);
 }
 
 bool ScenePlayer::IsDead()

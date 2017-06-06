@@ -60,7 +60,10 @@ class Title : CoroutineScene {
   void KeyInput() {
     while(true) {
       if (IsKeyTriggered(Key::INPUT_RETURN)) {
-        cursor.Enter();
+        if (cursor.Enter() == 2) {
+          Disappear();
+          Execute("Play.as");
+        }
         UpdateCursor();
       } else if (IsKeyTriggered(Key::INPUT_ESCAPE)) {
         cursor.Exit();

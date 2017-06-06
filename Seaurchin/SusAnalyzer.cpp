@@ -235,6 +235,7 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
                         noteData.Type.set(SusNoteType::Control);
                         break;
                     default:
+                        if (note[2] == '0') break;
                         if (ErrorCallback) ErrorCallback(0, "Error", "ノーツ種類の指定が不正です。");
                         break;
                 }
@@ -412,5 +413,4 @@ void SusAnalyzer::RenderScoreData(vector<SusDrawableNoteData> &data)
             if (ErrorCallback) ErrorCallback(0, "Error", "致命的なノーツエラー(不正な内部表現です)。");
         }
     }
-    data.size();
 }
