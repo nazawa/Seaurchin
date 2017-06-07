@@ -50,7 +50,7 @@ struct SusDrawableNoteData {
     //描画が"続く"時刻
     double Duration;
     //スライド・AA用制御データ
-    SusDrawableNoteData *ExtraData;
+    std::vector<std::shared_ptr<SusDrawableNoteData>> ExtraData;
 };
 
 struct SusMetaData {

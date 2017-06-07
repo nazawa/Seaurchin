@@ -44,6 +44,7 @@ void PreInitialize(HINSTANCE hInstance)
     SetGraphMode(SU_RES_WIDTH, SU_RES_HEIGHT, 32);
 	SetUseZBuffer3D(TRUE);
 	SetWriteZBuffer3D(TRUE);
+    SetFullSceneAntiAliasingMode(4, 2);
 }
 
 void Initialize()

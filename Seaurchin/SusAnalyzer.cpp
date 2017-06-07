@@ -235,7 +235,7 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
                         noteData.Type.set(SusNoteType::Control);
                         break;
                     default:
-                        if (note[2] == '0') break;
+                        if (note[1] == '0') continue;
                         if (ErrorCallback) ErrorCallback(0, "Error", "ノーツ種類の指定が不正です。");
                         break;
                 }
@@ -294,6 +294,7 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
                         noteData.Type.set(SusNoteType::Right);
                         break;
                     default:
+                        if (note[1] == '0') continue;
                         if (ErrorCallback) ErrorCallback(0, "Error", "ショートレーンの指定が不正です。");
                         break;
                 }
@@ -398,7 +399,7 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             if (info.NotePosition.StartLane + info.NotePosition.Length > 16) {
                 if (ErrorCallback) ErrorCallback(0, "Error", "ショートノーツがはみ出しています。");
             }
-            
+
             noteData->Type = info.Type;
             noteData->StartTime = GetAbsoluteTime(time.Measure, time.Tick);
             noteData->Duration = 0;
@@ -407,8 +408,72 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             data.push_back(noteData);
         } else if (bits & 0b0000000011100000) {
             noteData->Type = info.Type;
+            noteData->StartTime = GetAbsoluteTime(time.Measure, time.Tick);
             noteData->StartLane = info.NotePosition.StartLane;
             noteData->Length = info.NotePosition.Length;
+
+            int ltype = 0;
+            switch ((bits >> 5) & 7) {
+                case 1:
+                    ltype = SusNoteType::Hold;
+                    break;
+                case 2:
+                    ltype = SusNoteType::Slide;
+                    break;
+                case 4:
+                    ltype = SusNoteType::AirAction;
+                    break;
+            }
+
+            bool completed = false;
+            for (auto it : Notes) {
+                auto curPos = get<0>(it);
+                auto curNo = get<1>(it);
+                if (!curNo.Type.test(ltype) || curNo.Extra != info.Extra) continue;
+                if (curPos.Measure < time.Measure) continue;
+                if (curPos.Measure == time.Measure && curPos.Tick < time.Tick) continue;
+                switch (ltype) {
+                    case SusNoteType::Hold: {
+                        if (curNo.Type.test(SusNoteType::Step) || curNo.Type.test(SusNoteType::Control))
+                            if (ErrorCallback) ErrorCallback(0, "Error", "HoldでStep/Controlは指定できません。");
+                        if (curNo.NotePosition.StartLane != info.NotePosition.StartLane || curNo.NotePosition.Length != info.NotePosition.Length)
+                            if (ErrorCallback) ErrorCallback(0, "Error", "Holdの始点と終点が一致していません。");
+                        if (curNo.Type.test(SusNoteType::Start)) break;
+                        auto nextNote = make_shared<SusDrawableNoteData>();
+                        nextNote->StartTime = GetAbsoluteTime(curPos.Measure, curPos.Tick);
+                        nextNote->StartLane = curNo.NotePosition.StartLane;
+                        nextNote->Length = curNo.NotePosition.Length;
+                        nextNote->Type = curNo.Type;
+                        noteData->ExtraData.push_back(nextNote);
+
+                        noteData->Duration = nextNote->StartTime - noteData->StartTime;
+                        completed = true;
+                        break;
+                    }
+                    case SusNoteType::Slide:
+                    case SusNoteType::AirAction: {
+                        if (curNo.Type.test(SusNoteType::Start)) break;
+                        auto nextNote = make_shared<SusDrawableNoteData>();
+                        nextNote->StartTime = GetAbsoluteTime(curPos.Measure, curPos.Tick);
+                        nextNote->StartLane = curNo.NotePosition.StartLane;
+                        nextNote->Length = curNo.NotePosition.Length;
+                        nextNote->Type = curNo.Type;
+                        noteData->ExtraData.push_back(nextNote);
+                        
+                        if (curNo.Type.test(SusNoteType::End)) {
+                            noteData->Duration = nextNote->StartTime - noteData->StartTime;
+                            completed = true;
+                        }
+                        break;
+                    }
+                }
+                if (completed) break;
+            }
+            if (!completed) {
+                if (ErrorCallback) ErrorCallback(0, "Error", "ロングノーツに終点がありません。");
+            } else {
+                data.push_back(noteData);
+            }
         } else {
             if (ErrorCallback) ErrorCallback(0, "Error", "致命的なノーツエラー(不正な内部表現です)。");
         }
