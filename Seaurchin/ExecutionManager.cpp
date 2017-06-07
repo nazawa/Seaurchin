@@ -58,8 +58,8 @@ void ExecutionManager::RegisterGlobalManagementFunction()
 
     engine->RegisterGlobalFunction("void Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), void), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("void ReloadMusic()", asMETHOD(ExecutionManager, ReloadMusic), asCALL_THISCALL_ASGLOBAL, this);
-    engine->RegisterGlobalFunction(SU_IF_MSCURSOR "@ CreateMusicCursor()", asMETHOD(ExecutionManager, CreateCursor), asCALL_THISCALL_ASGLOBAL, this);
-    engine->RegisterGlobalFunction(SU_IF_SCENE_PLAYER "@ CreatePlayer()", asMETHOD(ExecutionManager, CreatePlayer), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterObjectBehaviour(SU_IF_MSCURSOR, asBEHAVE_FACTORY, SU_IF_MSCURSOR "@ f()", asMETHOD(ExecutionManager, CreateCursor), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterObjectBehaviour(SU_IF_SCENE_PLAYER, asBEHAVE_FACTORY, SU_IF_SCENE_PLAYER "@ f()", asMETHOD(ExecutionManager, CreatePlayer), asCALL_THISCALL_ASGLOBAL, this);
 }
 
 
@@ -281,8 +281,7 @@ MusicSelectionCursor * ExecutionManager::CreateCursor()
 
 ScenePlayer * ExecutionManager::CreatePlayer()
 {
-    auto player = new ScenePlayer;
-    player->SetManager(this);
+    auto player = new ScenePlayer(this);
     player->AddRef();
     return player;
 }

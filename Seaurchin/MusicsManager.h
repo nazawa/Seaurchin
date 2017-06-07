@@ -59,8 +59,6 @@ public:
     void Initialize();
     void Reload(bool recreateCache);
     bool IsReloading();
-    void RenderSelectedScore(std::vector<SusDrawableNoteData> &data);
-    // inline std::shared_ptr<MusicMetaInfo> GetSelectedMusicMetaInfo() { return Selected; }
     
     MusicSelectionCursor *CreateCursor();
 };

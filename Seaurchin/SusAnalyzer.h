@@ -41,6 +41,7 @@ struct SusRawNoteData {
 
 struct SusDrawableNoteData {
     std::bitset<16> Type;
+    std::bitset<8> OnTheFlyData;
     uint8_t StartLane;
     uint8_t Length;
 
@@ -88,5 +89,5 @@ public:
 
     void Reset();
     void LoadFromFile(const std::string &fileName, bool analyzeOnlyMetaData = false);
-    void RenderScoreData(std::vector<SusDrawableNoteData> &data);
+    void RenderScoreData(std::vector<std::shared_ptr<SusDrawableNoteData>> &data);
 };

@@ -346,7 +346,7 @@ float SusAnalyzer::GetBeatsAt(uint32_t measure)
     return result;
 }
 
-void SusAnalyzer::RenderScoreData(vector<SusDrawableNoteData> &data)
+void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
 {
     auto GetAbsoluteTime = [&](uint32_t meas, uint32_t tick) {
         double time = 0.0;
@@ -392,23 +392,23 @@ void SusAnalyzer::RenderScoreData(vector<SusDrawableNoteData> &data)
         if (info.Type[SusNoteType::Undefined]) continue;
 
         auto bits = info.Type.to_ulong();
+        auto noteData = make_shared<SusDrawableNoteData>();
         if (bits & 0b0000000000011110) {
             // ショート
             if (info.NotePosition.StartLane + info.NotePosition.Length > 16) {
                 if (ErrorCallback) ErrorCallback(0, "Error", "ショートノーツがはみ出しています。");
             }
-            SusDrawableNoteData noteData;
-            noteData.Type = info.Type;
-            noteData.StartTime = GetAbsoluteTime(time.Measure, time.Tick);
-            noteData.Duration = 0;
-            noteData.StartLane = info.NotePosition.StartLane;
-            noteData.Length = info.NotePosition.Length;
+            
+            noteData->Type = info.Type;
+            noteData->StartTime = GetAbsoluteTime(time.Measure, time.Tick);
+            noteData->Duration = 0;
+            noteData->StartLane = info.NotePosition.StartLane;
+            noteData->Length = info.NotePosition.Length;
             data.push_back(noteData);
         } else if (bits & 0b0000000011100000) {
-            SusDrawableNoteData noteData;
-            noteData.Type = info.Type;
-            noteData.StartLane = info.NotePosition.StartLane;
-            noteData.Length = info.NotePosition.Length;
+            noteData->Type = info.Type;
+            noteData->StartLane = info.NotePosition.StartLane;
+            noteData->Length = info.NotePosition.Length;
         } else {
             if (ErrorCallback) ErrorCallback(0, "Error", "致命的なノーツエラー(不正な内部表現です)。");
         }

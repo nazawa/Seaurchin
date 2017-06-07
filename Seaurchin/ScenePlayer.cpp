@@ -3,6 +3,10 @@
 
 using namespace std;
 
+static SSound *soundTap, *soundFlick;
+static SImage *imageTap, *imageExTap, *imageFlick;
+
+static uint16_t VertexIndices[] = { 0, 1, 3, 3, 1, 2 };
 static VERTEX3D Vertices[] = {
     {
         VGet(-500, 0, 2000),
@@ -38,23 +42,27 @@ static VERTEX3D Vertices[] = {
     }
 };
 
-static uint16_t VertexIndices[] = { 0, 1, 3, 3, 1, 2 };
-
-void RegisterPlayerScene(ExecutionManager * exm)
+void RegisterPlayerScene(ExecutionManager * manager)
 {
-    auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
+    auto engine = manager->GetScriptInterfaceUnsafe()->GetEngine();
 
     engine->RegisterObjectType(SU_IF_SCENE_PLAYER, 0, asOBJ_REF);
     engine->RegisterObjectBehaviour(SU_IF_SCENE_PLAYER, asBEHAVE_ADDREF, "void f()", asMETHOD(ScenePlayer, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_SCENE_PLAYER, asBEHAVE_RELEASE, "void f()", asMETHOD(ScenePlayer, Release), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void Initialize()", asMETHOD(ScenePlayer, Initialize), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_IMAGE "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_FONT "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_SOUND "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void DrawLanes()", asMETHOD(ScenePlayer, Draw), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void Play()", asMETHOD(ScenePlayer, Play), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "double GetCurrentTime()", asMETHOD(ScenePlayer, GetPlayingTime), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "int GetSeenObjectsCount()", asMETHOD(ScenePlayer, GetSeenObjectsCount), asCALL_THISCALL);
 }
 
+ScenePlayer::ScenePlayer(ExecutionManager *exm) : manager(exm)
+{
+
+}
 
 void ScenePlayer::AddRef()
 {
@@ -63,26 +71,10 @@ void ScenePlayer::AddRef()
 
 void ScenePlayer::Release()
 {
-    if (!--reference) {
+    if (--reference == 0) {
         Finalize();
         delete this;
     }
-}
-
-void ScenePlayer::Initialize()
-{
-    hGroundBuffer = MakeScreen(1024, 2048, TRUE);
-    hAirBuffer = MakeScreen(1024, 2048, TRUE);
-    manager->GetMusicsManager()->RenderSelectedScore(data);
-    auto meta = manager->GetMusicsManager()->Selected;
-    auto file = meta->WavePath;
-    bgmStream = manager->GetSoundManagerUnsafe()->LoadStreamFromFile(file.string().c_str());
-}
-
-void ScenePlayer::SetPlayerResource(const string & name, SResource * resource)
-{
-    if (resources.find(name) != resources.end()) resources[name]->Release();
-    resources[name] = resource;
 }
 
 void ScenePlayer::Finalize()
@@ -96,40 +88,47 @@ void ScenePlayer::Finalize()
 
 void ScenePlayer::Draw()
 {
-    double time = GetPlayingTime();
+    double time = GetPlayingTime() - metaInfo->WaveOffset;
     double duration = 1.00;
-    vector<SusDrawableNoteData> seenData;
+    double preced = 0.1;    //叩いた瞬間などの処理のために多く取る分 判定は上のtime基準
+    vector<shared_ptr<SusDrawableNoteData>> seenData;
 
     BEGIN_DRAW_TRANSACTION(hGroundBuffer);
     ClearDrawScreen();
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
     DrawGraph(0, 0, resources["LaneGround"]->GetHandle(), TRUE);
 
-    copy_if(data.begin(), data.end(), back_inserter(seenData), [&](SusDrawableNoteData n) {
-        if (n.Type.to_ulong() & 0b0000000011100000) {
+    copy_if(data.begin(), data.end(), back_inserter(seenData), [&](shared_ptr<SusDrawableNoteData> n) {
+        double ptime = time - preced;
+        if (n->Type.to_ulong() & 0b0000000011100000) {
             // ロング
-            return (time <= n.StartTime && n.StartTime <= time + duration)
-                || (time <= n.StartTime + n.Duration && n.StartTime + n.Duration <= time + duration)
-                || (n.StartTime <= time && time + duration <= n.StartTime + n.Duration);
+            return (ptime <= n->StartTime && n->StartTime <= time + duration)
+                || (ptime <= n->StartTime + n->Duration && n->StartTime + n->Duration <= time + duration)
+                || (n->StartTime <= ptime && time + duration <= n->StartTime + n->Duration);
         } else {
             // ショート
-            return (time <= n.StartTime && n.StartTime <= time + duration);
+            return (ptime <= n->StartTime && n->StartTime <= time + duration);
         }
     });
 
     seenObjects = seenData.size();
 
     for (auto& note : seenData) {
-        double relpos = (note.StartTime - time) / duration;
-        auto length = note.Length;
-        auto slane = note.StartLane;
+        double relpos = (note->StartTime - time) / duration;
+        auto length = note->Length;
+        auto slane = note->StartLane;
         int handleToDraw = 0;
 
-        if (note.Type.test(SusNoteType::Tap)) {
+        if (relpos < 0 && !note->OnTheFlyData.test(NoteAttribute::Finished)) {
+            note->OnTheFlyData.set(NoteAttribute::Finished);
+            soundTap->Play();
+        }
+
+        if (note->Type.test(SusNoteType::Tap)) {
             handleToDraw = resources["Tap"]->GetHandle();
-        } else if (note.Type.test(SusNoteType::ExTap)) {
+        } else if (note->Type.test(SusNoteType::ExTap)) {
             handleToDraw = resources["ExTap"]->GetHandle();
-        } else if (note.Type.test(SusNoteType::Flick)) {
+        } else if (note->Type.test(SusNoteType::Flick)) {
             handleToDraw = resources["Flick"]->GetHandle();
         } else {
             //暫定的に
@@ -149,14 +148,38 @@ void ScenePlayer::Draw()
     DrawPolygonIndexed3D(Vertices, 4, VertexIndices, 2, hGroundBuffer, TRUE);
 }
 
-bool ScenePlayer::IsDead()
+// スクリプト側から呼べるやつら
+
+void ScenePlayer::Initialize()
 {
-    return false;
+    analyzer = make_unique<SusAnalyzer>(192);
+    metaInfo = manager->GetMusicsManager()->Selected;
+
+    hGroundBuffer = MakeScreen(1024, 2048, TRUE);
+    hAirBuffer = MakeScreen(1024, 2048, TRUE);
+
+    analyzer->LoadFromFile(metaInfo->Path.string().c_str());
+    analyzer->RenderScoreData(data);
+
+    auto file = metaInfo->WavePath;
+    bgmStream = manager->GetSoundManagerUnsafe()->LoadStreamFromFile(file.string().c_str());
+}
+
+void ScenePlayer::SetPlayerResource(const string & name, SResource * resource)
+{
+    if (resources.find(name) != resources.end()) resources[name]->Release();
+    resources[name] = resource;
 }
 
 
 void ScenePlayer::Play()
 {
+    imageTap = dynamic_cast<SImage*>(resources["Tap"]);
+    imageExTap = dynamic_cast<SImage*>(resources["ExTap"]);
+    imageFlick = dynamic_cast<SImage*>(resources["Flick"]);
+    soundTap = dynamic_cast<SSound*>(resources["SoundTap"]);
+    soundFlick = dynamic_cast<SSound*>(resources["SoundFlick"]);
+
     manager->GetSoundManagerUnsafe()->Play(bgmStream);
 }
 

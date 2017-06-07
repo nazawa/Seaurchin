@@ -10,7 +10,7 @@ using namespace boost::filesystem;
 ScriptScene::ScriptScene(asIScriptObject *scene)
 {
     sceneObject = scene;
-    //sceneObject->AddRef();
+    sceneObject->AddRef();
 
     sceneType = sceneObject->GetObjectType();
     sceneType->AddRef();
@@ -297,7 +297,7 @@ void ScriptSceneRunCoroutine(asIScriptFunction *cofunc, const string &name)
     c->function->AddRef();
     c->object = cofunc->GetDelegateObject();
     c->type = cofunc->GetDelegateObjectType();
-    ctx->GetEngine()->AddRefScriptObject(c->object, c->type);
+    //ctx->GetEngine()->AddRefScriptObject(c->object, c->type);
 
     c->context->SetUserData(psc, SU_UDTYPE_SCENE);
     c->context->SetUserData(&c->wait, SU_UDTYPE_WAIT);

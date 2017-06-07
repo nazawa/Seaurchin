@@ -43,11 +43,6 @@ bool MusicsManager::IsReloading()
     return state;
 }
 
-void MusicsManager::RenderSelectedScore(std::vector<SusDrawableNoteData> &data)
-{
-    Analyzer->RenderScoreData(data);
-}
-
 MusicSelectionCursor * MusicsManager::CreateCursor()
 {
     auto cursor = new MusicSelectionCursor(this);

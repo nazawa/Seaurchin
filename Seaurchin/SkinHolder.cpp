@@ -91,9 +91,12 @@ asIScriptObject* SkinHolder::ExecuteSkinScript(string file)
     asITypeInfo *type = nullptr;
     for (int i = 0; i < cnt; i++)
     {
+        // ScriptBuilder‚ÌMetaData‚Ìƒe[ƒuƒ‹‚Í–ˆ‰ñ”jŠü‚³‚ê‚é‚Ì‚Å
+        // asITypeInfo‚Éî•ñ‚ð•ÛŽ
         auto cti = mod->GetObjectTypeByIndex(i);
-        if (!ScriptInterface->CheckMetaData(cti, "EntryPoint")) continue;
+        if (!(ScriptInterface->CheckMetaData(cti, "EntryPoint") || cti->GetUserData(SU_UDTYPE_ENTRYPOINT))) continue;
         type = cti;
+        type->SetUserData((void*)0xFFFFFFFF, SU_UDTYPE_ENTRYPOINT);
         type->AddRef();
         break;
     }

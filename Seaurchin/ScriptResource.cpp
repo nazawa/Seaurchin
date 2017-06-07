@@ -228,13 +228,17 @@ void SSound::StopAll()
 
 SSound * SSound::CreateSound(SoundManager *smanager)
 {
-	return new SSound(smanager, nullptr);
+    auto result =  new SSound(smanager, nullptr);
+    result->AddRef();
+    return result;
 }
 
 SSound * SSound::CreateSoundFromFile(SoundManager *smanager, const std::string & file, int simul)
 {
 	auto hs = smanager->LoadSampleFromFile(file.c_str(), simul);
-	return new SSound(smanager, hs);
+    auto result = new SSound(smanager, hs);
+    result->AddRef();
+    return result;
 }
 
 
