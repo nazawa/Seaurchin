@@ -40,6 +40,7 @@ protected:
     void CalculateNotes(double time, double duration, double preced);
     void DrawShortNotes(double time, double duration, double preced);
     void DrawLongNotes(double time, double duration, double preced);
+    void DrawSlideNotes(double time, double duration, std::shared_ptr<SusDrawableNoteData>);
     void ProcessSound(double time, double duration, double preced);
     void ProcessScore(double time, double duration, double preced);
 

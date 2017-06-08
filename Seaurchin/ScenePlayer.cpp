@@ -12,7 +12,7 @@ static STextSprite *textCombo;
 static uint16_t VertexIndices[] = { 0, 1, 3, 3, 1, 2 };
 static VERTEX3D Vertices[] = {
     {
-        VGet(-500, 0, 2000),
+        VGet(-400, 0, 2000),
         VGet(0, 1, 0),
         GetColorU8(255, 255, 255, 255),
         GetColorU8(0, 0, 0, 0),
@@ -20,7 +20,7 @@ static VERTEX3D Vertices[] = {
         0.0f, 0.0f
     },
     {
-        VGet(500, 0, 2000),
+        VGet(400, 0, 2000),
         VGet(0, 1, 0),
         GetColorU8(255, 255, 255, 255),
         GetColorU8(0, 0, 0, 0),
@@ -28,7 +28,7 @@ static VERTEX3D Vertices[] = {
         0.0f, 0.0f
     },
     {
-        VGet(500, 0, 0),
+        VGet(400, 0, 0),
         VGet(0, 1, 0),
         GetColorU8(255, 255, 255, 255),
         GetColorU8(0, 0, 0, 0),
@@ -36,7 +36,7 @@ static VERTEX3D Vertices[] = {
         0.0f, 0.0f
     },
     {
-        VGet(-500, 0, 0),
+        VGet(-400, 0, 0),
         VGet(0, 1, 0),
         GetColorU8(255, 255, 255, 255),
         GetColorU8(0, 0, 0, 0),
@@ -94,8 +94,8 @@ void ScenePlayer::Finalize()
 
 void ScenePlayer::Draw()
 {
-    double time = GetPlayingTime() - metaInfo->WaveOffset;
-    double duration = 1.00;
+    double time = GetPlayingTime() - analyzer->SharedMetaData.WaveOffset;
+    double duration = 0.750;
     double preced = 0.1;    //í@Ç¢ÇΩèuä‘Ç»Ç«ÇÃèàóùÇÃÇΩÇﬂÇ…ëΩÇ≠éÊÇÈï™ îªíËÇÕè„ÇÃtimeäÓèÄ
     int division = 8;
 
@@ -141,6 +141,7 @@ void ScenePlayer::CalculateNotes(double time, double duration, double preced)
 
 void ScenePlayer::DrawShortNotes(double time, double duration, double preced)
 {
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
     for (auto& note : seenData) {
         double relpos = 1.0 - (note->StartTime - time) / duration;
         auto length = note->Length;
@@ -168,6 +169,7 @@ void ScenePlayer::DrawShortNotes(double time, double duration, double preced)
 
 void ScenePlayer::DrawLongNotes(double time, double duration, double preced)
 {
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
     for (auto& note : seenData) {
         double relpos = 1.0 - (note->StartTime - time) / duration;
         auto length = note->Length;
@@ -188,34 +190,95 @@ void ScenePlayer::DrawLongNotes(double time, double duration, double preced)
                 DrawRectRotaGraph3F((slane * 2 + i) * 32.0f, 2048.0f * relendpos, 64 * type, (0), 64, 64, 0, 32.0f, 0.5f, 0.5f, 0, imageHold->GetHandle(), TRUE, FALSE);
             }
         } else if (note->Type.test(SusNoteType::Slide)) {
-            auto last = note;
-            auto lastpos = 1.0 - (note->StartTime - time) / duration;
-            //åªç›ÇÃï`âÊÇÕêßå‰ì_çló∂Ç»Çµ
-            for (int i = 0; i < note->Length * 2; i++) {
-                int type = i ? (i == note->Length * 2 - 1 ? 2 : 1) : 0;
-                DrawRectRotaGraph3F((note->StartLane * 2 + i) * 32.0f, 2048.0f * relpos, 64 * type, (0), 64, 64, 0, 32.0f, 0.5f, 0.5f, 0, imageSlide->GetHandle(), TRUE, FALSE);
-            }
-            for (auto &ex : note->ExtraData) {
-                double relendpos = 1.0 - (ex->StartTime - time) / duration;
-                DrawModiGraphF(
-                    last->StartLane * 64.0f, 2048.0f * lastpos,
-                    (last->StartLane + last->Length) * 64.0f, 2048.0f * lastpos,
-                    (ex->StartLane + ex->Length) * 64.0f, 2048.0f * relendpos,
-                    ex->StartLane * 64.0f, 2048.0f * relendpos,
-                    imageSlideStrut->GetHandle(), TRUE
-                );
-                for (int i = 0; i < ex->Length * 2; i++) {
-                    int type = i ? (i == ex->Length * 2 - 1 ? 2 : 1) : 0;
-                    DrawRectRotaGraph3F((ex->StartLane * 2 + i) * 32.0f, 2048.0f * relendpos, 64 * type, (0), 64, 64, 0, 32.0f, 0.5f, 0.5f, 0, imageSlide->GetHandle(), TRUE, FALSE);
-                }
-                last = ex;
-                lastpos = relendpos;
-            }
+            DrawSlideNotes(time, duration, note);
         } else if (note->Type.test(SusNoteType::AirAction)) {
 
         } else {
             continue;
         }
+    }
+}
+
+void ScenePlayer::DrawSlideNotes(double time, double duration, shared_ptr<SusDrawableNoteData> note)
+{
+    auto lastStep = note;
+    auto lastStepRelativeY = 1.0 - (lastStep->StartTime - time) / duration;
+    double segmentLength = 128.0;   // Bufferè„Ç≈ÇÃç≈è¨ÇÃí∑Ç≥
+    vector<tuple<double, double>> controlPoints;    // lastStepÇ©ÇÁÇÃéûä‘, XíÜâõà íu(0~1)
+    vector<tuple<double, double>> segmentPositions;
+    vector<tuple<double, double>> bezierBuffer;
+
+    //åªç›ÇÃï`âÊÇÕêßå‰ì_çló∂Ç»Çµ
+    for (int i = 0; i < lastStep->Length * 2; i++) {
+        int type = i ? (i == lastStep->Length * 2 - 1 ? 2 : 1) : 0;
+        DrawRectRotaGraph3F((lastStep->StartLane * 2 + i) * 32.0f, 2048.0f * lastStepRelativeY, 64 * type, (0), 64, 64, 0, 32.0f, 0.5f, 0.5f, 0, imageSlide->GetHandle(), TRUE, FALSE);
+    }
+
+    controlPoints.push_back(make_tuple(0, (lastStep->StartLane + lastStep->Length / 2.0) / 16.0));
+    for (auto &slideElement : note->ExtraData) {
+        if (slideElement->Type.test(SusNoteType::Control)) {
+            auto cpi = make_tuple(slideElement->StartTime - lastStep->StartTime, (slideElement->StartLane + slideElement->Length / 2.0) / 16.0);
+            controlPoints.push_back(cpi);
+            continue;
+        }
+        // EndÇ©Step
+        controlPoints.push_back(make_tuple(slideElement->StartTime - lastStep->StartTime, (slideElement->StartLane + slideElement->Length / 2.0) / 16.0));
+        double currentStepRelativeY = 1.0 - (slideElement->StartTime - time) / duration;
+        int segmentPoints = 2048.0 * (lastStepRelativeY - currentStepRelativeY) / segmentLength + 2;
+        segmentPositions.clear();
+        for (int j = 0; j < segmentPoints; j++) {
+            double relativeTimeInBlock = j / (double)(segmentPoints - 1);
+            bezierBuffer.clear();
+            copy(controlPoints.begin(), controlPoints.end(), back_inserter(bezierBuffer));
+            for (int k = controlPoints.size() - 1; k >= 0; k--) {
+                for (int l = 0; l < k; l++) {
+                    auto derivedTime = (1.0 - relativeTimeInBlock) * get<0>(bezierBuffer[l]) + relativeTimeInBlock * get<0>(bezierBuffer[l + 1]);
+                    auto derivedPosition = (1.0 - relativeTimeInBlock) * get<1>(bezierBuffer[l]) + relativeTimeInBlock * get<1>(bezierBuffer[l + 1]);
+                    bezierBuffer[l] = make_tuple(derivedTime, derivedPosition);
+                }
+            }
+            segmentPositions.push_back(bezierBuffer[0]);
+        }
+        
+        auto lastSegmentPosition = segmentPositions[0];
+        double lastSegmentLength = lastStep->Length;
+        double lastTimeInBlock = get<0>(lastSegmentPosition) / (slideElement->StartTime - lastStep->StartTime);
+        auto lastSegmentRelativeY = 1.0 - (lastStep->StartTime - time) / duration;
+        for (auto &segmentPosition : segmentPositions) {
+            if (lastSegmentPosition == segmentPosition) continue;
+            double currentTimeInBlock = get<0>(segmentPosition) / (slideElement->StartTime - lastStep->StartTime);
+            double currentSegmentLength = (1.0 - currentTimeInBlock) * lastStep->Length + currentTimeInBlock * slideElement->Length;
+            double currentSegmentRelativeY = 1.0 - (lastStep->StartTime + get<0>(segmentPosition) - time) / duration;
+            
+            SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
+            DrawRectModiGraphF(
+                get<1>(lastSegmentPosition) * 1024.0 - lastSegmentLength / 2 * 64.0, 2048.0f * lastSegmentRelativeY,
+                get<1>(lastSegmentPosition) * 1024.0 + lastSegmentLength / 2 * 64.0, 2048.0f * lastSegmentRelativeY,
+                get<1>(segmentPosition) * 1024.0 + currentSegmentLength / 2 * 64.0, 2048.0f * currentSegmentRelativeY,
+                get<1>(segmentPosition) * 1024.0 - currentSegmentLength / 2 * 64.0, 2048.0f * currentSegmentRelativeY,
+                0, 192.0 * lastTimeInBlock, 64, 192.0 * (currentTimeInBlock - lastTimeInBlock),
+                imageSlideStrut->GetHandle(), TRUE
+            );
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+            DrawLineAA(
+                get<1>(lastSegmentPosition) * 1024.0, 2048.0f * lastSegmentRelativeY,
+                get<1>(segmentPosition) * 1024.0, 2048.0f * currentSegmentRelativeY,
+                GetColor(0, 200, 255), 16);
+
+            lastSegmentPosition = segmentPosition;
+            lastSegmentLength = currentSegmentLength;
+            lastSegmentRelativeY = currentSegmentRelativeY;
+            lastTimeInBlock = currentTimeInBlock;
+        }
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+        for (int i = 0; i < slideElement->Length * 2; i++) {
+            int type = i ? (i == slideElement->Length * 2 - 1 ? 2 : 1) : 0;
+            DrawRectRotaGraph3F((slideElement->StartLane * 2 + i) * 32.0f, 2048.0f * currentStepRelativeY, 64 * type, (0), 64, 64, 0, 32.0f, 0.5f, 0.5f, 0, imageSlide->GetHandle(), TRUE, FALSE);
+        }
+        lastStep = slideElement;
+        lastStepRelativeY = currentStepRelativeY;
+        controlPoints.clear();
+        controlPoints.push_back(make_tuple(0, (slideElement->StartLane + slideElement->Length / 2.0) / 16.0));
     }
 }
 
@@ -229,7 +292,7 @@ void ScenePlayer::ProcessScore(double time, double duration, double preced)
     for (auto& note : seenData) {
         double relpos = (note->StartTime - time) / duration;
         if (relpos >= 0 || (note->OnTheFlyData.test(NoteAttribute::Finished) && note->ExtraData.size() == 0)) continue;
-        
+
         if (note->Type.test(SusNoteType::Flick)) {
             soundFlick->Play();
             comboCount++;
@@ -258,7 +321,7 @@ void ScenePlayer::ProcessScore(double time, double duration, double preced)
                 }
             }
         }
-        
+
     }
 }
 

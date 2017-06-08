@@ -5,6 +5,10 @@ void InitializeSkin(Skin@ skin) {
   skin.LoadImage("*Note-ExTap", "Note-ExTap.png");
   skin.LoadImage("*Note-Air", "Note-Air.png");
   skin.LoadImage("*Note-Flick", "Note-Flick.png");
+  skin.LoadImage("*Note-Hold", "Note-Hold.png");
+  skin.LoadImage("*Note-HoldStrut", "Note-HoldStrut.png");
+  skin.LoadImage("*Note-Slide", "Note-Slide.png");
+  skin.LoadImage("*Note-SlideStrut", "Note-SlideStrut.png");
   skin.LoadImage("*Lane-Ground", "Lane-Ground.png");
   
   skin.LoadImage("White", "White.png");               //つなぎ
@@ -23,6 +27,9 @@ void InitializeSkin(Skin@ skin) {
   skin.LoadFont("Normal64", "Normal64.sif");
   skin.LoadFont("Latin128", "Latin128.sif");
   
+  skin.LoadSound("*Sound-Tap", "Tap.wav");
+  skin.LoadSound("*Sound-ExTap", "ExTap.wav");
+  skin.LoadSound("*Sound-Flick", "Flick.wav");
   skin.LoadSound("SoundCursor", "button01a.mp3");
   
 }

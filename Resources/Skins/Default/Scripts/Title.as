@@ -5,6 +5,10 @@ class Title : CoroutineScene {
   Image@ imgWhite, imgDxLib, imgBoost, imgFreeType, imgAngelScript, imgSeaurchin;
   Image@ imgCursorMenu;
   
+  ~Title() {
+    WriteDebugConsole("Title Dead\n");
+  }
+  
   void Initialize() {
     LoadResources();
     AddSprite(Sprite(imgWhite));

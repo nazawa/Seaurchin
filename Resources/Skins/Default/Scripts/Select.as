@@ -12,7 +12,7 @@ class Title : CoroutineScene {
   
   void Run() {
     ReloadMusic();
-    @cursor = CreateMusicCursor();
+    @cursor = MusicCursor();
     
     RunCoroutine(Coroutine(Main), "Select:Main");
     RunCoroutine(Coroutine(KeyInput), "Select:KeyInput");
