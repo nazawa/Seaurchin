@@ -27,7 +27,9 @@ protected:
     asIScriptObject *sceneObject;
     asITypeInfo *sceneType;
     std::multiset<SSprite*, SSprite::Comparator> sprites;
+    std::vector<SSprite*> spritesPending;
     std::list<Coroutine*> coroutines;
+    std::list<Coroutine*> coroutinesPending;
 
     void TickCoroutine(double delta);
     void TickSprite(double delta);
