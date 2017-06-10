@@ -2,21 +2,21 @@
 
 enum SusNoteType : uint16_t {
 	Undefined = 0,  // BPMƒm[ƒc‚È‚Ç
-    Tap,
+    Tap,            // Invisible Step‚Ég‚¤
     ExTap,
 	Flick,
 	Air,
 
-    Hold,
+    Hold = 5,
     Slide,
 	AirAction,
 
-    Start,
+    Start = 8,
     Step,
 	Control,
     End,
 
-    Up,
+    Up = 12,
     Down,
     Left,
     Right,

@@ -17,6 +17,20 @@ string ConvertUTF8ToShiftJis(string utf8str)
     return ret;
 }
 
+string ConvertShiftJisToUTF8(string sjisstr)
+{
+    int len = MultiByteToWideChar(CP_ACP, 0, sjisstr.c_str(), -1, nullptr, 0);
+    wchar_t *buffer = new wchar_t[len];
+    MultiByteToWideChar(CP_ACP, 0, sjisstr.c_str(), -1, buffer, len);
+    int utf8 = WideCharToMultiByte(CP_UTF8, 0, buffer, -1, nullptr, 0, nullptr, nullptr);
+    char *ubuffer = new char[utf8];
+    WideCharToMultiByte(CP_UTF8, 0, buffer, -1, ubuffer, utf8, nullptr, nullptr);
+    string ret = ubuffer;
+    delete[] buffer;
+    delete[] ubuffer;
+    return ret;
+}
+
 wstring ConvertUTF8ToUnicode(string utf8str)
 {
     int len = MultiByteToWideChar(CP_UTF8, 0, utf8str.c_str(), -1, nullptr, 0);

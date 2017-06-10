@@ -32,6 +32,7 @@ namespace crc_ccitt
 
 
 std::string ConvertUTF8ToShiftJis(std::string utf8str);
+std::string ConvertShiftJisToUTF8(std::string sjisstr);
 std::wstring ConvertUTF8ToUnicode(std::string utf8str);
 void ScriptSceneWarnOutOf(std::string type, asIScriptContext *ctx);
 double ToDouble(const char *str);

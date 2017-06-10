@@ -234,6 +234,10 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
                     case '4':
                         noteData.Type.set(SusNoteType::Control);
                         break;
+                    case '5':
+                        noteData.Type.set(SusNoteType::Tap);
+                        noteData.Type.set(SusNoteType::Control);
+                        break;
                     default:
                         if (note[1] == '0') continue;
                         if (ErrorCallback) ErrorCallback(0, "Error", "ノーツ種類の指定が不正です。");
@@ -241,8 +245,8 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
                 }
                 Notes.push_back(make_tuple(time, noteData));
             }
-        } else if (lane[0] >= '1') {
-            // ショートタイプ
+        } else if (lane[0] == '1') {
+            // ショートノーツ
             for (auto i = 0; i < noteCount; i++) {
                 auto note = pattern.substr(i * 2, 2);
                 SusRawNoteData noteData;
@@ -264,38 +268,54 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
                         // 本来はHell
                         noteData.Type.set(SusNoteType::Tap);
                         break;
-                    case '5':
+                    default:
+                        if (note[1] == '0') continue;
+                        if (ErrorCallback) ErrorCallback(0, "Error", "ショートレーンの指定が不正です。");
+                        break;
+                }
+                Notes.push_back(make_tuple(time, noteData));
+            }
+        } else if (lane[0] == '5') {
+            // Airノーツ
+            for (auto i = 0; i < noteCount; i++) {
+                auto note = pattern.substr(i * 2, 2);
+                SusRawNoteData noteData;
+                SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
+                noteData.NotePosition.StartLane = ConvertHexatridecimal(lane.substr(1, 1));
+                noteData.NotePosition.Length = ConvertHexatridecimal(note.substr(1, 1));
+
+                switch (note[0]) {
+                    case '1':
                         noteData.Type.set(SusNoteType::Air);
                         noteData.Type.set(SusNoteType::Up);
+                        break;
+                    case '2':
+                        noteData.Type.set(SusNoteType::Air);
+                        noteData.Type.set(SusNoteType::Down);
+                        break;
+                    case '3':
+                        noteData.Type.set(SusNoteType::Air);
+                        noteData.Type.set(SusNoteType::Up);
+                        noteData.Type.set(SusNoteType::Left);
+                        break;
+                    case '4':
+                        noteData.Type.set(SusNoteType::Air);
+                        noteData.Type.set(SusNoteType::Up);
+                        noteData.Type.set(SusNoteType::Right);
+                        break;
+                    case '5':
+                        noteData.Type.set(SusNoteType::Air);
+                        noteData.Type.set(SusNoteType::Down);
+                        noteData.Type.set(SusNoteType::Right);
                         break;
                     case '6':
                         noteData.Type.set(SusNoteType::Air);
                         noteData.Type.set(SusNoteType::Down);
-                        break;
-                    case '7':
-                        noteData.Type.set(SusNoteType::Air);
-                        noteData.Type.set(SusNoteType::Up);
                         noteData.Type.set(SusNoteType::Left);
-                        break;
-                    case '8':
-                        noteData.Type.set(SusNoteType::Air);
-                        noteData.Type.set(SusNoteType::Up);
-                        noteData.Type.set(SusNoteType::Right);
-                        break;
-                    case '9':
-                        noteData.Type.set(SusNoteType::Air);
-                        noteData.Type.set(SusNoteType::Down);
-                        noteData.Type.set(SusNoteType::Left);
-                        break;
-                    case 'a':
-                    case 'A':
-                        noteData.Type.set(SusNoteType::Air);
-                        noteData.Type.set(SusNoteType::Down);
-                        noteData.Type.set(SusNoteType::Right);
                         break;
                     default:
                         if (note[1] == '0') continue;
-                        if (ErrorCallback) ErrorCallback(0, "Error", "ショートレーンの指定が不正です。");
+                        if (ErrorCallback) ErrorCallback(0, "Error", "Airレーンの指定が不正です。");
                         break;
                 }
                 Notes.push_back(make_tuple(time, noteData));
@@ -394,19 +414,7 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
 
         auto bits = info.Type.to_ulong();
         auto noteData = make_shared<SusDrawableNoteData>();
-        if (bits & 0b0000000000011110) {
-            // ショート
-            if (info.NotePosition.StartLane + info.NotePosition.Length > 16) {
-                if (ErrorCallback) ErrorCallback(0, "Error", "ショートノーツがはみ出しています。");
-            }
-
-            noteData->Type = info.Type;
-            noteData->StartTime = GetAbsoluteTime(time.Measure, time.Tick);
-            noteData->Duration = 0;
-            noteData->StartLane = info.NotePosition.StartLane;
-            noteData->Length = info.NotePosition.Length;
-            data.push_back(noteData);
-        } else if (bits & 0b0000000011100000) {
+        if (bits & 0b0000000011100000) {
             noteData->Type = info.Type;
             noteData->StartTime = GetAbsoluteTime(time.Measure, time.Tick);
             noteData->StartLane = info.NotePosition.StartLane;
@@ -474,6 +482,19 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             } else {
                 data.push_back(noteData);
             }
+        }
+        else if (bits & 0b0000000000011110) {
+            // ショート
+            if (info.NotePosition.StartLane + info.NotePosition.Length > 16) {
+                if (ErrorCallback) ErrorCallback(0, "Error", "ショートノーツがはみ出しています。");
+            }
+            noteData->Type = info.Type;
+            noteData->StartTime = GetAbsoluteTime(time.Measure, time.Tick);
+            noteData->Duration = 0;
+            noteData->StartLane = info.NotePosition.StartLane;
+            noteData->Length = info.NotePosition.Length;
+            data.push_back(noteData);
+            
         } else {
             if (ErrorCallback) ErrorCallback(0, "Error", "致命的なノーツエラー(不正な内部表現です)。");
         }

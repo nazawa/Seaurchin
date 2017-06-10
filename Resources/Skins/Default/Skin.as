@@ -4,11 +4,14 @@ void InitializeSkin(Skin@ skin) {
   skin.LoadImage("*Note-Tap", "Note-Tap.png");
   skin.LoadImage("*Note-ExTap", "Note-ExTap.png");
   skin.LoadImage("*Note-Air", "Note-Air.png");
+  skin.LoadImage("*Note-AirUp", "Air-Up.png");
+  skin.LoadImage("*Note-AirDown", "Air-Down.png");
   skin.LoadImage("*Note-Flick", "Note-Flick.png");
   skin.LoadImage("*Note-Hold", "Note-Hold.png");
   skin.LoadImage("*Note-HoldStrut", "Note-HoldStrut.png");
   skin.LoadImage("*Note-Slide", "Note-Slide.png");
   skin.LoadImage("*Note-SlideStrut", "Note-SlideStrut.png");
+  skin.LoadImage("*Note-AirAction", "Note-AirAction.png");
   skin.LoadImage("*Lane-Ground", "Lane-Ground.png");
   
   skin.LoadImage("White", "White.png");               //つなぎ
@@ -18,6 +21,7 @@ void InitializeSkin(Skin@ skin) {
   skin.LoadImage("LogoAngelScript", "aslogo.png");        //311x135
   skin.LoadImage("LogoBoost", "boost.png");               //277x86
   skin.LoadImage("LogoFreeType", "fond2-small.png");      //584x388
+  skin.LoadImage("PlayerTopCover", "PlayerTopCover.png"); //1280x106
   
   skin.LoadImage("CursorMenu", "MenuCursor.png");         //320x64
   skin.LoadImage("CursorCategory", "MusicSelect-Category.png");   //480x40

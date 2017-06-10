@@ -18,12 +18,10 @@ MusicsManager::MusicsManager(std::shared_ptr<Setting> setting)
 }
 
 MusicsManager::~MusicsManager()
-{
-}
+{}
 
 void MusicsManager::Initialize()
-{
-}
+{}
 
 void MusicsManager::Reload(bool recreateCache)
 {   /*
@@ -57,16 +55,13 @@ void MusicsManager::CreateMusicCache()
     FlagMutex.unlock();
 
     path mlpath = Setting::GetRootDirectory() / SU_MUSIC_DIR;
-    for (const auto& fdata : make_iterator_range(directory_iterator(mlpath), {}))
-    {
+    for (const auto& fdata : make_iterator_range(directory_iterator(mlpath), {})) {
         if (!is_directory(fdata)) continue;
         auto category = make_shared<CategoryInfo>(mlpath / fdata);
-        for (const auto& mdir : make_iterator_range(directory_iterator(fdata), {}))
-        {
+        for (const auto& mdir : make_iterator_range(directory_iterator(fdata), {})) {
             if (!is_directory(mdir)) continue;
 
-            for (const auto& file : make_iterator_range(directory_iterator(mdir), {}))
-            {
+            for (const auto& file : make_iterator_range(directory_iterator(mdir), {})) {
                 if (is_directory(file)) continue;
                 if (file.path().extension() != ".sus") continue;     //これ大文字どうすんの
                 Analyzer->Reset();
@@ -96,12 +91,11 @@ void MusicsManager::CreateMusicCache()
 CategoryInfo::CategoryInfo(boost::filesystem::path path)
 {
     Path = path;
-    Name = path.filename().string();
+    Name = ConvertShiftJisToUTF8(path.filename().string());
 }
 
 CategoryInfo::~CategoryInfo()
-{
-}
+{}
 
 void CategoryInfo::Reload(bool recreateCache)
 {
@@ -109,7 +103,8 @@ void CategoryInfo::Reload(bool recreateCache)
 }
 
 //MusicSelectionCursor ------------------------------------------
-MusicSelectionCursor::MusicSelectionCursor(MusicsManager *manager) {
+MusicSelectionCursor::MusicSelectionCursor(MusicsManager *manager)
+{
     Manager = manager;
     CategoryIndex = 0;
     MusicIndex = -1;
@@ -119,14 +114,14 @@ MusicSelectionCursor::MusicSelectionCursor(MusicsManager *manager) {
 std::string MusicSelectionCursor::GetPrimaryString(int32_t relativeIndex)
 {
     switch (State) {
-    case 0:
-        return GetCategoryName(relativeIndex);
-    case 1:
-        return GetMusicName(relativeIndex);
-    default:
-        return "";
+        case 0:
+            return GetCategoryName(relativeIndex);
+        case 1:
+            return GetMusicName(relativeIndex);
+        default:
+            return "";
     }
-    
+
 }
 
 std::string MusicSelectionCursor::GetCategoryName(int32_t relativeIndex)
@@ -149,34 +144,34 @@ std::string MusicSelectionCursor::GetMusicName(int32_t relativeIndex)
 int MusicSelectionCursor::Enter()
 {
     switch (State) {
-    case 0:
-        if (Manager->Categories.size() == 0) return 0;
-        State = 1;
-        MusicIndex = 0;
-        VariantIndex = 0;
-        return 1;
-    case 1: {
-        //選曲終了
-        auto current = Manager->Categories[CategoryIndex];
-        Manager->Selected = current->Musics[MusicIndex];
-        Manager->Analyzer->LoadFromFile(current->Musics[MusicIndex]->Path.string(), false);
-        return 2;
-    }
-    default:
-        return 0;
+        case 0:
+            if (Manager->Categories.size() == 0) return 0;
+            State = 1;
+            MusicIndex = 0;
+            VariantIndex = 0;
+            return 1;
+        case 1: {
+            //選曲終了
+            auto current = Manager->Categories[CategoryIndex];
+            Manager->Selected = current->Musics[MusicIndex];
+            Manager->Analyzer->LoadFromFile(current->Musics[MusicIndex]->Path.string(), false);
+            return 2;
+        }
+        default:
+            return 0;
     }
 }
 
 bool MusicSelectionCursor::Exit()
 {
     switch (State) {
-    case 0:
-        return 0;
-    case 1:
-        State = 0;
-        return 1;
-    default:
-        return 0;
+        case 0:
+            return 0;
+        case 1:
+            State = 0;
+            return 1;
+        default:
+            return 0;
     }
 }
 
@@ -188,17 +183,17 @@ bool MusicSelectionCursor::Start()
 int MusicSelectionCursor::Next()
 {
     switch (State) {
-    case 0:
-        if (Manager->Categories.size() == 0) return -1;
-        CategoryIndex = (CategoryIndex + 1) % Manager->Categories.size();
-        return 1;
-    case 1: {
-        auto current = Manager->Categories[CategoryIndex];
-        if (current->Musics.size() == 0) return -1;
-        MusicIndex = (MusicIndex + 1) % current->Musics.size();
-    }
-    default:
-        return 0;
+        case 0:
+            if (Manager->Categories.size() == 0) return -1;
+            CategoryIndex = (CategoryIndex + 1) % Manager->Categories.size();
+            return 1;
+        case 1: {
+            auto current = Manager->Categories[CategoryIndex];
+            if (current->Musics.size() == 0) return -1;
+            MusicIndex = (MusicIndex + 1) % current->Musics.size();
+        }
+        default:
+            return 0;
     }
     return 0;
 }
@@ -206,17 +201,17 @@ int MusicSelectionCursor::Next()
 int MusicSelectionCursor::Previous()
 {
     switch (State) {
-    case 0:
-        if (Manager->Categories.size() == 0) return -1;
-        CategoryIndex = (CategoryIndex + Manager->Categories.size() - 1) % Manager->Categories.size();
-        return 1;
-    case 1: {
-        auto current = Manager->Categories[CategoryIndex];
-        if (current->Musics.size() == 0) return -1;
-        MusicIndex = (MusicIndex + current->Musics.size() - 1) % current->Musics.size();
-    }
-    default:
-        return 0;
+        case 0:
+            if (Manager->Categories.size() == 0) return -1;
+            CategoryIndex = (CategoryIndex + Manager->Categories.size() - 1) % Manager->Categories.size();
+            return 1;
+        case 1: {
+            auto current = Manager->Categories[CategoryIndex];
+            if (current->Musics.size() == 0) return -1;
+            MusicIndex = (MusicIndex + current->Musics.size() - 1) % current->Musics.size();
+        }
+        default:
+            return 0;
     }
     return 0;
 }
