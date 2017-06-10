@@ -21,19 +21,13 @@
 #define ASSERT_CALL WriteDebugConsole((string(__func__) + " Called!\n").c_str())
 
 #else // _DEBUGÅAÅ´ÇÕReleaseéû
-#define WriteDebugConsole _WriteDebugConsoleA
-#define InitializeDebugFeature _InitializeDebugFeature
-#define TerminateDebugFeature _TerminateDebugFeature
-#define WriteDebugConsoleU _WriteDebugConsoleU
 
-#define ASSERT_CALL WriteDebugConsole((string(__func__) + " Called!\n").c_str())
-/*
 #define WriteDebugConsole Debug_ReleaseFunction
 #define InitializeDebugFeature Debug_ReleaseFunction
 #define TerminateDebugFeature Debug_ReleaseFunction
 #define WriteDebugConsoleU Debug_ReleaseFunction
 #define ASSERT_CALL
-*/
+
 #endif // _DEBUG
 
 void _InitializeDebugFeature();

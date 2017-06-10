@@ -367,38 +367,47 @@ float SusAnalyzer::GetBeatsAt(uint32_t measure)
     return result;
 }
 
+double SusAnalyzer::GetAbsoluteTime(uint32_t meas, uint32_t tick) {
+    double time = 0.0;
+    double lastBpm = 120.0;
+    vector<tuple<SusRelativeNoteTime, SusRawNoteData>> bpmchanges;
+
+    //超過したtick指定にも対応したほうが使いやすいよね
+    while (tick >= GetBeatsAt(meas) * TicksPerBeat) tick -= GetBeatsAt(meas++) * TicksPerBeat;
+
+    for (int i = 0; i < meas + 1; i++) {
+        auto beats = GetBeatsAt(i);
+        
+        bpmchanges.clear();
+        copy_if(Notes.begin(), Notes.end(), back_inserter(bpmchanges), [i](tuple<SusRelativeNoteTime, SusRawNoteData> n) {
+            return get<0>(n).Measure == i && get<1>(n).Type[SusNoteType::Undefined];
+        });
+        auto lastChangeTick = 0u;
+        for (auto& bc : bpmchanges) {
+            auto timing = get<0>(bc);
+            if (i == meas && timing.Tick >= tick) break;
+            double dur = (60.0 / lastBpm) * ((double)(timing.Tick - lastChangeTick) / TicksPerBeat);
+            time += dur;
+            lastChangeTick = timing.Tick;
+            lastBpm = BpmDefinitions[get<1>(bc).DefinitionNumber];
+        }
+        if (i == meas) {
+            time += (60.0 / lastBpm) * ((double)(tick - lastChangeTick) / TicksPerBeat);
+        } else {
+            time += (60.0 / lastBpm) * ((double)(TicksPerBeat * beats - lastChangeTick) / TicksPerBeat);
+        }
+    }
+
+    return time;
+};
+
+tuple<uint32_t, uint32_t> SusAnalyzer::GetRelativeTime(double time)
+{
+    // TODO: いつ使うかわからんが実装したい
+}
+
 void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
 {
-    auto GetAbsoluteTime = [&](uint32_t meas, uint32_t tick) {
-        double time = 0.0;
-        double lastBpm = 120.0;
-        vector<tuple<SusRelativeNoteTime, SusRawNoteData>> bpmchanges;
-
-        for (int i = 0; i < meas + 1; i++) {
-            auto beats = GetBeatsAt(i);
-            bpmchanges.clear();
-            copy_if(Notes.begin(), Notes.end(), back_inserter(bpmchanges), [i](tuple<SusRelativeNoteTime, SusRawNoteData> n) {
-                return get<0>(n).Measure == i && get<1>(n).Type[SusNoteType::Undefined];
-            });
-            auto lastChangeTick = 0u;
-            for (auto& bc : bpmchanges) {
-                auto timing = get<0>(bc);
-                if (i == meas && timing.Tick >= tick) break;
-                double dur = (60.0 / lastBpm) * ((double)(timing.Tick - lastChangeTick) / TicksPerBeat);
-                time += dur;
-                lastChangeTick = timing.Tick;
-                lastBpm = BpmDefinitions[get<1>(bc).DefinitionNumber];
-            }
-            if (i == meas) {
-                time += (60.0 / lastBpm) * ((double)(tick - lastChangeTick) / TicksPerBeat);
-            } else {
-                time += (60.0 / lastBpm) * ((double)(TicksPerBeat * beats - lastChangeTick) / TicksPerBeat);
-            }
-        }
-
-        return time;
-    };
-
     // 不正チェックリスト
     // ショート: はみ出しは全部アウト
     // ホールド: ケツ無しアウト(ケツ連は無視)、Step/Control問答無用アウト、ケツ違いアウト

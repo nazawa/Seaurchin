@@ -130,9 +130,6 @@ void ScriptScene::TickCoroutine(double delta)
             i++;
         }
     }
-    ostringstream str;
-    str << coroutines.size() << endl;
-    WriteDebugConsole(str.str().c_str());
 }
 
 void ScriptScene::TickSprite(double delta)

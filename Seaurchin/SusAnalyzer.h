@@ -72,6 +72,7 @@ private:
     static boost::xpressive::sregex RegexSusData;
 
     uint32_t TicksPerBeat;
+    double LongInjectionPerBeat;
     std::function<void(uint32_t, std::string, std::string)> ErrorCallback = nullptr;
     std::vector<std::tuple<SusRelativeNoteTime, SusRawNoteData>> Notes;
     std::unordered_map<uint32_t, double> BpmDefinitions;
@@ -80,6 +81,8 @@ private:
     void ProcessCommand(const boost::xpressive::smatch &result);
     void ProcessData(const boost::xpressive::smatch &result);
 	float GetBeatsAt(uint32_t measure);
+    double GetAbsoluteTime(uint32_t measure, uint32_t tick);
+    std::tuple<uint32_t, uint32_t> GetRelativeTime(double time);
 
 public:
     SusMetaData SharedMetaData;
