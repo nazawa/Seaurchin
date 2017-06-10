@@ -69,6 +69,7 @@ public:
 
 	void Play(SoundSample *sample);
 	void Stop(SoundSample *sample);
+    void SetLoop(SoundSample *sample, bool looping);
 	void SetVolume(SoundSample *sample, float volume);
 
 	void Play(SoundStream *sample);

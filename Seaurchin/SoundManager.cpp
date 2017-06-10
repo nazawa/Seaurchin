@@ -124,6 +124,18 @@ void SoundManager::Stop(SoundSample * sample)
     BASS_SampleStop(sample->hSample);
 }
 
+void SoundManager::SetLoop(SoundSample *sample, bool looping)
+{
+    BASS_SAMPLE info;
+    BASS_SampleGetInfo(sample->hSample, &info);
+    if (looping) {
+        info.flags |= BASS_SAMPLE_LOOP;
+    } else {
+        info.flags = info.flags & ~BASS_SAMPLE_LOOP;
+    }
+    BASS_SampleSetInfo(sample->hSample, &info);
+}
+
 void SoundManager::SetVolume(SoundSample * sample, float volume)
 {
     sample->PreservedVolume = clamp(volume, 0.0f, 1.0f);

@@ -226,6 +226,11 @@ void SSound::StopAll()
 	manager->Stop(sample);
 }
 
+void SSound::SetLoop(bool looping)
+{
+    manager->SetLoop(sample, looping);
+}
+
 SSound * SSound::CreateSound(SoundManager *smanager)
 {
     auto result =  new SSound(smanager, nullptr);
@@ -270,6 +275,7 @@ void RegisterScriptResource(ExecutionManager *exm)
 	engine->RegisterObjectBehaviour(SU_IF_SOUND, asBEHAVE_RELEASE, "void f()", asMETHOD(SSound, Release), asCALL_THISCALL);
 	engine->RegisterObjectMethod(SU_IF_SOUND, "void Play()", asMETHOD(SSound, Play), asCALL_THISCALL);
 	engine->RegisterObjectMethod(SU_IF_SOUND, "void StopAll()", asMETHOD(SSound, StopAll), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SOUND, "void SetLoop(bool)", asMETHOD(SSound, SetLoop), asCALL_THISCALL);
 
 	engine->RegisterObjectType(SU_IF_9IMAGE, 0, asOBJ_REF);
 	//engine->RegisterObjectBehaviour(SU_IF_9IMAGE, asBEHAVE_FACTORY, SU_IF_IMAGE "@ f()", asFUNCTION(SNinePatchImage::CreateBlankImage), asCALL_CDECL);

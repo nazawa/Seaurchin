@@ -6,18 +6,14 @@ class Play : CoroutineScene {
   ScenePlayer@ player;
   
   void Initialize() {
-    @player = ScenePlayer();
     LoadResources();
-    player.Initialize();  //呼ぶ前にリソースを設定すること
   }
   
   void Run() {
+    RunCoroutine(Coroutine(RunPlayer), "Play:RunPlayer");
     RunCoroutine(Coroutine(Main), "Play:Main");
     RunCoroutine(Coroutine(KeyInput), "Play:KeyInput");
-    player.Z = 5;
-    AddSprite(player);
     YieldTime(1);
-    player.Play();
     while(true) YieldTime(30);
   }
   
@@ -31,7 +27,9 @@ class Play : CoroutineScene {
     @font32 = skin.GetFont("Normal32");
     @font64 = skin.GetFont("Normal64");
     @imgWhite = skin.GetImage("TitleBack");
-    
+  }
+  
+  void SetPlayerResource() {
     player.SetResource("LaneGround", skin.GetImage("*Lane-Ground"));
     player.SetResource("FontCombo", font64);
     player.SetResource("Tap", skin.GetImage("*Note-Tap"));
@@ -47,8 +45,22 @@ class Play : CoroutineScene {
     player.SetResource("SoundTap", skin.GetSound("*Sound-Tap"));
     player.SetResource("SoundExTap", skin.GetSound("*Sound-ExTap"));
     player.SetResource("SoundFlick", skin.GetSound("*Sound-Flick"));
+    player.SetResource("SoundAir", skin.GetSound("*Sound-Air"));
+    player.SetResource("SoundAirAction", skin.GetSound("*Sound-AirAction"));
+    player.SetResource("SoundHoldLoop", skin.GetSound("*Sound-SlideLoop"));
+    player.SetResource("SoundSlideLoop", skin.GetSound("*Sound-HoldLoop"));
   }
   
+  void RunPlayer() {
+    @player = ScenePlayer();
+    SetPlayerResource();
+    player.Initialize();
+    player.Z = 5;
+    AddSprite(player);
+    player.Load();
+    while(!player.IsLoadCompleted()) YieldFrame(1);
+    player.Play();
+  }
   
   Sprite@ spTopCover, spBack;
   void Main() {

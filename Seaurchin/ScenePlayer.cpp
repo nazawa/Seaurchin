@@ -4,26 +4,6 @@
 
 using namespace std;
 
-
-static double cameraZ = -340, cameraY = 620, cameraTargetZ = 580; // スクショから計測
-static double laneBufferX = 1024;
-static double laneBufferY = laneBufferX * SU_LANE_ASPECT;
-static double widthPerLane = laneBufferX / 16;
-static double noteImageBlockX = 64;
-static double noteImageBlockY = 64;
-static double scaleNoteY = 2.0;
-static double actualNoteScaleX = (widthPerLane / 2) / noteImageBlockX;
-static double actualNoteScaleY = actualNoteScaleX * scaleNoteY;
-
-static SSound *soundTap, *soundExTap, *soundFlick;
-static SImage *imageTap, *imageExTap, *imageFlick;
-static SImage *imageAirUp, *imageAirDown;
-static SImage *imageHold, *imageHoldStrut;
-static SImage *imageSlide, *imageSlideStrut;
-static SImage *imageAirAction;
-static SFont *fontCombo;
-static STextSprite *textCombo;
-
 static uint16_t RectVertexIndices[] = { 0, 1, 3, 3, 1, 2 };
 static VERTEX3D GroundVertices[] = {
     {
@@ -93,8 +73,6 @@ static VERTEX3D AirVertices[] = {
         0.0f, 0.0f
     }
 };
-static unsigned int SlideLineColor = GetColor(0, 200, 255);
-static unsigned int AirActionLineColor = GetColor(0, 255, 32);
 
 void RegisterPlayerScene(ExecutionManager * manager)
 {
@@ -110,7 +88,8 @@ void RegisterPlayerScene(ExecutionManager * manager)
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_IMAGE "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_FONT "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_SOUND "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void DrawLanes()", asMETHOD(ScenePlayer, Draw), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void Load()", asMETHOD(ScenePlayer, Load), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "bool IsLoadCompleted()", asMETHOD(ScenePlayer, IsLoadCompleted), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void Play()", asMETHOD(ScenePlayer, Play), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "double GetCurrentTime()", asMETHOD(ScenePlayer, GetPlayingTime), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "int GetSeenObjectsCount()", asMETHOD(ScenePlayer, GetSeenObjectsCount), asCALL_THISCALL);
@@ -128,8 +107,51 @@ ScenePlayer::~ScenePlayer()
     Finalize();
 }
 
+void ScenePlayer::Initialize()
+{
+    analyzer = make_unique<SusAnalyzer>(192);
+    metaInfo = manager->GetMusicsManager()->Selected;
+
+    // 2^x制限があるのでここで計算
+    double bufferY = 2;
+    while (laneBufferY > bufferY) bufferY *= 2;
+    float bufferV = laneBufferY / bufferY;
+    for (int i = 2; i < 4; i++) GroundVertices[i].v = bufferV;
+    for (int i = 2; i < 4; i++) AirVertices[i].v = bufferV;
+    hGroundBuffer = MakeScreen(laneBufferX, bufferY, TRUE);
+    hAirBuffer = MakeScreen(laneBufferX, bufferY, TRUE);
+
+    imageTap = dynamic_cast<SImage*>(resources["Tap"]);
+    imageExTap = dynamic_cast<SImage*>(resources["ExTap"]);
+    imageFlick = dynamic_cast<SImage*>(resources["Flick"]);
+    imageAirUp = dynamic_cast<SImage*>(resources["AirUp"]);
+    imageAirDown = dynamic_cast<SImage*>(resources["AirDown"]);
+    imageHold = dynamic_cast<SImage*>(resources["Hold"]);
+    imageHoldStrut = dynamic_cast<SImage*>(resources["HoldStrut"]);
+    imageSlide = dynamic_cast<SImage*>(resources["Slide"]);
+    imageSlideStrut = dynamic_cast<SImage*>(resources["SlideStrut"]);
+    imageAirAction = dynamic_cast<SImage*>(resources["AirAction"]);
+
+    soundTap = dynamic_cast<SSound*>(resources["SoundTap"]);
+    soundExTap = dynamic_cast<SSound*>(resources["SoundExTap"]);
+    soundFlick = dynamic_cast<SSound*>(resources["SoundFlick"]);
+    soundAir = dynamic_cast<SSound*>(resources["SoundAir"]);
+    soundAirAction = dynamic_cast<SSound*>(resources["SoundAirAction"]);
+    soundSlideLoop = dynamic_cast<SSound*>(resources["SoundSlideLoop"]);
+    soundHoldLoop = dynamic_cast<SSound*>(resources["SoundHoldLoop"]);
+    fontCombo = dynamic_cast<SFont*>(resources["FontCombo"]);
+
+    fontCombo->AddRef();
+    textCombo = STextSprite::Factory(fontCombo, "0000");
+    textCombo->Apply("y:3072, scaleX:8, scaleY:8");
+    soundHoldLoop->SetLoop(true);
+    soundSlideLoop->SetLoop(true);
+}
+
 void ScenePlayer::Finalize()
 {
+    soundHoldLoop->StopAll();
+    soundSlideLoop->StopAll();
     for (auto& res : resources) res.second->Release();
     manager->GetSoundManagerUnsafe()->Stop(bgmStream);
     manager->GetSoundManagerUnsafe()->ReleaseSound(bgmStream);
@@ -145,9 +167,8 @@ void ScenePlayer::Draw()
     ostringstream combo;
     currentTime = GetPlayingTime() - analyzer->SharedMetaData.WaveOffset;
     int division = 8;
-
-    CalculateNotes(currentTime, seenDuration, precedTime);
-    ProcessScore(currentTime, seenDuration, precedTime);
+    seenData.clear();
+    if (isLoadCompleted) CalculateNotes(currentTime, seenDuration, precedTime);
 
     combo << setw(4) << comboCount;
     textCombo->set_Text(combo.str());
@@ -160,6 +181,9 @@ void ScenePlayer::Draw()
     textCombo->Draw();
     FINISH_DRAW_TRANSACTION;
 
+    // Ground
+    bool SlideCheck = false;
+    bool HoldCheck = false;
     BEGIN_DRAW_TRANSACTION(hGroundBuffer);
     for (auto& note : seenData) {
         auto &type = note->Type;
@@ -168,11 +192,19 @@ void ScenePlayer::Draw()
         if (type.test(SusNoteType::Tap)) DrawShortNotes(note);
         if (type.test(SusNoteType::ExTap)) DrawShortNotes(note);
         if (type.test(SusNoteType::Flick)) DrawShortNotes(note);
+        ProcessScore(note);
+        SlideCheck = isInSlide || SlideCheck;
+        HoldCheck = isInHold || HoldCheck;
     }
     FINISH_DRAW_TRANSACTION;
+    if (!wasInSlide && SlideCheck) soundSlideLoop->Play();
+    if (wasInSlide && !SlideCheck) soundSlideLoop->StopAll();
+    if (!wasInHold && HoldCheck) soundHoldLoop->Play();
+    if (wasInHold && !HoldCheck) soundHoldLoop->StopAll();
     Prepare3DDrawCall();
     DrawPolygonIndexed3D(GroundVertices, 4, RectVertexIndices, 2, hGroundBuffer, TRUE);
 
+    //Air
     BEGIN_DRAW_TRANSACTION(hAirBuffer);
     ClearDrawScreen();
     for (auto& note : seenData) if (note->Type.test(SusNoteType::AirAction)) airactionStarts.push_back(DrawAirActionNotes(note));
@@ -183,13 +215,28 @@ void ScenePlayer::Draw()
         double x = (1.0 - get<0>(position)) * SU_LANE_X_MIN + get<0>(position) * SU_LANE_X_MAX;
         DrawLine3D(VGet(x, SU_LANE_Y_AIR, get<1>(position)), VGet(x, SU_LANE_Y_GROUND, get<1>(position)), AirActionLineColor);
     }
-
     for (auto& note : seenData) if (note->Type.test(SusNoteType::Air)) DrawAirNotes(note);
+
+    wasInHold = isInHold;
+    wasInSlide = SlideCheck;
+}
+
+void ScenePlayer::LoadWorker()
+{
+    analyzer->LoadFromFile(metaInfo->Path.string().c_str());
+    analyzer->RenderScoreData(data);
+    for (auto &note : data) {
+        if (note->Type.test(SusNoteType::Slide) || note->Type.test(SusNoteType::AirAction)) CalculateCurves(note);
+    }
+
+    auto file = metaInfo->WavePath;
+    bgmStream = manager->GetSoundManagerUnsafe()->LoadStreamFromFile(file.string().c_str());
+
+    isLoadCompleted = true;
 }
 
 void ScenePlayer::CalculateNotes(double time, double duration, double preced)
 {
-    seenData.clear();
     copy_if(data.begin(), data.end(), back_inserter(seenData), [&](shared_ptr<SusDrawableNoteData> n) {
         double ptime = time - preced;
         if (n->Type.to_ulong() & 0b0000000011100000) {
@@ -482,88 +529,90 @@ void ScenePlayer::ProcessSound(double time, double duration, double preced)
     //役目不明
 }
 
-void ScenePlayer::ProcessScore(double time, double duration, double preced)
+void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
 {
-    for (auto& note : seenData) {
-        double relpos = (note->StartTime - time) / duration;
-        if (relpos >= 0 || (note->OnTheFlyData.test(NoteAttribute::Finished) && note->ExtraData.size() == 0)) continue;
+    double relpos = (note->StartTime - currentTime) / seenDuration;
+    if (relpos >= 0 || (note->OnTheFlyData.test(NoteAttribute::Finished) && note->ExtraData.size() == 0)) return;
+    auto state = note->Type.to_ulong();
 
-        if (note->Type.test(SusNoteType::Flick)) {
-            soundFlick->Play();
-            comboCount++;
-            note->OnTheFlyData.set(NoteAttribute::Finished);
-        } else if (note->Type.test(SusNoteType::ExTap)) {
-            soundExTap->Play();
-            comboCount++;
-            note->OnTheFlyData.set(NoteAttribute::Finished);
-        } else if (note->Type.test(SusNoteType::Tap)
-            || note->Type.test(SusNoteType::Air)) {
+    if (note->Type.test(SusNoteType::Hold)) {
+        isInHold = true;
+        if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
             soundTap->Play();
             comboCount++;
             note->OnTheFlyData.set(NoteAttribute::Finished);
-        } else if (note->Type.test(SusNoteType::Start)) {
-            if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
-                soundTap->Play();
-                comboCount++;
-                note->OnTheFlyData.set(NoteAttribute::Finished);
-            }
-            for (auto& ex : note->ExtraData) {
-                relpos = (ex->StartTime - time) / duration;
-                if (relpos < 0 && !ex->OnTheFlyData.test(NoteAttribute::Finished)) {
-                    soundTap->Play();
-                    comboCount++;
-                    ex->OnTheFlyData.set(NoteAttribute::Finished);
-                }
-            }
         }
+
+        double endpos = (note->ExtraData[0]->StartTime - currentTime) / seenDuration;
+        if (endpos >= 0) return;
+        isInHold = false;
+        if (note->ExtraData[0]->OnTheFlyData.test(NoteAttribute::Finished)) return;
+        soundTap->Play();
+
+        comboCount++;
+        note->ExtraData[0]->OnTheFlyData.set(NoteAttribute::Finished);
+    } else if (note->Type.test(SusNoteType::Slide)) {
+        isInSlide = true;
+        if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
+            soundTap->Play();
+            comboCount++;
+            note->OnTheFlyData.set(NoteAttribute::Finished);
+            return;
+        }
+        for (auto &extra : note->ExtraData) {
+            double pos = (extra->StartTime - currentTime) / seenDuration;
+            if (pos >= 0) continue;
+            if (extra->Type.test(SusNoteType::End)) isInSlide = false;
+            if (extra->Type.test(SusNoteType::Control)) continue;
+            if (extra->Type.test(SusNoteType::Tap)) continue;
+            if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
+            soundTap->Play();
+            comboCount++;
+            extra->OnTheFlyData.set(NoteAttribute::Finished);
+            return;
+        }
+    } else if (note->Type.test(SusNoteType::AirAction)) {
+        for (auto &extra : note->ExtraData) {
+            double pos = (extra->StartTime - currentTime) / seenDuration;
+            if (extra->Type.test(SusNoteType::Control)) continue;
+            if (extra->Type.test(SusNoteType::Tap)) continue;
+            if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
+            if (pos >= 0) continue;
+            soundAirAction->Play();
+            comboCount++;
+            extra->OnTheFlyData.set(NoteAttribute::Finished);
+        }
+    } else if (note->Type.test(SusNoteType::Air)) {
+        soundAir->Play();
+        note->OnTheFlyData.set(NoteAttribute::Finished);
+    } else if (note->Type.test(SusNoteType::Tap)) {
+        soundTap->Play();
+        comboCount++;
+        note->OnTheFlyData.set(NoteAttribute::Finished);
+    } else if (note->Type.test(SusNoteType::ExTap)) {
+        soundExTap->Play();
+        comboCount++;
+        note->OnTheFlyData.set(NoteAttribute::Finished);
+    } else if (note->Type.test(SusNoteType::Flick)) {
+        soundFlick->Play();
+        comboCount++;
+        note->OnTheFlyData.set(NoteAttribute::Finished);
+    } else {
+        // 現在なし 
     }
 }
 
 // スクリプト側から呼べるやつら
 
-void ScenePlayer::Initialize()
+void ScenePlayer::Load()
 {
-    analyzer = make_unique<SusAnalyzer>(192);
-    metaInfo = manager->GetMusicsManager()->Selected;
+    thread loadThread([&] { LoadWorker(); });
+    loadThread.detach();
+}
 
-    // 2^x制限があるのでここで計算
-    double bufferY = 2;
-    while (laneBufferY > bufferY) bufferY *= 2;
-    float bufferV = laneBufferY / bufferY;
-    for (int i = 2; i < 4; i++) GroundVertices[i].v = bufferV;
-    for (int i = 2; i < 4; i++) AirVertices[i].v = bufferV;
-    hGroundBuffer = MakeScreen(laneBufferX, bufferY, TRUE);
-    hAirBuffer = MakeScreen(laneBufferX, bufferY, TRUE);
-
-
-    analyzer->LoadFromFile(metaInfo->Path.string().c_str());
-    analyzer->RenderScoreData(data);
-    for (auto &note : data) {
-        if (note->Type.test(SusNoteType::Slide) || note->Type.test(SusNoteType::AirAction)) CalculateCurves(note);
-    }
-
-    auto file = metaInfo->WavePath;
-    bgmStream = manager->GetSoundManagerUnsafe()->LoadStreamFromFile(file.string().c_str());
-
-    imageTap = dynamic_cast<SImage*>(resources["Tap"]);
-    imageExTap = dynamic_cast<SImage*>(resources["ExTap"]);
-    imageFlick = dynamic_cast<SImage*>(resources["Flick"]);
-    imageAirUp = dynamic_cast<SImage*>(resources["AirUp"]);
-    imageAirDown = dynamic_cast<SImage*>(resources["AirDown"]);
-    imageHold = dynamic_cast<SImage*>(resources["Hold"]);
-    imageHoldStrut = dynamic_cast<SImage*>(resources["HoldStrut"]);
-    imageSlide = dynamic_cast<SImage*>(resources["Slide"]);
-    imageSlideStrut = dynamic_cast<SImage*>(resources["SlideStrut"]);
-    imageAirAction = dynamic_cast<SImage*>(resources["AirAction"]);
-
-    soundTap = dynamic_cast<SSound*>(resources["SoundTap"]);
-    soundExTap = dynamic_cast<SSound*>(resources["SoundExTap"]);
-    soundFlick = dynamic_cast<SSound*>(resources["SoundFlick"]);
-    fontCombo = dynamic_cast<SFont*>(resources["FontCombo"]);
-
-    fontCombo->AddRef();
-    textCombo = STextSprite::Factory(fontCombo, "0000");
-    textCombo->Apply("y:3072, scaleX:8, scaleY:8");
+bool ScenePlayer::IsLoadCompleted()
+{
+    return isLoadCompleted;
 }
 
 void ScenePlayer::SetPlayerResource(const string & name, SResource * resource)
@@ -572,7 +621,6 @@ void ScenePlayer::SetPlayerResource(const string & name, SResource * resource)
     resources[name] = resource;
 }
 
-
 void ScenePlayer::Play()
 {
     manager->GetSoundManagerUnsafe()->Play(bgmStream);
@@ -580,6 +628,7 @@ void ScenePlayer::Play()
 
 double ScenePlayer::GetPlayingTime()
 {
+    if (!bgmStream) return 0;
     return manager->GetSoundManagerUnsafe()->GetPosition(bgmStream);
 }
 

@@ -37,6 +37,28 @@ protected:
     std::shared_ptr<MusicMetaInfo> metaInfo;
     std::map<std::string, SResource*> resources;
     SoundStream *bgmStream;
+    bool isLoadCompleted = false;
+
+    double cameraZ = -340, cameraY = 620, cameraTargetZ = 580; // スクショから計測
+    double laneBufferX = 1024;
+    double laneBufferY = laneBufferX * SU_LANE_ASPECT;
+    double widthPerLane = laneBufferX / 16;
+    double noteImageBlockX = 64;
+    double noteImageBlockY = 64;
+    double scaleNoteY = 2.0;
+    double actualNoteScaleX = (widthPerLane / 2) / noteImageBlockX;
+    double actualNoteScaleY = actualNoteScaleX * scaleNoteY;
+
+    SSound *soundTap, *soundExTap, *soundFlick, *soundAir, *soundAirAction, *soundHoldLoop, *soundSlideLoop;
+    SImage *imageTap, *imageExTap, *imageFlick;
+    SImage *imageAirUp, *imageAirDown;
+    SImage *imageHold, *imageHoldStrut;
+    SImage *imageSlide, *imageSlideStrut;
+    SImage *imageAirAction;
+    SFont *fontCombo;
+    STextSprite *textCombo;
+    unsigned int SlideLineColor = GetColor(0, 200, 255);
+    unsigned int AirActionLineColor = GetColor(0, 255, 32);
 
     // 曲の途中で変化するやつら
     std::vector<std::shared_ptr<SusDrawableNoteData>> data;
@@ -47,7 +69,9 @@ protected:
     double seenDuration = 0.750;
     double precedTime = 0.1;
     int seenObjects = 0;
+    bool isInHold = false, isInSlide = false, wasInHold = false, wasInSlide = false;
 
+    void LoadWorker();
     void CalculateNotes(double time, double duration, double preced);
     void CalculateCurves(std::shared_ptr<SusDrawableNoteData> note);
     void DrawShortNotes(std::shared_ptr<SusDrawableNoteData> note);
@@ -58,17 +82,19 @@ protected:
     void Prepare3DDrawCall();
 
     void ProcessSound(double time, double duration, double preced);
-    void ProcessScore(double time, double duration, double preced);
+    void ProcessScore(std::shared_ptr<SusDrawableNoteData> note);
 
 public:
     ScenePlayer(ExecutionManager *exm);
     ~ScenePlayer() override;
 
-    void Initialize();
     void SetPlayerResource(const std::string &name, SResource *resource);
     void Draw() override;
     void Finalize();
 
+    void Initialize();
+    void Load();
+    bool IsLoadCompleted();
     void Play();
     double GetPlayingTime();
     int GetSeenObjectsCount();

@@ -120,6 +120,7 @@ public:
 
     void Play();
     void StopAll();
+    void SetLoop(bool looping);
 
     static SSound* CreateSound(SoundManager *smanager);
     static SSound* CreateSoundFromFile(SoundManager *smanager, const std::string &file, int simul);

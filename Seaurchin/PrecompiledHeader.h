@@ -36,6 +36,7 @@
 #include <random>
 #include <exception>
 #include <future>
+#include <thread>
 
 //Boost
 #include <boost/property_tree/ptree.hpp>
