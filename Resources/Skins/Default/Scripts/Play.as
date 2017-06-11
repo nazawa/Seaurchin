@@ -102,7 +102,11 @@ class Play : CoroutineScene {
     while(true) {
       int pgm = gMax;
       player.GetCurrentGauge(gMax, gCurrent);
-      if (gMax > pgm) for(int i = 0; i < gMax; i++) spGaugeCounts[i].SetImage(imgGCFull);
+      if (gMax > pgm) for(int i = pgm; i < gMax; i++) {
+         spGaugeCounts[i].SetImage(imgGCFull);
+         spGaugeCounts[i].Apply("scaleX:1.0");
+         spGaugeCounts[i].AddMove("scale_to(x:0.8, y:0.5, time:0.3)");
+      }
       spBarFill.AddMove("range_size(width:" + formatFloat(gCurrent, '', 1, 4) + ", height: 1, time: 0.1)");
       YieldFrame(1);
     }
