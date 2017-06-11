@@ -251,11 +251,6 @@ void RegisterScriptScene(ExecutionManager *exm)
     engine->RegisterGlobalFunction("void AddScene(" SU_IF_COSCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
 }
 
-int ScriptSceneGetIndex()
-{
-    return 0;
-}
-
 void ScriptSceneSetIndex(int index)
 {
     auto ctx = asGetActiveContext();
