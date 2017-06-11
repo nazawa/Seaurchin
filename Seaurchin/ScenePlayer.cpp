@@ -232,7 +232,7 @@ void ScenePlayer::Draw()
         textCombo->AddMove("scale_to(x:8, y:8, time:0.2, ease:out_quad)");
     }
 
-    wasInHold = isInHold;
+    wasInHold = HoldCheck;
     wasInSlide = SlideCheck;
 }
 
