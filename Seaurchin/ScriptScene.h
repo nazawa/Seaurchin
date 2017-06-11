@@ -75,6 +75,8 @@ public:
 class ExecutionManager;
 void RegisterScriptScene(ExecutionManager *exm);
 
+int ScriptSceneGetIndex();
+void ScriptSceneSetIndex(int index);
 bool ScriptSceneIsKeyHeld(int keynum);
 bool ScriptSceneIsKeyTriggered(int keynum);
 void ScriptSceneAddScene(asIScriptObject *sceneObject);

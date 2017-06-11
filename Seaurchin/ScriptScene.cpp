@@ -251,6 +251,33 @@ void RegisterScriptScene(ExecutionManager *exm)
     engine->RegisterGlobalFunction("void AddScene(" SU_IF_COSCENE "@)", asFUNCTION(ScriptSceneAddScene), asCALL_CDECL);
 }
 
+int ScriptSceneGetIndex()
+{
+    return 0;
+}
+
+void ScriptSceneSetIndex(int index)
+{
+    auto ctx = asGetActiveContext();
+    auto psc = static_cast<ScriptScene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
+    if (!psc) {
+        ScriptSceneWarnOutOf("Scene Class", ctx);
+        return;
+    }
+    psc->SetIndex(index);
+}
+
+int ScriptSceneGetIndex()
+{
+    auto ctx = asGetActiveContext();
+    auto psc = static_cast<ScriptScene*>(ctx->GetUserData(SU_UDTYPE_SCENE));
+    if (!psc) {
+        ScriptSceneWarnOutOf("Scene Class", ctx);
+        return 0;
+    }
+    return psc->GetIndex();
+}
+
 // Scene用メソッド
 
 bool ScriptSceneIsKeyHeld(int keynum)
