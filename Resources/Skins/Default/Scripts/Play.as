@@ -2,6 +2,7 @@
 class Play : CoroutineScene {
   Skin@ skin;
   Image@ imgWhite;
+  Image@ imgGCEmpty, imgGCFull, imgGBBack, imgGBFill, imgGBFront;
   Font@ font32, font64, fontLatin;
   ScenePlayer@ player;
   
@@ -27,6 +28,11 @@ class Play : CoroutineScene {
     @font32 = skin.GetFont("Normal32");
     @font64 = skin.GetFont("Normal64");
     @imgWhite = skin.GetImage("TitleBack");
+    @imgGCEmpty = skin.GetImage("GaugeCountEmpty");
+    @imgGCFull = skin.GetImage("GaugeCountFull");
+    @imgGBBack = skin.GetImage("GaugeBarBack");
+    @imgGBFill = skin.GetImage("GaugeBarFill");
+    @imgGBFront = skin.GetImage("GaugeBarFront");
   }
   
   void SetPlayerResource() {
@@ -63,16 +69,42 @@ class Play : CoroutineScene {
   }
   
   Sprite@ spTopCover, spBack;
+  array<Sprite@> spGaugeCounts(6);
+  Sprite@ spBarBack, spBarFront;
+  ClipSprite@ spBarFill;
+  int gMax;
+  double gCurrent;
   void Main() {
     @spBack = Sprite(skin.GetImage("TitleBack"));
     @spTopCover = Sprite(skin.GetImage("PlayerTopCover"));
-    spTopCover.Apply("z:0");
     spTopCover.Apply("z:10");
+    for(int i = 0; i < 6; i++) {
+      @spGaugeCounts[i] = Sprite(imgGCEmpty);
+      spGaugeCounts[i].Apply("x:" + (384 + i * 48) + ", y:74, z:11, scaleX:0.8, scaleY:0.5");
+      AddSprite(spGaugeCounts[i]);
+    }
+    @spBarBack = Sprite(imgGBBack);
+    @spBarFront = Sprite(imgGBFront);
+    @spBarFill = ClipSprite(512, 64);
+    spBarFill.Transfer(imgGBFill, 0, 0);
+    spBarFill.SetRange(0, 0, 0, 1);
+    spBarBack.Apply("x:384, y:4, z:15");
+    spBarFill.Apply("x:384, y:4, z:16");
+    spBarFront.Apply("x:384, y:4, z:17");
+    
     AddSprite(spBack);
     AddSprite(spTopCover);
+    AddSprite(spBack);
+    AddSprite(spBarBack);
+    AddSprite(spBarFill);
+    AddSprite(spBarFront);
     
     while(true) {
-      YieldTime(0.01);
+      int pgm = gMax;
+      player.GetCurrentGauge(gMax, gCurrent);
+      if (gMax > pgm) for(int i = 0; i < gMax; i++) spGaugeCounts[i].SetImage(imgGCFull);
+      spBarFill.AddMove("range_size(width:" + formatFloat(gCurrent, '', 1, 4) + ", height: 1, time: 0.1)");
+      YieldFrame(1);
     }
   }
   

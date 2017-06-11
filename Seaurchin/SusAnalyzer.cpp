@@ -77,6 +77,7 @@ static auto ConvertRawString = [](const string &input) -> string {
 SusAnalyzer::SusAnalyzer(uint32_t tpb)
 {
     TicksPerBeat = tpb;
+    LongInjectionPerBeat = 2;
 }
 
 SusAnalyzer::~SusAnalyzer()
@@ -236,7 +237,7 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
                         break;
                     case '5':
                         noteData.Type.set(SusNoteType::Tap);
-                        noteData.Type.set(SusNoteType::Control);
+                        noteData.Type.set(SusNoteType::Step);
                         break;
                     default:
                         if (note[1] == '0') continue;
@@ -367,7 +368,8 @@ float SusAnalyzer::GetBeatsAt(uint32_t measure)
     return result;
 }
 
-double SusAnalyzer::GetAbsoluteTime(uint32_t meas, uint32_t tick) {
+double SusAnalyzer::GetAbsoluteTime(uint32_t meas, uint32_t tick)
+{
     double time = 0.0;
     double lastBpm = 120.0;
     vector<tuple<SusRelativeNoteTime, SusRawNoteData>> bpmchanges;
@@ -377,7 +379,7 @@ double SusAnalyzer::GetAbsoluteTime(uint32_t meas, uint32_t tick) {
 
     for (int i = 0; i < meas + 1; i++) {
         auto beats = GetBeatsAt(i);
-        
+
         bpmchanges.clear();
         copy_if(Notes.begin(), Notes.end(), back_inserter(bpmchanges), [i](tuple<SusRelativeNoteTime, SusRawNoteData> n) {
             return get<0>(n).Measure == i && get<1>(n).Type[SusNoteType::Undefined];
@@ -404,6 +406,41 @@ double SusAnalyzer::GetAbsoluteTime(uint32_t meas, uint32_t tick) {
 tuple<uint32_t, uint32_t> SusAnalyzer::GetRelativeTime(double time)
 {
     // TODO: いつ使うかわからんが実装したい
+    double restTime = time;
+    uint32_t meas = 0, tick = 0;
+    vector<tuple<SusRelativeNoteTime, SusRawNoteData>> bpmchanges;
+    double secPerBeat = (60.0 / 120.0);
+
+    while (true) {
+        auto beats = GetBeatsAt(meas);
+
+        bpmchanges.clear();
+        copy_if(Notes.begin(), Notes.end(), back_inserter(bpmchanges), [meas](tuple<SusRelativeNoteTime, SusRawNoteData> n) {
+            return get<0>(n).Measure == meas && get<1>(n).Type[SusNoteType::Undefined];
+        });
+        auto lastChangeTick = 0u;
+
+        for (auto& bc : bpmchanges) {
+            auto timing = get<0>(bc);
+            double dur = secPerBeat * ((double)(timing.Tick - lastChangeTick) / TicksPerBeat);
+            if (dur >= restTime) return make_tuple(meas, lastChangeTick + restTime / secPerBeat * TicksPerBeat);
+            restTime -= dur;
+            lastChangeTick = timing.Tick;
+            secPerBeat = 60.0 / BpmDefinitions[get<1>(bc).DefinitionNumber];
+        }
+        double restTicks = TicksPerBeat * beats - lastChangeTick;
+        double restDuration = restTicks / TicksPerBeat * secPerBeat;
+        if (restDuration >= restTime) return make_tuple(meas, lastChangeTick + restTime / secPerBeat * TicksPerBeat);
+        restTime -= restDuration;
+        meas++;
+    }
+}
+
+uint32_t SusAnalyzer::GetRelativeTicks(uint32_t measure, uint32_t tick)
+{
+    uint32_t result = 0;
+    for (int i = 0; i < measure; i++) result += GetBeatsAt(i) * TicksPerBeat;
+    return result + tick;
 }
 
 void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
@@ -443,6 +480,7 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             }
 
             bool completed = false;
+            auto lastStep = note;
             for (auto it : Notes) {
                 auto curPos = get<0>(it);
                 auto curNo = get<1>(it);
@@ -461,8 +499,16 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
                         nextNote->StartLane = curNo.NotePosition.StartLane;
                         nextNote->Length = curNo.NotePosition.Length;
                         nextNote->Type = curNo.Type;
+                        auto injc = (double)(GetRelativeTicks(curPos.Measure, curPos.Tick) - GetRelativeTicks(time.Measure, time.Tick)) / TicksPerBeat * LongInjectionPerBeat;
+                        // 1 のときはピッタシ終わってるので無視
+                        for (int i = 1; i < injc; i++) {
+                            double insertAt = time.Tick + (TicksPerBeat / LongInjectionPerBeat * i);
+                            auto injection = make_shared<SusDrawableNoteData>();
+                            injection->Type.set(SusNoteType::ExTap);
+                            injection->StartTime = GetAbsoluteTime(time.Measure, insertAt);
+                            noteData->ExtraData.push_back(injection);
+                        }
                         noteData->ExtraData.push_back(nextNote);
-
                         noteData->Duration = nextNote->StartTime - noteData->StartTime;
                         completed = true;
                         break;
@@ -475,12 +521,21 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
                         nextNote->StartLane = curNo.NotePosition.StartLane;
                         nextNote->Length = curNo.NotePosition.Length;
                         nextNote->Type = curNo.Type;
+                        auto lsrt = get<0>(lastStep);
+                        auto injc = (double)(GetRelativeTicks(curPos.Measure, curPos.Tick) - GetRelativeTicks(lsrt.Measure, lsrt.Tick)) / TicksPerBeat * LongInjectionPerBeat;
+                        for (int i = 1; i < injc; i++) {
+                            double insertAt = lsrt.Tick + (TicksPerBeat / LongInjectionPerBeat * i);
+                            auto injection = make_shared<SusDrawableNoteData>();
+                            injection->Type.set(SusNoteType::ExTap);
+                            injection->StartTime = GetAbsoluteTime(lsrt.Measure, insertAt);
+                            noteData->ExtraData.push_back(injection);
+                        }
                         noteData->ExtraData.push_back(nextNote);
-                        
                         if (curNo.Type.test(SusNoteType::End)) {
                             noteData->Duration = nextNote->StartTime - noteData->StartTime;
                             completed = true;
                         }
+                        if (!nextNote->Type.test(SusNoteType::Control))lastStep = it;
                         break;
                     }
                 }
@@ -491,8 +546,7 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             } else {
                 data.push_back(noteData);
             }
-        }
-        else if (bits & 0b0000000000011110) {
+        } else if (bits & 0b0000000000011110) {
             // ショート
             if (info.NotePosition.StartLane + info.NotePosition.Length > 16) {
                 if (ErrorCallback) ErrorCallback(0, "Error", "ショートノーツがはみ出しています。");
@@ -503,9 +557,10 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             noteData->StartLane = info.NotePosition.StartLane;
             noteData->Length = info.NotePosition.Length;
             data.push_back(noteData);
-            
+
         } else {
             if (ErrorCallback) ErrorCallback(0, "Error", "致命的なノーツエラー(不正な内部表現です)。");
         }
+        auto test = GetRelativeTime(GetAbsoluteTime(2, 200));
     }
 }

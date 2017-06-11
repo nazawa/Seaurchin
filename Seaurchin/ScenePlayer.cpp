@@ -93,6 +93,7 @@ void RegisterPlayerScene(ExecutionManager * manager)
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void Play()", asMETHOD(ScenePlayer, Play), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "double GetCurrentTime()", asMETHOD(ScenePlayer, GetPlayingTime), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "int GetSeenObjectsCount()", asMETHOD(ScenePlayer, GetSeenObjectsCount), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "int GetCurrentGauge(int &out, double &out)", asMETHOD(ScenePlayer, GetCurrentGauge), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void AdjustCamera(double, double, double)", asMETHOD(ScenePlayer, AdjustCamera), asCALL_THISCALL);
 }
 
@@ -143,7 +144,8 @@ void ScenePlayer::Initialize()
 
     fontCombo->AddRef();
     textCombo = STextSprite::Factory(fontCombo, "0000");
-    textCombo->Apply("y:3072, scaleX:8, scaleY:8");
+    textCombo->SetAlignment(STextAlign::Center, STextAlign::Center);
+    textCombo->Apply("x:512, y:3200, scaleX:8, scaleY:8");
     soundHoldLoop->SetLoop(true);
     soundSlideLoop->SetLoop(true);
 }
@@ -161,6 +163,11 @@ void ScenePlayer::Finalize()
     DeleteGraph(hAirBuffer);
 }
 
+void ScenePlayer::Tick(double delta)
+{
+    textCombo->Tick(delta);
+}
+
 void ScenePlayer::Draw()
 {
     vector<tuple<double, double>> airactionStarts;
@@ -170,7 +177,8 @@ void ScenePlayer::Draw()
     seenData.clear();
     if (isLoadCompleted) CalculateNotes(currentTime, seenDuration, precedTime);
 
-    combo << setw(4) << comboCount;
+    int pCombo = comboCount;
+    combo << comboCount;
     textCombo->set_Text(combo.str());
 
     BEGIN_DRAW_TRANSACTION(hGroundBuffer);
@@ -213,9 +221,16 @@ void ScenePlayer::Draw()
     DrawPolygonIndexed3D(AirVertices, 4, RectVertexIndices, 2, hAirBuffer, TRUE);
     for (auto& position : airactionStarts) {
         double x = (1.0 - get<0>(position)) * SU_LANE_X_MIN + get<0>(position) * SU_LANE_X_MAX;
-        DrawLine3D(VGet(x, SU_LANE_Y_AIR, get<1>(position)), VGet(x, SU_LANE_Y_GROUND, get<1>(position)), AirActionLineColor);
+        DrawLine3D(VGet(x, SU_LANE_Y_AIR, get<1>(position)), VGet(x, SU_LANE_Y_GROUND, get<1>(position)), airActionLineColor);
     }
     for (auto& note : seenData) if (note->Type.test(SusNoteType::Air)) DrawAirNotes(note);
+
+    //Œãˆ—
+    if (comboCount > pCombo) {
+        textCombo->AbortMove(true);
+        textCombo->Apply("scaleY:8.4, scaleX:8.4");
+        textCombo->AddMove("scale_to(x:8, y:8, time:0.2, ease:out_quad)");
+    }
 
     wasInHold = isInHold;
     wasInSlide = SlideCheck;
@@ -228,11 +243,36 @@ void ScenePlayer::LoadWorker()
     for (auto &note : data) {
         if (note->Type.test(SusNoteType::Slide) || note->Type.test(SusNoteType::AirAction)) CalculateCurves(note);
     }
-
+    PrecalculateNotes();
     auto file = metaInfo->WavePath;
     bgmStream = manager->GetSoundManagerUnsafe()->LoadStreamFromFile(file.string().c_str());
 
     isLoadCompleted = true;
+}
+
+void ScenePlayer::PrecalculateNotes()
+{
+    allNotesCount = 0;
+    for (auto &note : data) {
+        auto type = note->Type.to_ulong();
+        if (type & 0b0000000011100000) {
+            if (!note->Type.test(SusNoteType::AirAction)) allNotesCount++;
+            for (auto &ex : note->ExtraData)
+                if (
+                    ex->Type.test(SusNoteType::End)
+                    || ex->Type.test(SusNoteType::Step)
+                    || ex->Type.test(SusNoteType::ExTap))
+                    allNotesCount++;
+        } else if (type & 0b0000000000011110) {
+            allNotesCount++;
+        }
+    }
+}
+
+void ScenePlayer::IncrementCombo()
+{
+    comboCount++;
+    currentGauge += gaugeDefaultMax / allNotesCount;
 }
 
 void ScenePlayer::CalculateNotes(double time, double duration, double preced)
@@ -261,6 +301,7 @@ void ScenePlayer::CalculateCurves(std::shared_ptr<SusDrawableNoteData> note)
 
     controlPoints.push_back(make_tuple(0, (lastStep->StartLane + lastStep->Length / 2.0) / 16.0));
     for (auto &slideElement : note->ExtraData) {
+        if (slideElement->Type.test(SusNoteType::ExTap)) continue;
         if (slideElement->Type.test(SusNoteType::Control)) {
             auto cpi = make_tuple(slideElement->StartTime - lastStep->StartTime, (slideElement->StartLane + slideElement->Length / 2.0) / 16.0);
             controlPoints.push_back(cpi);
@@ -370,8 +411,12 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
     auto length = note->Length;
     auto slane = note->StartLane;
     double relpos = 1.0 - (note->StartTime - currentTime) / seenDuration;
-    double relendpos = 1.0 - (note->ExtraData[0]->StartTime - currentTime) / seenDuration;
-
+    double relendpos = 1.0;
+    for (auto &ex : note->ExtraData) {
+        if (ex->Type.test(SusNoteType::ExTap)) continue;
+        relendpos = 1.0 - (ex->StartTime - currentTime) / seenDuration;
+    }
+    SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
     DrawModiGraphF(
         slane * widthPerLane, laneBufferY * relpos,
         (slane + length) * widthPerLane, laneBufferY * relpos,
@@ -379,6 +424,7 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
         slane * widthPerLane, laneBufferY * relendpos,
         imageHoldStrut->GetHandle(), TRUE
     );
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
     for (int i = 0; i < length * 2; i++) {
         int type = i ? (i == length * 2 - 1 ? 2 : 1) : 0;
         DrawRectRotaGraph3F(
@@ -417,6 +463,7 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
 
     for (auto &slideElement : note->ExtraData) {
         if (slideElement->Type.test(SusNoteType::Control)) continue;
+        if (slideElement->Type.test(SusNoteType::ExTap)) continue;
         double currentStepRelativeY = 1.0 - (slideElement->StartTime - currentTime) / seenDuration;
         auto &segmentPositions = curveData[slideElement];
 
@@ -443,7 +490,7 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
             DrawLineAA(
                 get<1>(lastSegmentPosition) * laneBufferX, laneBufferY * lastSegmentRelativeY,
                 get<1>(segmentPosition) * laneBufferX, laneBufferY * currentSegmentRelativeY,
-                SlideLineColor, 16);
+                slideLineColor, 16);
 
             lastSegmentPosition = segmentPosition;
             lastSegmentLength = currentSegmentLength;
@@ -476,6 +523,7 @@ tuple<double, double> ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNote
 
     for (auto &slideElement : note->ExtraData) {
         if (slideElement->Type.test(SusNoteType::Control)) continue;
+        if (slideElement->Type.test(SusNoteType::ExTap)) continue;
         double currentStepRelativeY = 1.0 - (slideElement->StartTime - currentTime) / seenDuration;
         auto &segmentPositions = curveData[slideElement];
 
@@ -493,7 +541,7 @@ tuple<double, double> ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNote
             DrawLineAA(
                 get<1>(lastSegmentPosition) * laneBufferX, laneBufferY * lastSegmentRelativeY,
                 get<1>(segmentPosition) * laneBufferX, laneBufferY * currentSegmentRelativeY,
-                AirActionLineColor, 16);
+                airActionLineColor, 16);
 
             lastSegmentPosition = segmentPosition;
             lastSegmentLength = currentSegmentLength;
@@ -539,23 +587,30 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
         isInHold = true;
         if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
             soundTap->Play();
-            comboCount++;
+            IncrementCombo();
             note->OnTheFlyData.set(NoteAttribute::Finished);
         }
 
-        double endpos = (note->ExtraData[0]->StartTime - currentTime) / seenDuration;
-        if (endpos >= 0) return;
-        isInHold = false;
-        if (note->ExtraData[0]->OnTheFlyData.test(NoteAttribute::Finished)) return;
-        soundTap->Play();
-
-        comboCount++;
-        note->ExtraData[0]->OnTheFlyData.set(NoteAttribute::Finished);
+        for (auto &extra : note->ExtraData) {
+            double pos = (extra->StartTime - currentTime) / seenDuration;
+            if (pos >= 0) continue;
+            if (extra->Type.test(SusNoteType::End)) isInHold = false;
+            if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
+            if (extra->Type.test(SusNoteType::ExTap)) {
+                IncrementCombo();
+                extra->OnTheFlyData.set(NoteAttribute::Finished);
+                return;
+            }
+            if (!extra->Type.test(SusNoteType::Tap)) soundTap->Play();
+            IncrementCombo();
+            extra->OnTheFlyData.set(NoteAttribute::Finished);
+            return;
+        }
     } else if (note->Type.test(SusNoteType::Slide)) {
         isInSlide = true;
         if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
             soundTap->Play();
-            comboCount++;
+            IncrementCombo();
             note->OnTheFlyData.set(NoteAttribute::Finished);
             return;
         }
@@ -564,38 +619,49 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
             if (pos >= 0) continue;
             if (extra->Type.test(SusNoteType::End)) isInSlide = false;
             if (extra->Type.test(SusNoteType::Control)) continue;
-            if (extra->Type.test(SusNoteType::Tap)) continue;
             if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
-            soundTap->Play();
-            comboCount++;
+            if (extra->Type.test(SusNoteType::ExTap)) {
+                IncrementCombo();
+                extra->OnTheFlyData.set(NoteAttribute::Finished);
+                return;
+            }
+            if (!extra->Type.test(SusNoteType::Tap)) soundTap->Play();
+            IncrementCombo();
             extra->OnTheFlyData.set(NoteAttribute::Finished);
             return;
         }
     } else if (note->Type.test(SusNoteType::AirAction)) {
         for (auto &extra : note->ExtraData) {
             double pos = (extra->StartTime - currentTime) / seenDuration;
+            if (pos >= 0) continue;
             if (extra->Type.test(SusNoteType::Control)) continue;
             if (extra->Type.test(SusNoteType::Tap)) continue;
             if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
+            if (extra->Type.test(SusNoteType::ExTap)) {
+                IncrementCombo();
+                extra->OnTheFlyData.set(NoteAttribute::Finished);
+                return;
+            }
             if (pos >= 0) continue;
             soundAirAction->Play();
-            comboCount++;
+            IncrementCombo();
             extra->OnTheFlyData.set(NoteAttribute::Finished);
         }
     } else if (note->Type.test(SusNoteType::Air)) {
         soundAir->Play();
+        IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::Tap)) {
         soundTap->Play();
-        comboCount++;
+        IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::ExTap)) {
         soundExTap->Play();
-        comboCount++;
+        IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::Flick)) {
         soundFlick->Play();
-        comboCount++;
+        IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else {
         // Œ»Ý‚È‚µ 
@@ -642,4 +708,18 @@ void ScenePlayer::AdjustCamera(double cy, double cz, double ctz)
     cameraY += cy;
     cameraZ += cz;
     cameraTargetZ += ctz;
+}
+
+void ScenePlayer::GetCurrentGauge(int *fulfilled, double *current)
+{
+    *fulfilled = 0;
+    *current = 0;
+    double calc = currentGauge;
+    double currentMax = 12000;
+    while (calc >= currentMax) {
+        *fulfilled += 1;
+        calc -= currentMax;
+        currentMax += 2000;
+    }
+    *current = calc / currentMax;
 }

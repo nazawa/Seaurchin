@@ -36,7 +36,7 @@ void SSprite::set_Image(SImage * img)
     Image = img;
 }
 
-const SImage * SSprite::get_Image()
+const SImage *SSprite::get_Image()
 {
     if (Image) Image->AddRef();
     return Image;
@@ -86,6 +86,11 @@ void SSprite::ParseCustomMover(Mover *mover, const vector<tuple<string, string>>
 void SSprite::AddMove(const string & move)
 {
     mover->AddMove(move);
+}
+
+void SSprite::AbortMove(bool terminate)
+{
+    mover->Abort(terminate);
 }
 
 void SSprite::Apply(const string & dict)
@@ -237,7 +242,6 @@ void SpriteDtorColorTint(void *memory)
     // nothing to do
 }
 
-//“¯Žž‚ÉColor‚ÆTransform2D‚à
 void SSprite::RegisterType(asIScriptEngine * engine)
 {
     //Transform2D
@@ -260,6 +264,22 @@ void SSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 R", asOFFSET(ColorTint, R));
     engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 G", asOFFSET(ColorTint, G));
     engine->RegisterObjectProperty(SU_IF_COLOR, "uint8 B", asOFFSET(ColorTint, B));
+
+    //ShapeType
+    engine->RegisterEnum(SU_IF_SHAPETYPE);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Pixel", SShapeType::Pixel);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Box", SShapeType::Box);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "BoxFill", SShapeType::BoxFill);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Oval", SShapeType::Oval);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "OvalFill", SShapeType::OvalFill);
+
+    //ShapeType
+    engine->RegisterEnum(SU_IF_TEXTALIGN);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Top", STextAlign::VTop);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Bottom", STextAlign::VBottom);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Left", STextAlign::HLeft);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Right", STextAlign::HRight);
+    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Center", STextAlign::Center);
 
     RegisterSpriteBasic<SSprite>(engine, SU_IF_SPRITE);
     engine->RegisterObjectBehaviour(SU_IF_SPRITE, asBEHAVE_FACTORY, SU_IF_SPRITE "@ f()", asFUNCTIONPR(SSprite::Factory, (), SSprite*), asCALL_CDECL);
@@ -347,6 +367,12 @@ void STextSprite::set_Text(const std::string & txt)
     Refresh();
 }
 
+void STextSprite::SetAlignment(STextAlign hori, STextAlign vert)
+{
+    HorizontalAlignment = hori;
+    VerticalAlignment = vert;
+}
+
 STextSprite::~STextSprite()
 {
     if (Font) Font->Release();
@@ -358,9 +384,11 @@ void STextSprite::Draw()
     if (!Target) return;
     SetDrawBright(Color.R, Color.G, Color.B);
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
+    double tox = Target->get_Width() / 2 * HorizontalAlignment;
+    double toy = Target->get_Height() / 2 * VerticalAlignment;
     DrawRotaGraph3F(
         Transform.X, Transform.Y,
-        Transform.OriginX, Transform.OriginY,
+        Transform.OriginX + tox, Transform.OriginY + toy,
         Transform.ScaleX, Transform.ScaleY,
         Transform.Angle, Target->GetHandle(),
         TRUE, FALSE);
@@ -410,6 +438,7 @@ void STextSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, SU_IF_TXTSPRITE "@ Clone()", asMETHOD(STextSprite, Clone), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetFont(" SU_IF_FONT "@)", asMETHOD(STextSprite, set_Font), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetText(const string &in)", asMETHOD(STextSprite, set_Text), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_TXTSPRITE, "void SetAlignment(" SU_IF_TEXTALIGN ", " SU_IF_TEXTALIGN ")", asMETHOD(STextSprite, SetAlignment), asCALL_THISCALL);
 }
 
 // STextInput ---------------------------------------

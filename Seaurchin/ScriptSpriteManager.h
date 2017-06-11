@@ -40,6 +40,7 @@ public:
     static std::string ParseMover(Mover* mover, std::string move);
     static std::tuple<std::string, std::vector<std::tuple<std::string, std::string>>> ParseRaw(const std::string &move);
     void Tick(double delta);
+    void Abort(bool terminateAll);
 
     //delta > 0 : “®ì
     //delta == 0 : Mover‰Šú‰»

@@ -1,16 +1,6 @@
 #pragma once
 
 #define SU_IF_KEY "Key"
-#define SU_IF_TF2D "Transform2D"
-
-#define SU_IF_IMAGE "Image"
-#define SU_IF_FONT "Font"
-#define SU_IF_VFONT "VirtualFont"
-
-#define SU_IF_COLOR "Color"
-#define SU_IF_SPRITE "Sprite"
-#define SU_IF_TXTSPRITE "TextSprite"
-#define SU_IF_IMGSPRITE "ImageSprite"
 
 //Helpers from as_smart_ptr_wrapper
 

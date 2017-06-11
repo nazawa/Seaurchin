@@ -87,34 +87,32 @@ string ScriptSpriteMover::ParseMover(Mover * mover, std::string move)
     auto ms = match[s1].str();
     vector<string> params;
     split(params, match[s2].str(), is_any_of(","));
-    for (const auto& s : params)
-    {
+    for (const auto& s : params) {
         regex_match(s, match, srparam);
         auto pname = match[s1].str();
         auto pval = match[s2].str();
-        switch (hash(pname.c_str()))
-        {
-        case hash("x"):
-        case hash("r"):
-            mover->X = atof(pval.c_str());
-            break;
-        case hash("y"):
-        case hash("g"):
-            mover->Y = atof(pval.c_str());
-            break;
-        case hash("z"):
-        case hash("b"):
-            mover->Z = atof(pval.c_str());
-            break;
-        case hash("time"):
-            mover->Duration = atof(pval.c_str());
-            break;
-        case hash("wait"):
-            mover->Wait = atof(pval.c_str());
-            break;
-        case hash("ease"):
-            mover->Function = easings[pval];
-            break;
+        switch (hash(pname.c_str())) {
+            case hash("x"):
+            case hash("r"):
+                mover->X = atof(pval.c_str());
+                break;
+            case hash("y"):
+            case hash("g"):
+                mover->Y = atof(pval.c_str());
+                break;
+            case hash("z"):
+            case hash("b"):
+                mover->Z = atof(pval.c_str());
+                break;
+            case hash("time"):
+                mover->Duration = atof(pval.c_str());
+                break;
+            case hash("wait"):
+                mover->Wait = atof(pval.c_str());
+                break;
+            case hash("ease"):
+                mover->Function = easings[pval];
+                break;
         }
     }
 
@@ -135,8 +133,7 @@ tuple<string, vector<tuple<string, string>>> ScriptSpriteMover::ParseRaw(const s
     vector<string> params;
     auto ms = match[s1].str();
     split(params, match[s2].str(), is_any_of(","));
-    for (const auto& s : params)
-    {
+    for (const auto& s : params) {
         regex_match(s, match, srparam);
         auto pname = match[s1].str();
         auto pval = match[s2].str();
@@ -148,11 +145,10 @@ tuple<string, vector<tuple<string, string>>> ScriptSpriteMover::ParseRaw(const s
 
 void ScriptSpriteMover::AddMove(std::string move)
 {
-    Mover *mover = new Mover{ 0 };
+    Mover *mover = new Mover { 0 };
     auto aname = ParseMover(mover, move);
     auto action = actions[aname];
-    if (!action)
-    {
+    if (!action) {
         auto rd = ParseRaw(move);
         action = Target->GetCustomAction(get<0>(rd));
         if (!action) return;
@@ -164,54 +160,48 @@ void ScriptSpriteMover::AddMove(std::string move)
 void ScriptSpriteMover::Tick(double delta)
 {
     auto i = movers.begin();
-    while (i != movers.end())
-    {
+    while (i != movers.end()) {
         auto t = *i;
         auto mover = get<0>(t);
-        if (mover->Wait > 0)
-        {
+        if (mover->Wait > 0) {
             //余ったdeltaで呼び出すべきなのかもしれないけどまあいいかって
             mover->Wait -= delta;
             ++i;
             continue;
-        }
-        else if (mover->Wait != -1e+10)
-        {
+        } else if (mover->Wait != -1e+10) {
             //多分初期化処理はこのタイミングの方がいい
             mover->Wait = -1e+10;
             get<1>(t)(Target, *mover, 0);
         }
         bool result = get<1>(t)(Target, *mover, delta);
         mover->Now += delta;
-        if (mover->Now >= mover->Duration || result)
-        {
+        if (mover->Now >= mover->Duration || result) {
             get<1>(t)(Target, *mover, -1);
             delete mover;
             i = movers.erase(i);
-        }
-        else
-        {
+        } else {
             ++i;
         }
     }
 }
 
+void ScriptSpriteMover::Abort(bool terminateAll)
+{
+    if (terminateAll) for (auto &mover : movers) get<1>(mover)(Target, *get<0>(mover), -1);
+    movers.clear();
+}
+
 bool ScriptSpriteMover::ActionMoveTo(SSprite* target, Mover &mover, double delta)
 {
-    if (delta == 0)
-    {
+    if (delta == 0) {
         mover.Extra1 = target->Transform.X;
         mover.Extra2 = target->Transform.Y;
         return false;
-    }
-    else if (delta >= 0)
-    {
+    } else if (delta >= 0) {
         target->Transform.X = mover.Function(mover.Now, mover.Duration, mover.Extra1, mover.X - mover.Extra1);
         target->Transform.Y = mover.Function(mover.Now, mover.Duration, mover.Extra2, mover.Y - mover.Extra2);
         return false;
-    }
-    else
-    {
+    } else {
         target->Transform.X = mover.X;
         target->Transform.Y = mover.Y;
         return true;
@@ -220,20 +210,15 @@ bool ScriptSpriteMover::ActionMoveTo(SSprite* target, Mover &mover, double delta
 
 bool ScriptSpriteMover::ActionMoveBy(SSprite* target, Mover &mover, double delta)
 {
-    if (delta == 0)
-    {
+    if (delta == 0) {
         mover.Extra1 = target->Transform.X;
         mover.Extra2 = target->Transform.Y;
         return false;
-    }
-    else if (delta >= 0)
-    {
+    } else if (delta >= 0) {
         target->Transform.X = mover.Function(mover.Now, mover.Duration, mover.Extra1, mover.X);
         target->Transform.Y = mover.Function(mover.Now, mover.Duration, mover.Extra2, mover.Y);
         return false;
-    }
-    else
-    {
+    } else {
         target->Transform.X = mover.Extra1 + mover.X;
         target->Transform.Y = mover.Extra2 + mover.Y;
         return true;
@@ -242,18 +227,13 @@ bool ScriptSpriteMover::ActionMoveBy(SSprite* target, Mover &mover, double delta
 
 bool ScriptSpriteMover::ActionAngleTo(SSprite * target, Mover & mover, double delta)
 {
-    if (delta == 0)
-    {
+    if (delta == 0) {
         mover.Extra1 = target->Transform.Angle;
         return false;
-    }
-    else if (delta >= 0)
-    {
+    } else if (delta >= 0) {
         target->Transform.Angle = mover.Function(mover.Now, mover.Duration, mover.Extra1, mover.X - mover.Extra1);
         return false;
-    }
-    else
-    {
+    } else {
         target->Transform.Angle = mover.X;
         return true;
     }
@@ -261,18 +241,13 @@ bool ScriptSpriteMover::ActionAngleTo(SSprite * target, Mover & mover, double de
 
 bool ScriptSpriteMover::ActionAngleBy(SSprite * target, Mover & mover, double delta)
 {
-    if (delta == 0)
-    {
+    if (delta == 0) {
         mover.Extra1 = target->Transform.Angle;
         return false;
-    }
-    else if (delta >= 0)
-    {
+    } else if (delta >= 0) {
         target->Transform.Angle = mover.Function(mover.Now, mover.Duration, mover.Extra1, mover.X);
         return false;
-    }
-    else
-    {
+    } else {
         target->Transform.Angle = mover.Extra1 + mover.X;
         return true;
     }
@@ -280,20 +255,15 @@ bool ScriptSpriteMover::ActionAngleBy(SSprite * target, Mover & mover, double de
 
 bool ScriptSpriteMover::ActionScaleTo(SSprite *target, Mover &mover, double delta)
 {
-    if (delta == 0)
-    {
+    if (delta == 0) {
         mover.Extra1 = target->Transform.ScaleX;
         mover.Extra2 = target->Transform.ScaleY;
         return false;
-    }
-    else if (delta >= 0)
-    {
+    } else if (delta >= 0) {
         target->Transform.ScaleX = mover.Function(mover.Now, mover.Duration, mover.Extra1, mover.X - mover.Extra1);
         target->Transform.ScaleY = mover.Function(mover.Now, mover.Duration, mover.Extra2, mover.Y - mover.Extra2);
         return false;
-    }
-    else
-    {
+    } else {
         target->Transform.ScaleX = mover.X;
         target->Transform.ScaleY = mover.Y;
         return true;
@@ -302,18 +272,13 @@ bool ScriptSpriteMover::ActionScaleTo(SSprite *target, Mover &mover, double delt
 
 bool ScriptSpriteMover::ActionAlpha(SSprite* target, Mover &mover, double delta)
 {
-    if (delta == 0)
-    {
+    if (delta == 0) {
         target->Color.A = (uint8_t)(mover.X * 255.0);
         return false;
-    }
-    else if (delta >= 0)
-    {
+    } else if (delta >= 0) {
         target->Color.A = (uint8_t)(255.0 * mover.Function(mover.Now, mover.Duration, mover.X, mover.Y - mover.X));
         return false;
-    }
-    else
-    {
+    } else {
         target->Color.A = (uint8_t)(mover.Y * 255.0);
         return true;
     }
@@ -321,12 +286,9 @@ bool ScriptSpriteMover::ActionAlpha(SSprite* target, Mover &mover, double delta)
 
 bool ScriptSpriteMover::ActionDeath(SSprite * target, Mover & mover, double delta)
 {
-    if (delta >= 0)
-    {
+    if (delta >= 0) {
         return false;
-    }
-    else
-    {
+    } else {
         target->Dismiss();
         return true;
     }

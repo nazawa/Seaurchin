@@ -7,6 +7,7 @@
 #define SU_IF_COLOR "Color"
 #define SU_IF_TF2D "Transform2D"
 #define SU_IF_SHAPETYPE "ShapeType"
+#define SU_IF_TEXTALIGN "TextAlign"
 #define SU_IF_9TYPE "NinePatchType"
 
 #define SU_IF_SPRITE "Sprite"
@@ -50,6 +51,7 @@ public:
     virtual std::function<bool(SSprite*, Mover&, double)> GetCustomAction(const std::string &name);
     virtual void ParseCustomMover(Mover *mover, const std::vector<std::tuple<std::string, std::string>> &params);
     void AddMove(const std::string &move);
+    void AbortMove(bool terminate);
     void Apply(const std::string &dict);
     void Apply(const CScriptDictionary &dict);
     virtual void Tick(double delta);
@@ -91,11 +93,21 @@ public:
     static void RegisterType(asIScriptEngine *engine);
 };
 
+enum STextAlign {
+    VTop = 0,
+    Center = 1,
+    VBottom = 2,
+    HLeft = 0,
+    HRight = 2
+};
+
 //文字列をスプライトとして扱います
 class STextSprite : public SSprite
 {
 protected:
     SRenderTarget *Target = nullptr;
+    STextAlign HorizontalAlignment = STextAlign::HLeft;
+    STextAlign VerticalAlignment = STextAlign::VTop;
 
     void Refresh();
 public:
@@ -103,6 +115,7 @@ public:
     std::string Text = "";
     void set_Font(SFont* font);
     void set_Text(const std::string &txt);
+    void SetAlignment(STextAlign hori, STextAlign vert);
 
     ~STextSprite() override;
     void Draw() override;
@@ -255,6 +268,7 @@ void RegisterSpriteBasic(asIScriptEngine *engine, const char *name)
     engine->RegisterObjectMethod(name, "void Apply(const string &in)", asMETHODPR(T, Apply, (const std::string&), void), asCALL_THISCALL);
     engine->RegisterObjectMethod(name, "void Apply(const dictionary@)", asMETHODPR(T, Apply, (const CScriptDictionary&), void), asCALL_THISCALL);
     engine->RegisterObjectMethod(name, "void AddMove(const string &in)", asMETHOD(T, AddMove), asCALL_THISCALL);
+    engine->RegisterObjectMethod(name, "void AbortMove(bool = true)", asMETHOD(T, AbortMove), asCALL_THISCALL);
     engine->RegisterObjectMethod(name, "void Tick(double)", asMETHOD(T, Tick), asCALL_THISCALL);
     engine->RegisterObjectMethod(name, "void Draw()", asMETHOD(T, Draw), asCALL_THISCALL);
 }

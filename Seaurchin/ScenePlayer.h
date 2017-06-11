@@ -57,8 +57,13 @@ protected:
     SImage *imageAirAction;
     SFont *fontCombo;
     STextSprite *textCombo;
-    unsigned int SlideLineColor = GetColor(0, 200, 255);
-    unsigned int AirActionLineColor = GetColor(0, 255, 32);
+    unsigned int slideLineColor = GetColor(0, 200, 255);
+    unsigned int airActionLineColor = GetColor(0, 255, 32);
+
+    //SlideÇÃèdÇ›Ç™é·ä±à·Ç§ÇÁÇµÇ¢ÇØÇ«ÇªÇÃÇ÷ÇÒãñÇµÇƒÇÀ
+    int allNotesCount = 0;
+    double gaugeDefaultMax = 60000;
+    double currentGauge = 0;
 
     // ã»ÇÃìríÜÇ≈ïœâªÇ∑ÇÈÇ‚Ç¬ÇÁ
     std::vector<std::shared_ptr<SusDrawableNoteData>> data;
@@ -72,6 +77,8 @@ protected:
     bool isInHold = false, isInSlide = false, wasInHold = false, wasInSlide = false;
 
     void LoadWorker();
+    void PrecalculateNotes();
+    void IncrementCombo();
     void CalculateNotes(double time, double duration, double preced);
     void CalculateCurves(std::shared_ptr<SusDrawableNoteData> note);
     void DrawShortNotes(std::shared_ptr<SusDrawableNoteData> note);
@@ -89,6 +96,7 @@ public:
     ~ScenePlayer() override;
 
     void SetPlayerResource(const std::string &name, SResource *resource);
+    void Tick(double delta) override;
     void Draw() override;
     void Finalize();
 
@@ -99,6 +107,7 @@ public:
     double GetPlayingTime();
     int GetSeenObjectsCount();
     void AdjustCamera(double cy, double cz, double ctz);
+    void GetCurrentGauge(int *fulfilled, double *current);
 };
 
 void RegisterPlayerScene(ExecutionManager *exm);

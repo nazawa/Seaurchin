@@ -3,7 +3,7 @@
 enum SusNoteType : uint16_t {
 	Undefined = 0,  // BPMノーツなど
     Tap,            // Invisible Stepに使う
-    ExTap,
+    ExTap,          // 中割り コンボだけ加算
 	Flick,
 	Air,
 
@@ -83,6 +83,7 @@ private:
 	float GetBeatsAt(uint32_t measure);
     double GetAbsoluteTime(uint32_t measure, uint32_t tick);
     std::tuple<uint32_t, uint32_t> GetRelativeTime(double time);
+    uint32_t GetRelativeTicks(uint32_t measure, uint32_t tick);
 
 public:
     SusMetaData SharedMetaData;

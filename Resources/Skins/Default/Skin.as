@@ -22,6 +22,11 @@ void InitializeSkin(Skin@ skin) {
   skin.LoadImage("LogoBoost", "boost.png");               //277x86
   skin.LoadImage("LogoFreeType", "fond2-small.png");      //584x388
   skin.LoadImage("PlayerTopCover", "PlayerTopCover.png"); //1280x106
+  skin.LoadImage("GaugeCountEmpty", "GaugeCountEmpty.png");
+  skin.LoadImage("GaugeCountFull", "GaugeCountFull.png");
+  skin.LoadImage("GaugeBarBack", "GaugeBarBack.png");
+  skin.LoadImage("GaugeBarFill", "GaugeBarFill.png");
+  skin.LoadImage("GaugeBarFront", "GaugeBarFront.png");
   
   skin.LoadImage("CursorMenu", "MenuCursor.png");         //320x64
   skin.LoadImage("CursorCategory", "MusicSelect-Category.png");   //480x40
