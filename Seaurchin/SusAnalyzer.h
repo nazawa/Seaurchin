@@ -57,6 +57,7 @@ struct SusMetaData {
     std::string UTitle;
     std::string USubTitle;
     std::string UArtist;
+    std::string UJacketFileName;
     std::string UDesigner;
     std::string USongId;
     std::string UWaveFileName;

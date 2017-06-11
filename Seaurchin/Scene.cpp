@@ -21,6 +21,9 @@ void Scene::Tick(double delta)
 {
 }
 
+void Scene::OnEvent(const std::string & message)
+{}
+
 void Scene::Draw()
 {
 }

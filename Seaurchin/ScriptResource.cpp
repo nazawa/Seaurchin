@@ -58,9 +58,12 @@ SImage * SImage::CreateBlankImage()
 	return result;
 }
 
-SImage * SImage::CreateLoadedImageFromFile(const string & file)
+SImage * SImage::CreateLoadedImageFromFile(const string &file, bool async)
 {
-	auto result = new SImage(LoadGraph(ConvertUTF8ToShiftJis(file).c_str()));
+    auto afile = ConvertUTF8ToShiftJis(file);
+    if (async) SetUseASyncLoadFlag(TRUE);
+    auto result = new SImage(LoadGraph(afile.c_str()));
+    if (async) SetUseASyncLoadFlag(FALSE);
 	result->AddRef();
 	return result;
 }
@@ -253,6 +256,7 @@ void RegisterScriptResource(ExecutionManager *exm)
 
 	engine->RegisterObjectType(SU_IF_IMAGE, 0, asOBJ_REF);
 	engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_FACTORY, SU_IF_IMAGE "@ f()", asFUNCTION(SImage::CreateBlankImage), asCALL_CDECL);
+    engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_FACTORY, SU_IF_IMAGE "@ f(const string &in, bool = false)", asFUNCTION(SImage::CreateLoadedImageFromFile), asCALL_CDECL);
 	engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_ADDREF, "void f()", asMETHOD(SImage, AddRef), asCALL_THISCALL);
 	engine->RegisterObjectBehaviour(SU_IF_IMAGE, asBEHAVE_RELEASE, "void f()", asMETHOD(SImage, Release), asCALL_THISCALL);
 	engine->RegisterObjectMethod(SU_IF_IMAGE, "int get_Width()", asMETHOD(SImage, get_Width), asCALL_THISCALL);

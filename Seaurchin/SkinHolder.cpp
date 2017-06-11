@@ -114,7 +114,7 @@ asIScriptObject* SkinHolder::ExecuteSkinScript(string file)
 
 void SkinHolder::LoadSkinImage(const string &key, const string &filename)
 {
-    Images[key] = SImage::CreateLoadedImageFromFile((SkinRoot / SU_IMAGE_DIR / filename).string());
+    Images[key] = SImage::CreateLoadedImageFromFile((SkinRoot / SU_IMAGE_DIR / filename).string(), false);
 }
 
 void SkinHolder::LoadSkinFont(const string &key, const string &filename)

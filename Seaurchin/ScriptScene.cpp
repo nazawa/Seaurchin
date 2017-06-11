@@ -57,6 +57,17 @@ void ScriptScene::Tick(double delta)
     context->Execute();
 }
 
+void ScriptScene::OnEvent(const string &message)
+{
+    auto func = sceneType->GetMethodByDecl("void OnEvent(const string &in)");
+    if (!func) return;
+    auto evc = manager->GetScriptInterfaceUnsafe()->GetEngine()->CreateContext();
+    evc->Prepare(func);
+    evc->SetObject(sceneObject);
+    evc->Execute();
+    evc->Release();
+}
+
 void ScriptScene::Draw()
 {
     DrawSprite();

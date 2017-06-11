@@ -53,6 +53,7 @@ public:
     void ExecuteSkin(const std::string &file);
     void ExecuteSystemMenu();
     void ReloadMusic();
+    void Fire(const std::string &message);
     MusicSelectionCursor *CreateCursor();
     ScenePlayer *CreatePlayer();
 

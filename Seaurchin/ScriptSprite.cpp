@@ -275,11 +275,11 @@ void SSprite::RegisterType(asIScriptEngine * engine)
 
     //ShapeType
     engine->RegisterEnum(SU_IF_TEXTALIGN);
-    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Top", STextAlign::VTop);
-    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Bottom", STextAlign::VBottom);
-    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Left", STextAlign::HLeft);
-    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Right", STextAlign::HRight);
-    engine->RegisterEnumValue(SU_IF_SHAPETYPE, "Center", STextAlign::Center);
+    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Top", STextAlign::VTop);
+    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Bottom", STextAlign::VBottom);
+    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Left", STextAlign::HLeft);
+    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Right", STextAlign::HRight);
+    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Center", STextAlign::Center);
 
     RegisterSpriteBasic<SSprite>(engine, SU_IF_SPRITE);
     engine->RegisterObjectBehaviour(SU_IF_SPRITE, asBEHAVE_FACTORY, SU_IF_SPRITE "@ f()", asFUNCTIONPR(SSprite::Factory, (), SSprite*), asCALL_CDECL);
@@ -545,6 +545,8 @@ void SSynthSprite::Transfer(SImage * image, double x, double y)
 {
     if (!image) return;
     BEGIN_DRAW_TRANSACTION(Target->GetHandle());
+    SetDrawBright(255, 255, 255);
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
     DrawGraphF(x, y, image->GetHandle(), HasAlpha ? TRUE : FALSE);
     FINISH_DRAW_TRANSACTION;
     image->Release();

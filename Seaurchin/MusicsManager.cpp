@@ -45,7 +45,7 @@ bool MusicsManager::IsReloading()
 
 std::string MusicsManager::GetSelectedScorePath()
 {
-    path result = Setting::GetRootDirectory() / SU_MUSIC_DIR / Categories[Applied->CategoryIndex]->GetName();
+    path result = Setting::GetRootDirectory() / SU_MUSIC_DIR / ConvertUTF8ToShiftJis(Categories[Applied->CategoryIndex]->GetName());
     result /= Categories[Applied->CategoryIndex]->Musics[Applied->MusicIndex]->Scores[Applied->VariantIndex]->Path;
     return result.string();
 }
@@ -82,6 +82,7 @@ void MusicsManager::CreateMusicCache()
                     (*music)->SongId = Analyzer->SharedMetaData.USongId;
                     (*music)->Name = Analyzer->SharedMetaData.UTitle;
                     (*music)->Artist = Analyzer->SharedMetaData.UArtist;
+                    (*music)->JacketPath = (mdir.path().filename() / ConvertUTF8ToShiftJis(Analyzer->SharedMetaData.UJacketFileName)).string();
                 }
                 auto score = make_shared<MusicScoreInfo>();
                 score->Path = mdir.path().filename() / file.path().filename();
@@ -138,7 +139,7 @@ std::string MusicSelectionCursor::GetPrimaryString(int32_t relativeIndex)
 
 }
 
-std::string MusicSelectionCursor::GetCategoryName(int32_t relativeIndex)
+string MusicSelectionCursor::GetCategoryName(int32_t relativeIndex)
 {
     if (Manager->Categories.size() == 0) return "Unavailable";
     int32_t actual = relativeIndex + CategoryIndex;
@@ -146,13 +147,25 @@ std::string MusicSelectionCursor::GetCategoryName(int32_t relativeIndex)
     return Manager->Categories[actual % Manager->Categories.size()]->GetName();
 }
 
-std::string MusicSelectionCursor::GetMusicName(int32_t relativeIndex)
+string MusicSelectionCursor::GetMusicName(int32_t relativeIndex)
 {
     auto current = Manager->Categories[CategoryIndex];
     if (current->Musics.size() == 0) return "Unavailable!";
     int32_t actual = relativeIndex + MusicIndex;
     while (actual < 0) actual += current->Musics.size();
     return current->Musics[actual % current->Musics.size()]->Name;
+}
+
+string MusicSelectionCursor::GetMusicJacketFileName(int32_t relativeIndex)
+{
+    auto current = Manager->Categories[CategoryIndex];
+    if (current->Musics.size() == 0) return "";
+    int32_t actual = relativeIndex + MusicIndex;
+    while (actual < 0) actual += current->Musics.size();
+    auto music = current->Musics[actual % current->Musics.size()];
+    if (music->JacketPath == "") return "";
+    auto result = (Setting::GetRootDirectory() / SU_MUSIC_DIR / ConvertUTF8ToShiftJis(current->GetName()) / music->JacketPath).string();
+    return ConvertShiftJisToUTF8(result);
 }
 
 int MusicSelectionCursor::Enter()
@@ -235,6 +248,7 @@ void MusicSelectionCursor::RegisterScriptInterface(asIScriptEngine *engine)
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetPrimaryString(int)", asMETHOD(MusicSelectionCursor, GetPrimaryString), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetCategoryName(int)", asMETHOD(MusicSelectionCursor, GetCategoryName), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetMusicName(int)", asMETHOD(MusicSelectionCursor, GetMusicName), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetMusicJacketFileName(int)", asMETHOD(MusicSelectionCursor, GetMusicJacketFileName), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int Next()", asMETHOD(MusicSelectionCursor, Next), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int Previous()", asMETHOD(MusicSelectionCursor, Previous), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int Enter()", asMETHOD(MusicSelectionCursor, Enter), asCALL_THISCALL);

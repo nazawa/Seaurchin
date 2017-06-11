@@ -178,6 +178,9 @@ void SusAnalyzer::ProcessCommand(const xp::smatch &result)
         case hashstr("WAVEOFFSET"):
             SharedMetaData.WaveOffset = ConvertFloat(result[2]);
             break;
+        case hashstr("JACKET"):
+            SharedMetaData.UJacketFileName = ConvertRawString(result[2]);
+            break;
         default:
             if (ErrorCallback) ErrorCallback(0, "Error", "SUSコマンドが無効です。");
             break;

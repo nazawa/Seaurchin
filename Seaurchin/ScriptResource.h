@@ -50,7 +50,7 @@ public:
     int get_Height();
 
     static SImage* CreateBlankImage();
-    static SImage* CreateLoadedImageFromFile(const std::string &file);
+    static SImage* CreateLoadedImageFromFile(const std::string &file, bool async);
     static SImage* CreateLoadedImageFromMemory(void *buffer, size_t size);
 };
 

@@ -46,7 +46,7 @@ void YieldFrames(int64_t frames)
 SImage* LoadSystemImage(const string & file)
 {
     path p = Setting::GetRootDirectory() / SU_DATA_DIR / SU_IMAGE_DIR / ConvertUTF8ToShiftJis(file);
-    return SImage::CreateLoadedImageFromFile(p.string());
+    return SImage::CreateLoadedImageFromFile(p.string(), false);
 }
 
 SFont* LoadSystemFont(const std::string & file)

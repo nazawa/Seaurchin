@@ -18,6 +18,7 @@ struct MusicMetaInfo final {
     std::string SongId;
     std::string Name;
     std::string Artist;
+    std::string JacketPath;
     std::vector<std::shared_ptr<MusicScoreInfo>> Scores;
 };
 
@@ -86,6 +87,7 @@ public:
     std::string GetPrimaryString(int32_t relativeIndex);
     std::string GetCategoryName(int32_t relativeIndex);
     std::string GetMusicName(int32_t relativeIndex);
+    std::string GetMusicJacketFileName(int32_t relativeIndex);
 
     int Enter();
     bool Exit();

@@ -44,6 +44,7 @@ public:
     void AddSprite(SSprite *sprite);
     void AddCoroutine(Coroutine *co);
     void Tick(double delta) override;
+    void OnEvent(const std::string &message) override;
     void Draw() override;
     bool IsDead() override;
     virtual void Disappear();
