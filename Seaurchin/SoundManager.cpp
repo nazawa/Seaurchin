@@ -147,6 +147,7 @@ void SoundManager::SetVolume(SoundSample * sample, float volume)
 
 void SoundManager::Play(SoundStream * stream)
 {
+    if (!stream) return;
     switch (stream->State) {
     case SoundState::Loading:
         break;
@@ -167,6 +168,7 @@ void SoundManager::Play(SoundStream * stream)
 
 void SoundManager::Stop(SoundStream * stream)
 {
+    if (!stream) return;
     BASS_ChannelStop(stream->hStream);
 }
 

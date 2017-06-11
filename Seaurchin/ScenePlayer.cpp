@@ -111,7 +111,6 @@ ScenePlayer::~ScenePlayer()
 void ScenePlayer::Initialize()
 {
     analyzer = make_unique<SusAnalyzer>(192);
-    metaInfo = manager->GetMusicsManager()->Selected;
 
     // 2^x§ŒÀ‚ª‚ ‚é‚Ì‚Å‚±‚±‚ÅŒvŽZ
     double bufferY = 2;
@@ -238,13 +237,16 @@ void ScenePlayer::Draw()
 
 void ScenePlayer::LoadWorker()
 {
-    analyzer->LoadFromFile(metaInfo->Path.string().c_str());
+    auto mm = manager->GetMusicsManager();
+    auto scorefile = mm->GetSelectedScorePath();
+
+    analyzer->LoadFromFile(scorefile);
     analyzer->RenderScoreData(data);
     for (auto &note : data) {
         if (note->Type.test(SusNoteType::Slide) || note->Type.test(SusNoteType::AirAction)) CalculateCurves(note);
     }
     PrecalculateNotes();
-    auto file = metaInfo->WavePath;
+    auto file = boost::filesystem::path(scorefile).parent_path() / ConvertUTF8ToShiftJis(analyzer->SharedMetaData.UWaveFileName);
     bgmStream = manager->GetSoundManagerUnsafe()->LoadStreamFromFile(file.string().c_str());
 
     isLoadCompleted = true;

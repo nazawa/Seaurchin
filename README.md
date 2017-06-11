@@ -9,6 +9,7 @@
 * libpng
 * LZMA SDK
 * BASS Audio Library
+* msgpack-c
 
 # ライセンス
 本体はMIT License

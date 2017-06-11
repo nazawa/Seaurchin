@@ -34,7 +34,6 @@ protected:
     int hAirBuffer;
     ExecutionManager *manager;
     std::unique_ptr<SusAnalyzer> analyzer;
-    std::shared_ptr<MusicMetaInfo> metaInfo;
     std::map<std::string, SResource*> resources;
     SoundStream *bgmStream;
     bool isLoadCompleted = false;
@@ -71,7 +70,7 @@ protected:
     std::unordered_map<std::shared_ptr<SusDrawableNoteData>, std::vector<std::tuple<double, double>>> curveData;
     uint32_t comboCount = 0;
     double currentTime = 0;
-    double seenDuration = 0.750;
+    double seenDuration = 15;
     double precedTime = 0.1;
     int seenObjects = 0;
     bool isInHold = false, isInSlide = false, wasInHold = false, wasInSlide = false;

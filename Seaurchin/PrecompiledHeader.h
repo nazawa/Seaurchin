@@ -74,3 +74,5 @@
 #include <bass.h>
 #include <bassmix.h>
 #include <bass_fx.h>
+
+#include <msgpack.hpp>

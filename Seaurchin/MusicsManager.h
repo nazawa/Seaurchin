@@ -5,23 +5,26 @@
 
 #define SU_IF_MSCURSOR "MusicCursor"
 
-struct MusicMetaInfo final {
+struct MusicScoreInfo final {
+    uint16_t Difficulty;
+    uint16_t Level;
+    std::string DifficultyName;
+    std::string Designer;
     boost::filesystem::path Path;
     boost::filesystem::path WavePath;
-    std::string SongId;
-    std::string Name;
-    std::string DifficultyName;
-    std::string Artist;
-    std::string Designer;
-    double WaveOffset;
-    uint32_t Level;
-    uint32_t Difficulty;
 };
 
-class CategoryInfo final
-{
+struct MusicMetaInfo final {
+    std::string SongId;
+    std::string Name;
+    std::string Artist;
+    std::vector<std::shared_ptr<MusicScoreInfo>> Scores;
+};
+
+
+class CategoryInfo final {
 private:
-    
+
     std::string Name;
     boost::filesystem::path Path;
 
@@ -38,8 +41,7 @@ public:
 //musicにsはつかないって？知るかバカ
 class MusicSelectionCursor;
 
-class MusicsManager final
-{
+class MusicsManager final {
     friend class MusicSelectionCursor;
 private:
     std::shared_ptr<Setting> SharedSetting;
@@ -51,7 +53,7 @@ private:
     void CreateMusicCache();
 
 public:
-    std::shared_ptr<MusicMetaInfo> Selected;
+    MusicSelectionCursor *Applied;
 
     MusicsManager(std::shared_ptr<Setting> setting);
     ~MusicsManager();
@@ -59,7 +61,9 @@ public:
     void Initialize();
     void Reload(bool recreateCache);
     bool IsReloading();
-    
+    std::string GetSelectedScorePath();
+
+    const std::vector<std::shared_ptr<CategoryInfo>> &GetCategories() { return Categories; }
     MusicSelectionCursor *CreateCursor();
 };
 
@@ -90,4 +94,11 @@ public:
     int Previous();
 
     static void RegisterScriptInterface(asIScriptEngine *engine);
+};
+
+struct MusicRawData final {
+    std::string SongId;
+    std::string Name;
+    std::string Artist;
+    std::vector<std::tuple<std::string, std::string, std::string, std::string>> Scores;
 };

@@ -15,6 +15,8 @@ MusicsManager::MusicsManager(std::shared_ptr<Setting> setting)
 {
     SharedSetting = setting;
     Analyzer = make_unique<SusAnalyzer>(192);
+    Applied = new MusicSelectionCursor(this);
+    Applied->AddRef();
 }
 
 MusicsManager::~MusicsManager()
@@ -41,11 +43,17 @@ bool MusicsManager::IsReloading()
     return state;
 }
 
+std::string MusicsManager::GetSelectedScorePath()
+{
+    path result = Setting::GetRootDirectory() / SU_MUSIC_DIR / Categories[Applied->CategoryIndex]->GetName();
+    result /= Categories[Applied->CategoryIndex]->Musics[Applied->MusicIndex]->Scores[Applied->VariantIndex]->Path;
+    return result.string();
+}
+
 MusicSelectionCursor * MusicsManager::CreateCursor()
 {
-    auto cursor = new MusicSelectionCursor(this);
-    cursor->AddRef();
-    return cursor;
+    Applied->AddRef();
+    return Applied;
 }
 
 void MusicsManager::CreateMusicCache()
@@ -57,25 +65,31 @@ void MusicsManager::CreateMusicCache()
     path mlpath = Setting::GetRootDirectory() / SU_MUSIC_DIR;
     for (const auto& fdata : make_iterator_range(directory_iterator(mlpath), {})) {
         if (!is_directory(fdata)) continue;
-        auto category = make_shared<CategoryInfo>(mlpath / fdata);
+
+        auto category = make_shared<CategoryInfo>(fdata);
         for (const auto& mdir : make_iterator_range(directory_iterator(fdata), {})) {
             if (!is_directory(mdir)) continue;
-
             for (const auto& file : make_iterator_range(directory_iterator(mdir), {})) {
                 if (is_directory(file)) continue;
                 if (file.path().extension() != ".sus") continue;     //‚±‚ê‘å•¶Žš‚Ç‚¤‚·‚ñ‚Ì
                 Analyzer->Reset();
                 Analyzer->LoadFromFile(file.path().string(), true);
-                auto info = make_shared<MusicMetaInfo>();
-                info->Path = file;
-                info->SongId = Analyzer->SharedMetaData.USongId;
-                info->Name = Analyzer->SharedMetaData.UTitle;
-                info->DifficultyName = Analyzer->SharedMetaData.USubTitle;
-                info->Artist = Analyzer->SharedMetaData.UArtist;
-                info->Designer = Analyzer->SharedMetaData.UDesigner;
-                info->WavePath = path(file).parent_path() / Analyzer->SharedMetaData.UWaveFileName;
-                info->WaveOffset = Analyzer->SharedMetaData.WaveOffset;
-                category->Musics.push_back(info);
+                auto music = find_if(category->Musics.begin(), category->Musics.end(), [&](std::shared_ptr<MusicMetaInfo> info) {
+                    return info->SongId == Analyzer->SharedMetaData.USongId;
+                });
+                if (music == category->Musics.end()) {
+                    music = category->Musics.insert(category->Musics.begin(), make_shared<MusicMetaInfo>());
+                    (*music)->SongId = Analyzer->SharedMetaData.USongId;
+                    (*music)->Name = Analyzer->SharedMetaData.UTitle;
+                    (*music)->Artist = Analyzer->SharedMetaData.UArtist;
+                }
+                auto score = make_shared<MusicScoreInfo>();
+                score->Path = mdir.path().filename() / file.path().filename();
+                score->WavePath = ConvertUTF8ToShiftJis(Analyzer->SharedMetaData.UWaveFileName);
+                score->Designer = Analyzer->SharedMetaData.UDesigner;
+                score->Difficulty = Analyzer->SharedMetaData.DifficultyType;
+                score->Level = Analyzer->SharedMetaData.Level;
+                (*music)->Scores.push_back(score);
             }
         }
         Categories.push_back(category);
@@ -152,9 +166,6 @@ int MusicSelectionCursor::Enter()
             return 1;
         case 1: {
             //‘I‹ÈI—¹
-            auto current = Manager->Categories[CategoryIndex];
-            Manager->Selected = current->Musics[MusicIndex];
-            Manager->Analyzer->LoadFromFile(current->Musics[MusicIndex]->Path.string(), false);
             return 2;
         }
         default:

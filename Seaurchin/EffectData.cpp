@@ -90,7 +90,7 @@ void EffectData::InitializeInstance(EffectInstance *instance)
         {
         case EmitterRateType::BurstEmission:
         {
-            int num = (int)max(0, em->Rate->Take());
+            int num = (int)em->Rate->Take(); //–{—ˆ‚Ímax‚Å0‚ªÅ’á
             for (int i = 0; i < num; i++)
             {
                 ParticleData *pd = new ParticleData();
