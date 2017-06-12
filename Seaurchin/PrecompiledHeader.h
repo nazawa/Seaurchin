@@ -48,6 +48,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/clamp.hpp>
 #include <boost/crc.hpp>
+#include <boost/any.hpp>
 #include <boost/fusion/include/std_tuple.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/optional.hpp>

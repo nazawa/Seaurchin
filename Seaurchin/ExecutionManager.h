@@ -11,8 +11,7 @@
 #include "SoundManager.h"
 #include "ScenePlayer.h"
 
-class ExecutionManager final
-{
+class ExecutionManager final {
 private:
     std::shared_ptr<Setting> SharedSetting;
     std::shared_ptr<AngelScript> ScriptInterface;
@@ -23,9 +22,9 @@ private:
     std::unique_ptr<SkinHolder> Skin;
     std::unique_ptr<EffectBuilder> SuEffect;
     std::shared_ptr<std::mt19937> Random;
-	std::shared_ptr<SoundManager> Sound;
+    std::shared_ptr<SoundManager> Sound;
     std::shared_ptr<MusicsManager> Musics;
-   
+    std::unordered_map<std::string, boost::any> optionalData;
     HIMC hImc;
     DWORD ImmConversion, ImmSentence;
 
@@ -46,7 +45,7 @@ public:
     inline std::shared_ptr<KeyState> GetKeyStateSafe() { return SharedKeyState; }
     inline KeyState* GetKeyStateUnsafe() { return SharedKeyState.get(); }
     inline AngelScript* GetScriptInterfaceUnsafe() { return ScriptInterface.get(); }
-	inline SoundManager* GetSoundManagerUnsafe() { return Sound.get(); }
+    inline SoundManager* GetSoundManagerUnsafe() { return Sound.get(); }
 
     std::tuple<bool, LRESULT> CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void ExecuteSkin();
@@ -57,9 +56,26 @@ public:
     MusicSelectionCursor *CreateCursor();
     ScenePlayer *CreatePlayer();
 
+    template<typename T>
+    void SetData(const std::string &name, const T& data);
+    template<typename T>
+    T GetData(const std::string &name);
+
 private:
     bool CheckSkinStructure(boost::filesystem::path name);
     void UpdateKeyState();
     void RegisterGlobalManagementFunction();
 };
 
+template<typename T>
+void ExecutionManager::SetData(const std::string &name, const T & data)
+{
+    optionalData[name] = data;
+}
+
+template<typename T>
+T ExecutionManager::GetData(const std::string &name)
+{
+    auto it = optionalData.find(name);
+    return it == optionalData.end() ? T() : boost::any_cast<T>(name);
+}
