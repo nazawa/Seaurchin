@@ -60,9 +60,8 @@ SImage * SImage::CreateBlankImage()
 
 SImage * SImage::CreateLoadedImageFromFile(const string &file, bool async)
 {
-    auto afile = ConvertUTF8ToShiftJis(file);
     if (async) SetUseASyncLoadFlag(TRUE);
-    auto result = new SImage(LoadGraph(afile.c_str()));
+    auto result = new SImage(LoadGraph(ConvertUTF8ToShiftJis(file).c_str()));
     if (async) SetUseASyncLoadFlag(FALSE);
 	result->AddRef();
 	return result;
@@ -243,7 +242,7 @@ SSound * SSound::CreateSound(SoundManager *smanager)
 
 SSound * SSound::CreateSoundFromFile(SoundManager *smanager, const std::string & file, int simul)
 {
-	auto hs = smanager->LoadSampleFromFile(file.c_str(), simul);
+	auto hs = smanager->LoadSampleFromFile(ConvertUTF8ToShiftJis(file).c_str(), simul);
     auto result = new SSound(smanager, hs);
     result->AddRef();
     return result;

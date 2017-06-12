@@ -114,17 +114,17 @@ asIScriptObject* SkinHolder::ExecuteSkinScript(string file)
 
 void SkinHolder::LoadSkinImage(const string &key, const string &filename)
 {
-    Images[key] = SImage::CreateLoadedImageFromFile((SkinRoot / SU_IMAGE_DIR / filename).string(), false);
+    Images[key] = SImage::CreateLoadedImageFromFile(ConvertShiftJisToUTF8((SkinRoot / SU_IMAGE_DIR / filename).string()), false);
 }
 
 void SkinHolder::LoadSkinFont(const string &key, const string &filename)
 {
-    Fonts[key] = SFont::CreateLoadedFontFromFile((SkinRoot / SU_FONT_DIR / filename).string());
+    Fonts[key] = SFont::CreateLoadedFontFromFile(ConvertShiftJisToUTF8((SkinRoot / SU_FONT_DIR / filename).string()));
 }
 
 void SkinHolder::LoadSkinSound(const std::string & key, const std::string & filename)
 {
-	Sounds[key] = SSound::CreateSoundFromFile(SoundInterface.get(), (SkinRoot / SU_SOUND_DIR / filename).string(), 8);
+	Sounds[key] = SSound::CreateSoundFromFile(SoundInterface.get(), ConvertShiftJisToUTF8((SkinRoot / SU_SOUND_DIR / filename).string()), 8);
 }
 
 SImage* SkinHolder::GetSkinImage(const string &key)
