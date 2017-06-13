@@ -116,9 +116,9 @@ void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
     Reset();
 
     file.open(fileName, ios::in);
-    unsigned char bom[3];
+    char bom[3];
     file.read(bom, 3);
-    if (bom[0] != 0xEF || bom[1] != 0xBB || bom[2] == 0xBF) file.seekg(0);
+    if (bom[0] != (char)0xEF || bom[1] != (char)0xBB || bom[2] == (char)0xBF) file.seekg(0);
     while (getline(file, rawline)) {
         if (!rawline.length()) continue;
         if (rawline[0] != '#') continue;
