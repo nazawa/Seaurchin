@@ -5,10 +5,6 @@ class Title : CoroutineScene {
   Image@ imgWhite, imgDxLib, imgBoost, imgFreeType, imgAngelScript, imgSeaurchin;
   Image@ imgCursorMenu;
   
-  ~Title() {
-    WriteDebugConsole("Title Dead\n");
-  }
-  
   void Initialize() {
     LoadResources();
     AddSprite(Sprite(imgWhite));
@@ -40,6 +36,7 @@ class Title : CoroutineScene {
     @imgSeaurchin = skin.GetImage("LogoSeaurchin");
     @imgCursorMenu = skin.GetImage("CursorMenu");
     @smCursor = skin.GetSound("SoundCursor");
+    @mixSE = GetDefaultMixer("SE");
   }
   
   //ここからコルーチン
@@ -78,9 +75,10 @@ class Title : CoroutineScene {
   }
   
   Sprite@ spLogo, spCursor;
-  ClipSprite @spTitle;
+  ClipSprite@ spTitle;
   array<Sprite@> menu(3);
-  Sound @smCursor;
+  Sound@ smCursor;
+  SoundMixer@ mixSE;
   int mcur = 0;
   void TitleRipple() {
     @spLogo = Sprite(imgSeaurchin);
@@ -146,12 +144,12 @@ class Title : CoroutineScene {
     while(true) {
       if (IsKeyTriggered(Key::INPUT_UP)) {
         mcur = (mcur + 2) % 3;
-        smCursor.Play();
+        mixSE.Play(smCursor);
         spCursor.AddMove("move_to(time:0.1, x:480, y:" + (400 + 64 * mcur) + ")");
       }
       if (IsKeyTriggered(Key::INPUT_DOWN)) {
         mcur = (mcur + 1) % 3;
-        smCursor.Play();
+        mixSE.Play(smCursor);
         spCursor.AddMove("move_to(time:0.1, x:480, y:" + (400 + 64 * mcur) + ")");
       }
       if (IsKeyTriggered(Key::INPUT_RETURN)) {

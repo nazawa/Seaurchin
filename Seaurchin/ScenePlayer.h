@@ -33,6 +33,7 @@ protected:
     int hGroundBuffer;
     int hAirBuffer;
     ExecutionManager *manager;
+    SoundManager *soundManager;
     std::unique_ptr<SusAnalyzer> analyzer;
     std::map<std::string, SResource*> resources;
     SoundStream *bgmStream;

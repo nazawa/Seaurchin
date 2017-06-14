@@ -203,47 +203,68 @@ SEffect::SEffect(EffectData *rawdata)
 SEffect::~SEffect()
 {}
 
-// SSound -----------------------------------
-SSound::SSound(SoundManager *mng, SoundSample *smp)
+// SSoundMixer ------------------------------
+
+SSoundMixer::SSoundMixer(SoundMixerStream * mixer)
 {
-	manager = mng;
+    this->mixer = mixer;
+}
+
+SSoundMixer::~SSoundMixer()
+{
+    delete mixer;
+}
+
+void SSoundMixer::Update()
+{
+    mixer->Update();
+}
+
+void SSoundMixer::Play(SSound * sound)
+{
+    mixer->Play(sound->sample);
+}
+
+void SSoundMixer::Stop(SSound * sound)
+{
+    mixer->Stop(sound->sample);
+}
+
+SSoundMixer * SSoundMixer::CreateMixer(SoundManager * manager)
+{
+    auto result = new SSoundMixer(manager->CreateMixerStream());
+    result->AddRef();
+    return result;
+}
+
+
+// SSound -----------------------------------
+SSound::SSound(SoundSample *smp)
+{
 	sample = smp;
 }
 
 SSound::~SSound()
 {
-	StopAll();
-	if (sample) manager->ReleaseSound(sample);
-	manager->ReleaseSound(sample);
-	sample = nullptr;
-}
-
-void SSound::Play()
-{
-	manager->Play(sample);
-}
-
-void SSound::StopAll()
-{
-	manager->Stop(sample);
+    delete sample;
 }
 
 void SSound::SetLoop(bool looping)
 {
-    manager->SetLoop(sample, looping);
+    sample->SetLoop(looping);
 }
 
 SSound * SSound::CreateSound(SoundManager *smanager)
 {
-    auto result =  new SSound(smanager, nullptr);
+    auto result =  new SSound(nullptr);
     result->AddRef();
     return result;
 }
 
 SSound * SSound::CreateSoundFromFile(SoundManager *smanager, const std::string & file, int simul)
 {
-	auto hs = smanager->LoadSampleFromFile(ConvertUTF8ToShiftJis(file).c_str(), simul);
-    auto result = new SSound(smanager, hs);
+	auto hs = SoundSample::CreateFromFile(ConvertUTF8ToShiftJis(file).c_str(), simul);
+    auto result = new SSound(hs);
     result->AddRef();
     return result;
 }
@@ -276,9 +297,13 @@ void RegisterScriptResource(ExecutionManager *exm)
 	engine->RegisterObjectType(SU_IF_SOUND, 0, asOBJ_REF);
 	engine->RegisterObjectBehaviour(SU_IF_SOUND, asBEHAVE_ADDREF, "void f()", asMETHOD(SSound, AddRef), asCALL_THISCALL);
 	engine->RegisterObjectBehaviour(SU_IF_SOUND, asBEHAVE_RELEASE, "void f()", asMETHOD(SSound, Release), asCALL_THISCALL);
-	engine->RegisterObjectMethod(SU_IF_SOUND, "void Play()", asMETHOD(SSound, Play), asCALL_THISCALL);
-	engine->RegisterObjectMethod(SU_IF_SOUND, "void StopAll()", asMETHOD(SSound, StopAll), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SOUND, "void SetLoop(bool)", asMETHOD(SSound, SetLoop), asCALL_THISCALL);
+
+    engine->RegisterObjectType(SU_IF_SOUNDMIXER, 0, asOBJ_REF);
+    engine->RegisterObjectBehaviour(SU_IF_SOUNDMIXER, asBEHAVE_ADDREF, "void f()", asMETHOD(SSoundMixer, AddRef), asCALL_THISCALL);
+    engine->RegisterObjectBehaviour(SU_IF_SOUNDMIXER, asBEHAVE_RELEASE, "void f()", asMETHOD(SSoundMixer, Release), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SOUNDMIXER, "void Play(" SU_IF_SOUND "@)", asMETHOD(SSoundMixer, Play), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SOUNDMIXER, "void Stop(" SU_IF_SOUND "@)", asMETHOD(SSoundMixer, Stop), asCALL_THISCALL);
 
 	engine->RegisterObjectType(SU_IF_9IMAGE, 0, asOBJ_REF);
 	//engine->RegisterObjectBehaviour(SU_IF_9IMAGE, asBEHAVE_FACTORY, SU_IF_IMAGE "@ f()", asFUNCTION(SNinePatchImage::CreateBlankImage), asCALL_CDECL);
@@ -287,3 +312,4 @@ void RegisterScriptResource(ExecutionManager *exm)
 	engine->RegisterObjectMethod(SU_IF_9IMAGE, "int get_Width()", asMETHOD(SNinePatchImage, get_Width), asCALL_THISCALL);
 	engine->RegisterObjectMethod(SU_IF_9IMAGE, "int get_Height()", asMETHOD(SNinePatchImage, get_Height), asCALL_THISCALL);
 }
+

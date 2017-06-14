@@ -29,6 +29,14 @@ void SoundSample::StopSound()
     BASS_SampleStop(hSample);
 }
 
+void SoundSample::SetVolume(float vol)
+{
+    BASS_SAMPLE si = { 0 };
+    BASS_SampleGetInfo(hSample, &si);
+    si.volume = vol;
+    BASS_SampleSetInfo(hSample, &si);
+}
+
 SoundSample *SoundSample::CreateFromFile(const string & fileNameA, int maxChannels)
 {
     auto handle = BASS_SampleLoad(FALSE, fileNameA.c_str(), 0, 0, maxChannels, BASS_SAMPLE_OVER_POS);
@@ -69,6 +77,11 @@ DWORD SoundStream::GetSoundHandle()
 void SoundStream::StopSound()
 {
     BASS_ChannelStop(hStream);
+}
+
+void SoundStream::SetVolume(float vol)
+{
+    BASS_ChannelSetAttribute(hStream, BASS_ATTRIB_VOL, clamp(vol, 0.0f, 1.0f));
 }
 
 SoundStream *SoundStream::CreateFromFile(const string & fileNameA)
@@ -120,11 +133,13 @@ void SoundMixerStream::Play(Sound * sound)
     auto ch = sound->GetSoundHandle();
     PlayingSounds.emplace(ch);
     BASS_Mixer_StreamAddChannel(hMixerStream, ch, 0);
+    BASS_ChannelPlay(ch, FALSE);
 }
 
 void SoundMixerStream::Stop(Sound * sound)
 {
     sound->StopSound();
+    //ƒ`ƒƒƒ“ƒlƒ‹íœ‚ÍUpdate‚É”C‚¹‚é
 }
 
 void SoundMixerStream::SetVolume(float vol)
@@ -132,7 +147,7 @@ void SoundMixerStream::SetVolume(float vol)
     BASS_ChannelSetAttribute(hMixerStream, BASS_ATTRIB_VOL, vol);
 }
 
-
+// SoundManager -----------------------------
 SoundManager::SoundManager()
 {
     //‚æ‚ë‚µ‚­‚È‚¢
@@ -143,4 +158,19 @@ SoundManager::SoundManager()
 SoundManager::~SoundManager()
 {
     BASS_Free();
+}
+
+SoundMixerStream *SoundManager::CreateMixerStream()
+{
+    return new SoundMixerStream(2, 44100);
+}
+
+void SoundManager::PlayGlobal(Sound * sound)
+{
+    BASS_ChannelPlay(sound->GetSoundHandle(), FALSE);
+}
+
+void SoundManager::StopGlobal(Sound * sound)
+{
+    sound->StopSound();
 }

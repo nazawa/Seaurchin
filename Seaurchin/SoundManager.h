@@ -14,6 +14,7 @@ public:
 
     virtual DWORD GetSoundHandle() = 0;
     virtual void StopSound() = 0;
+    virtual void SetVolume(float vol) = 0;
 };
 
 class SoundSample : public Sound {
@@ -22,14 +23,15 @@ class SoundSample : public Sound {
 protected:
     HSAMPLE hSample;
 
+public:
     SoundSample(HSAMPLE sample);
     ~SoundSample();
 
-public:
     DWORD GetSoundHandle() override;
     void StopSound() override;
+    void SetVolume(float vol) override;
 
-    SoundSample *CreateFromFile(const std::string &fileNameA, int maxChannels = 16);
+    static SoundSample *CreateFromFile(const std::string &fileNameA, int maxChannels = 16);
     void SetLoop(bool looping);
 };
 
@@ -39,14 +41,15 @@ class SoundStream : public Sound {
 protected:
     HSTREAM hStream;
 
+public:
     SoundStream(HSTREAM stream);
     ~SoundStream();
 
-public:
     DWORD GetSoundHandle() override;
     void StopSound() override;
+    void SetVolume(float vol) override;
 
-    SoundStream *CreateFromFile(const std::string &fileNameA);
+    static SoundStream *CreateFromFile(const std::string &fileNameA);
     double GetPlayingPosition();
 };
 
@@ -65,11 +68,14 @@ public:
     void Stop(Sound *sound);
 };
 
-//こいつのポインタをOBJFIRSTで渡すのギルティーじゃない？
 class SoundManager final {
 private:
 
 public:
 	SoundManager();
 	~SoundManager();
+
+    SoundMixerStream *CreateMixerStream();
+    void PlayGlobal(Sound *sound);
+    void StopGlobal(Sound *sound);
 };

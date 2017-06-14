@@ -9,6 +9,7 @@
 #define SU_IF_IMAGE "Image"
 #define SU_IF_FONT "Font"
 #define SU_IF_RENDER "RenderTarget"
+#define SU_IF_SOUNDMIXER "SoundMixer"
 #define SU_IF_SOUND "Sound"
 #define SU_IF_EFXDATA "EffectData"
 #define SU_IF_9IMAGE "NinePatchImage"
@@ -110,20 +111,35 @@ public:
 };
 
 class SSound : public SResource {
+    friend class SSoundMixer;
+
 protected:
-	SoundManager *manager = nullptr;
 	SoundSample *sample;
 
 public:
-    SSound(SoundManager *mng, SoundSample *smp);
+    SSound(SoundSample *smp);
     ~SSound() override;
 
-    void Play();
-    void StopAll();
+    inline SoundSample *GetSample() { return sample; }
     void SetLoop(bool looping);
 
     static SSound* CreateSound(SoundManager *smanager);
     static SSound* CreateSoundFromFile(SoundManager *smanager, const std::string &file, int simul);
+};
+
+class SSoundMixer : public SResource {
+protected:
+    SoundMixerStream *mixer;
+
+public:
+    SSoundMixer(SoundMixerStream *mixer);
+    ~SSoundMixer() override;
+
+    void Update();
+    void Play(SSound *sound);
+    void Stop(SSound *sound);
+
+    static SSoundMixer *CreateMixer(SoundManager *manager);
 };
 
 class ExecutionManager;

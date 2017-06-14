@@ -39,6 +39,11 @@ void ExecutionManager::Initialize()
     InterfacesRegisterSceneFunction(this);
     InterfacesRegisterGlobalFunction(this);
     RegisterGlobalManagementFunction();
+
+    MixerBGM = SSoundMixer::CreateMixer(Sound.get());
+    MixerSE = SSoundMixer::CreateMixer(Sound.get());
+    MixerBGM->AddRef();
+    MixerSE->AddRef();
     /*
     hImc = ImmGetContext(GetMainWindowHandle());
     if (!ImmGetOpenStatus(hImc)) ImmSetOpenStatus(hImc, TRUE);
@@ -49,7 +54,8 @@ void ExecutionManager::Initialize()
 
 void ExecutionManager::Shutdown()
 {
-    //if (hImc) ImmReleaseContext(GetMainWindowHandle(), hImc);
+    MixerBGM->Release();
+    MixerSE->Release();
 }
 
 void ExecutionManager::RegisterGlobalManagementFunction()
@@ -59,6 +65,8 @@ void ExecutionManager::RegisterGlobalManagementFunction()
 
     engine->RegisterGlobalFunction("void Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), void), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("void ReloadMusic()", asMETHOD(ExecutionManager, ReloadMusic), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterGlobalFunction(SU_IF_SOUNDMIXER "@ GetDefaultMixer(const string &in)", asMETHOD(ExecutionManager, GetDefaultMixer), asCALL_THISCALL_ASGLOBAL, this);
+
     engine->RegisterGlobalFunction("void Fire(const string &in)", asMETHOD(ExecutionManager, Fire), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("void SetData(const string &in, const int &in)", asMETHOD(ExecutionManager, SetData<int>), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("void SetData(const string &in, const double &in)", asMETHOD(ExecutionManager, SetData<double>), asCALL_THISCALL_ASGLOBAL, this);
@@ -66,6 +74,7 @@ void ExecutionManager::RegisterGlobalManagementFunction()
     engine->RegisterGlobalFunction("int GetIntData(const string &in)", asMETHOD(ExecutionManager, GetData<int>), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("double GetDoubleData(const string &in)", asMETHOD(ExecutionManager, GetData<double>), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("string GetStringData(const string &in)", asMETHOD(ExecutionManager, GetData<string>), asCALL_THISCALL_ASGLOBAL, this);
+    
     engine->RegisterObjectBehaviour(SU_IF_MSCURSOR, asBEHAVE_FACTORY, SU_IF_MSCURSOR "@ f()", asMETHOD(ExecutionManager, CreateCursor), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterObjectBehaviour(SU_IF_SCENE_PLAYER, asBEHAVE_FACTORY, SU_IF_SCENE_PLAYER "@ f()", asMETHOD(ExecutionManager, CreatePlayer), asCALL_THISCALL_ASGLOBAL, this);
 }
@@ -208,7 +217,8 @@ void ExecutionManager::Tick(double delta)
     ps += delta;
     if (ps >= 1.0) {
         ps = 0;
-        Sound->Update();
+        MixerBGM->Update();
+        MixerSE->Update();
     }
     ScriptInterface->GetEngine()->GarbageCollect(asGC_ONE_STEP);
 }
@@ -292,11 +302,24 @@ MusicSelectionCursor * ExecutionManager::CreateCursor()
     return Musics->CreateCursor();
 }
 
-ScenePlayer * ExecutionManager::CreatePlayer()
+ScenePlayer *ExecutionManager::CreatePlayer()
 {
     auto player = new ScenePlayer(this);
     player->AddRef();
     return player;
+}
+
+SSoundMixer *ExecutionManager::GetDefaultMixer(const string & name)
+{
+    if (name == "BGM") {
+        MixerBGM->AddRef();
+        return MixerBGM;
+    }
+    if (name == "SE") {
+        MixerSE->AddRef();
+        return MixerSE;
+    }
+    return nullptr;
 }
 
 std::tuple<bool, LRESULT> ExecutionManager::CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

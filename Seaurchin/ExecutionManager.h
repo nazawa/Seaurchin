@@ -27,6 +27,7 @@ private:
     std::unordered_map<std::string, boost::any> optionalData;
     HIMC hImc;
     DWORD ImmConversion, ImmSentence;
+    SSoundMixer *MixerBGM, *MixerSE;
 
 public:
     ExecutionManager(std::shared_ptr<Setting> setting);
@@ -55,6 +56,7 @@ public:
     void Fire(const std::string &message);
     MusicSelectionCursor *CreateCursor();
     ScenePlayer *CreatePlayer();
+    SSoundMixer *GetDefaultMixer(const std::string &name);
 
     template<typename T>
     void SetData(const std::string &name, const T& data);

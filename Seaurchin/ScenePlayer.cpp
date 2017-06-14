@@ -100,7 +100,7 @@ void RegisterPlayerScene(ExecutionManager * manager)
 
 ScenePlayer::ScenePlayer(ExecutionManager *exm) : manager(exm)
 {
-
+    soundManager = manager->GetSoundManagerUnsafe();
 }
 
 ScenePlayer::~ScenePlayer()
@@ -151,11 +151,11 @@ void ScenePlayer::Initialize()
 
 void ScenePlayer::Finalize()
 {
-    soundHoldLoop->StopAll();
-    soundSlideLoop->StopAll();
+    soundManager->StopGlobal(soundHoldLoop->GetSample());
+    soundManager->StopGlobal(soundSlideLoop->GetSample());
     for (auto& res : resources) res.second->Release();
-    manager->GetSoundManagerUnsafe()->Stop(bgmStream);
-    manager->GetSoundManagerUnsafe()->ReleaseSound(bgmStream);
+    soundManager->StopGlobal(bgmStream);
+    delete bgmStream;
 
     fontCombo->Release();
     DeleteGraph(hGroundBuffer);
@@ -204,10 +204,10 @@ void ScenePlayer::Draw()
         HoldCheck = isInHold || HoldCheck;
     }
     FINISH_DRAW_TRANSACTION;
-    if (!wasInSlide && SlideCheck) soundSlideLoop->Play();
-    if (wasInSlide && !SlideCheck) soundSlideLoop->StopAll();
-    if (!wasInHold && HoldCheck) soundHoldLoop->Play();
-    if (wasInHold && !HoldCheck) soundHoldLoop->StopAll();
+    if (!wasInSlide && SlideCheck) soundManager->PlayGlobal(soundSlideLoop->GetSample());
+    if (wasInSlide && !SlideCheck) soundManager->StopGlobal(soundSlideLoop->GetSample());
+    if (!wasInHold && HoldCheck) soundManager->PlayGlobal(soundHoldLoop->GetSample());
+    if (wasInHold && !HoldCheck) soundManager->StopGlobal(soundHoldLoop->GetSample());
     Prepare3DDrawCall();
     DrawPolygonIndexed3D(GroundVertices, 4, RectVertexIndices, 2, hGroundBuffer, TRUE);
 
@@ -247,7 +247,7 @@ void ScenePlayer::LoadWorker()
     }
     PrecalculateNotes();
     auto file = boost::filesystem::path(scorefile).parent_path() / ConvertUTF8ToShiftJis(analyzer->SharedMetaData.UWaveFileName);
-    bgmStream = manager->GetSoundManagerUnsafe()->LoadStreamFromFile(file.string().c_str());
+    bgmStream = SoundStream::CreateFromFile(file.string().c_str());
 
     isLoadCompleted = true;
 }
@@ -588,7 +588,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
     if (note->Type.test(SusNoteType::Hold)) {
         isInHold = true;
         if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
-            soundTap->Play();
+            soundManager->PlayGlobal(soundTap->GetSample());
             IncrementCombo();
             note->OnTheFlyData.set(NoteAttribute::Finished);
         }
@@ -603,7 +603,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
                 extra->OnTheFlyData.set(NoteAttribute::Finished);
                 return;
             }
-            if (!extra->Type.test(SusNoteType::Tap)) soundTap->Play();
+            if (!extra->Type.test(SusNoteType::Tap)) soundManager->PlayGlobal(soundTap->GetSample());
             IncrementCombo();
             extra->OnTheFlyData.set(NoteAttribute::Finished);
             return;
@@ -611,7 +611,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
     } else if (note->Type.test(SusNoteType::Slide)) {
         isInSlide = true;
         if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
-            soundTap->Play();
+            soundManager->PlayGlobal(soundTap->GetSample());
             IncrementCombo();
             note->OnTheFlyData.set(NoteAttribute::Finished);
             return;
@@ -627,7 +627,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
                 extra->OnTheFlyData.set(NoteAttribute::Finished);
                 return;
             }
-            if (!extra->Type.test(SusNoteType::Tap)) soundTap->Play();
+            if (!extra->Type.test(SusNoteType::Tap)) soundManager->PlayGlobal(soundTap->GetSample());
             IncrementCombo();
             extra->OnTheFlyData.set(NoteAttribute::Finished);
             return;
@@ -645,24 +645,24 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
                 return;
             }
             if (pos >= 0) continue;
-            soundAirAction->Play();
+            soundManager->PlayGlobal(soundAirAction->GetSample());
             IncrementCombo();
             extra->OnTheFlyData.set(NoteAttribute::Finished);
         }
     } else if (note->Type.test(SusNoteType::Air)) {
-        soundAir->Play();
+        soundManager->PlayGlobal(soundAir->GetSample());
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::Tap)) {
-        soundTap->Play();
+        soundManager->PlayGlobal(soundTap->GetSample());
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::ExTap)) {
-        soundExTap->Play();
+        soundManager->PlayGlobal(soundExTap->GetSample());
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::Flick)) {
-        soundFlick->Play();
+        soundManager->PlayGlobal(soundFlick->GetSample());
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else {
@@ -691,13 +691,13 @@ void ScenePlayer::SetPlayerResource(const string & name, SResource * resource)
 
 void ScenePlayer::Play()
 {
-    manager->GetSoundManagerUnsafe()->Play(bgmStream);
+    soundManager->PlayGlobal(bgmStream);
 }
 
 double ScenePlayer::GetPlayingTime()
 {
     if (!bgmStream) return 0;
-    return manager->GetSoundManagerUnsafe()->GetPosition(bgmStream);
+    return bgmStream->GetPlayingPosition();
 }
 
 int ScenePlayer::GetSeenObjectsCount()
