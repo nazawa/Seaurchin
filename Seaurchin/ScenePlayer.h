@@ -9,6 +9,7 @@
 #include "MusicsManager.h"
 
 #define SU_IF_SCENE_PLAYER "ScenePlayer"
+#define SU_IF_PLAY_STATUS "PlayStatus"
 
 #define SU_LANE_X_MIN -400.0
 #define SU_LANE_X_MAX 400.0
@@ -20,6 +21,18 @@
 
 // Scene‚Æ‚¢‚¤–¼‘O‚±‚»‚Â‚¢‚Ä‚é‚¯‚Ç‹““®‚Í•Ê•¨
 // SceneManager‚É’Ç‰Á‚³‚ê‚È‚¢
+
+struct PlayStatus {
+    uint32_t JusticeCritical = 0;
+    uint32_t Justice = 0;
+    uint32_t Attack = 0;
+    uint32_t Miss = 0;
+
+    uint32_t AllNotes = 0;
+    uint32_t Combo = 0;
+    double CurrentGauge = 0.0;
+    double GaugeDefaultMax = 60000.0;
+};
 
 enum NoteAttribute {
     Invisible = 0,
@@ -61,15 +74,12 @@ protected:
     unsigned int airActionLineColor = GetColor(0, 255, 32);
 
     //Slide‚Ìd‚İ‚ªáŠ±ˆá‚¤‚ç‚µ‚¢‚¯‚Ç‚»‚Ì‚Ö‚ñ‹–‚µ‚Ä‚Ë
-    int allNotesCount = 0;
-    double gaugeDefaultMax = 60000;
-    double currentGauge = 0;
+    PlayStatus Status;
 
     // ‹È‚Ì“r’†‚Å•Ï‰»‚·‚é‚â‚Â‚ç
     std::vector<std::shared_ptr<SusDrawableNoteData>> data;
     std::vector<std::shared_ptr<SusDrawableNoteData>> seenData;
     std::unordered_map<std::shared_ptr<SusDrawableNoteData>, std::vector<std::tuple<double, double>>> curveData;
-    uint32_t comboCount = 0;
     double currentTime = 0;
     double seenDuration = 0.8;
     double precedTime = 0.1;

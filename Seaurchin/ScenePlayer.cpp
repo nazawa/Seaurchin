@@ -4,74 +4,19 @@
 
 using namespace std;
 
-static uint16_t RectVertexIndices[] = { 0, 1, 3, 3, 1, 2 };
+static const uint16_t RectVertexIndices[] = { 0, 1, 3, 3, 1, 2 };
 static VERTEX3D GroundVertices[] = {
-    {
-        VGet(SU_LANE_X_MIN, SU_LANE_Y_GROUND, SU_LANE_Z_MAX),
-        VGet(0, 1, 0),
-        GetColorU8(255, 255, 255, 255),
-        GetColorU8(0, 0, 0, 0),
-        0.0f, 0.0f,
-        0.0f, 0.0f
-    },
-    {
-        VGet(SU_LANE_X_MAX, SU_LANE_Y_GROUND, SU_LANE_Z_MAX),
-        VGet(0, 1, 0),
-        GetColorU8(255, 255, 255, 255),
-        GetColorU8(0, 0, 0, 0),
-        1.0f, 0.0f,
-        0.0f, 0.0f
-    },
-    {
-        VGet(SU_LANE_X_MAX, SU_LANE_Y_GROUND, SU_LANE_Z_MIN),
-        VGet(0, 1, 0),
-        GetColorU8(255, 255, 255, 255),
-        GetColorU8(0, 0, 0, 0),
-        1.0f, 1.0f,
-        0.0f, 0.0f
-    },
-    {
-        VGet(SU_LANE_X_MIN, SU_LANE_Y_GROUND, SU_LANE_Z_MIN),
-        VGet(0, 1, 0),
-        GetColorU8(255, 255, 255, 255),
-        GetColorU8(0, 0, 0, 0),
-        0.0f, 1.0f,
-        0.0f, 0.0f
-    }
+    { VGet(SU_LANE_X_MIN, SU_LANE_Y_GROUND, SU_LANE_Z_MAX), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.0f, 0.0f, 0.0f, 0.0f },
+    { VGet(SU_LANE_X_MAX, SU_LANE_Y_GROUND, SU_LANE_Z_MAX), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0f, 0.0f, 0.0f, 0.0f },
+    { VGet(SU_LANE_X_MAX, SU_LANE_Y_GROUND, SU_LANE_Z_MIN), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0f, 1.0f, 0.0f, 0.0f },
+    { VGet(SU_LANE_X_MIN, SU_LANE_Y_GROUND, SU_LANE_Z_MIN), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.0f, 1.0f, 0.0f, 0.0f }
 };
+
 static VERTEX3D AirVertices[] = {
-    {
-        VGet(SU_LANE_X_MIN, SU_LANE_Y_AIR, SU_LANE_Z_MAX),
-        VGet(0, 1, 0),
-        GetColorU8(255, 255, 255, 255),
-        GetColorU8(0, 0, 0, 0),
-        0.0f, 0.0f,
-        0.0f, 0.0f
-    },
-    {
-        VGet(SU_LANE_X_MAX, SU_LANE_Y_AIR, SU_LANE_Z_MAX),
-        VGet(0, 1, 0),
-        GetColorU8(255, 255, 255, 255),
-        GetColorU8(0, 0, 0, 0),
-        1.0f, 0.0f,
-        0.0f, 0.0f
-    },
-    {
-        VGet(SU_LANE_X_MAX, SU_LANE_Y_AIR, SU_LANE_Z_MIN),
-        VGet(0, 1, 0),
-        GetColorU8(255, 255, 255, 255),
-        GetColorU8(0, 0, 0, 0),
-        1.0f, 1.0f,
-        0.0f, 0.0f
-    },
-    {
-        VGet(SU_LANE_X_MIN, SU_LANE_Y_AIR, SU_LANE_Z_MIN),
-        VGet(0, 1, 0),
-        GetColorU8(255, 255, 255, 255),
-        GetColorU8(0, 0, 0, 0),
-        0.0f, 1.0f,
-        0.0f, 0.0f
-    }
+    { VGet(SU_LANE_X_MIN, SU_LANE_Y_AIR, SU_LANE_Z_MAX), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.0f, 0.0f, 0.0f, 0.0f },
+    { VGet(SU_LANE_X_MAX, SU_LANE_Y_AIR, SU_LANE_Z_MAX), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0f, 0.0f, 0.0f, 0.0f },
+    { VGet(SU_LANE_X_MAX, SU_LANE_Y_AIR, SU_LANE_Z_MIN), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0f, 1.0f, 0.0f, 0.0f },
+    { VGet(SU_LANE_X_MIN, SU_LANE_Y_AIR, SU_LANE_Z_MIN), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.0f, 1.0f, 0.0f, 0.0f }
 };
 
 void RegisterPlayerScene(ExecutionManager * manager)
@@ -81,9 +26,9 @@ void RegisterPlayerScene(ExecutionManager * manager)
     engine->RegisterObjectType(SU_IF_SCENE_PLAYER, 0, asOBJ_REF);
     engine->RegisterObjectBehaviour(SU_IF_SCENE_PLAYER, asBEHAVE_ADDREF, "void f()", asMETHOD(ScenePlayer, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_SCENE_PLAYER, asBEHAVE_RELEASE, "void f()", asMETHOD(ScenePlayer, Release), asCALL_THISCALL);
+    engine->RegisterObjectProperty(SU_IF_SCENE_PLAYER, "int Z", asOFFSET(ScenePlayer, ZIndex));
     engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_SCENE_PLAYER "@ opCast()", asFUNCTION((CastReferenceType<SSprite, ScenePlayer>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<ScenePlayer, SSprite>)), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectProperty(SU_IF_SCENE_PLAYER, "int Z", asOFFSET(ScenePlayer, ZIndex));
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void Initialize()", asMETHOD(ScenePlayer, Initialize), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_IMAGE "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_FONT "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
@@ -95,6 +40,18 @@ void RegisterPlayerScene(ExecutionManager * manager)
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "int GetSeenObjectsCount()", asMETHOD(ScenePlayer, GetSeenObjectsCount), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "int GetCurrentGauge(int &out, double &out)", asMETHOD(ScenePlayer, GetCurrentGauge), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void AdjustCamera(double, double, double)", asMETHOD(ScenePlayer, AdjustCamera), asCALL_THISCALL);
+
+    engine->RegisterObjectType(SU_IF_PLAY_STATUS, sizeof(PlayStatus), asOBJ_VALUE | asOBJ_APP_CLASS_CD);
+    engine->RegisterObjectBehaviour(SU_IF_PLAY_STATUS, asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(AngelScriptValueConstruct<PlayStatus>), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectBehaviour(SU_IF_PLAY_STATUS, asBEHAVE_DESTRUCT, "void f()", asFUNCTION(AngelScriptValueDestruct<PlayStatus>), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 JusticeCritical", asOFFSET(PlayStatus, JusticeCritical));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Justice", asOFFSET(PlayStatus, Justice));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Attack", asOFFSET(PlayStatus, Attack));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Miss", asOFFSET(PlayStatus, Miss));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 AllNotes", asOFFSET(PlayStatus, AllNotes));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Combo", asOFFSET(PlayStatus, Combo));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "dobule CurrentGauge", asOFFSET(PlayStatus, CurrentGauge));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "double GaugeDefaultMax", asOFFSET(PlayStatus, GaugeDefaultMax));
 }
 
 
@@ -169,6 +126,7 @@ void ScenePlayer::Tick(double delta)
 
 void ScenePlayer::Draw()
 {
+
     vector<tuple<double, double>> airactionStarts;
     ostringstream combo;
     currentTime = GetPlayingTime() - analyzer->SharedMetaData.WaveOffset;
@@ -176,8 +134,8 @@ void ScenePlayer::Draw()
     seenData.clear();
     if (isLoadCompleted) CalculateNotes(currentTime, seenDuration, precedTime);
 
-    int pCombo = comboCount;
-    combo << comboCount;
+    int pCombo = Status.Combo;
+    combo << Status.Combo;
     textCombo->set_Text(combo.str());
 
     BEGIN_DRAW_TRANSACTION(hGroundBuffer);
@@ -191,6 +149,7 @@ void ScenePlayer::Draw()
     // Ground
     bool SlideCheck = false;
     bool HoldCheck = false;
+
     BEGIN_DRAW_TRANSACTION(hGroundBuffer);
     for (auto& note : seenData) {
         auto &type = note->Type;
@@ -204,6 +163,7 @@ void ScenePlayer::Draw()
         HoldCheck = isInHold || HoldCheck;
     }
     FINISH_DRAW_TRANSACTION;
+
     if (!wasInSlide && SlideCheck) soundManager->PlayGlobal(soundSlideLoop->GetSample());
     if (wasInSlide && !SlideCheck) soundManager->StopGlobal(soundSlideLoop->GetSample());
     if (!wasInHold && HoldCheck) soundManager->PlayGlobal(soundHoldLoop->GetSample());
@@ -212,6 +172,7 @@ void ScenePlayer::Draw()
     DrawPolygonIndexed3D(GroundVertices, 4, RectVertexIndices, 2, hGroundBuffer, TRUE);
 
     //Air
+
     BEGIN_DRAW_TRANSACTION(hAirBuffer);
     ClearDrawScreen();
     for (auto& note : seenData) if (note->Type.test(SusNoteType::AirAction)) airactionStarts.push_back(DrawAirActionNotes(note));
@@ -225,7 +186,7 @@ void ScenePlayer::Draw()
     for (auto& note : seenData) if (note->Type.test(SusNoteType::Air)) DrawAirNotes(note);
 
     //Œãˆ—
-    if (comboCount > pCombo) {
+    if (Status.Combo > pCombo) {
         textCombo->AbortMove(true);
         textCombo->Apply("scaleY:8.4, scaleX:8.4");
         textCombo->AddMove("scale_to(x:8, y:8, time:0.2, ease:out_quad)");
@@ -233,6 +194,7 @@ void ScenePlayer::Draw()
 
     wasInHold = HoldCheck;
     wasInSlide = SlideCheck;
+
 }
 
 void ScenePlayer::LoadWorker()
@@ -254,27 +216,27 @@ void ScenePlayer::LoadWorker()
 
 void ScenePlayer::PrecalculateNotes()
 {
-    allNotesCount = 0;
+    Status.AllNotes = 0;
     for (auto &note : data) {
         auto type = note->Type.to_ulong();
         if (type & 0b0000000011100000) {
-            if (!note->Type.test(SusNoteType::AirAction)) allNotesCount++;
+            if (!note->Type.test(SusNoteType::AirAction)) Status.AllNotes++;
             for (auto &ex : note->ExtraData)
                 if (
                     ex->Type.test(SusNoteType::End)
                     || ex->Type.test(SusNoteType::Step)
                     || ex->Type.test(SusNoteType::ExTap))
-                    allNotesCount++;
+                    Status.AllNotes++;
         } else if (type & 0b0000000000011110) {
-            allNotesCount++;
+            Status.AllNotes++;
         }
     }
 }
 
 void ScenePlayer::IncrementCombo()
 {
-    comboCount++;
-    currentGauge += gaugeDefaultMax / allNotesCount;
+    Status.Combo++;
+    Status.CurrentGauge += Status.GaugeDefaultMax / Status.AllNotes;
 }
 
 void ScenePlayer::CalculateNotes(double time, double duration, double preced)
@@ -716,7 +678,7 @@ void ScenePlayer::GetCurrentGauge(int *fulfilled, double *current)
 {
     *fulfilled = 0;
     *current = 0;
-    double calc = currentGauge;
+    double calc = round(Status.CurrentGauge);
     double currentMax = 12000;
     while (calc >= currentMax) {
         *fulfilled += 1;

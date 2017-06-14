@@ -30,6 +30,20 @@ namespace crc_ccitt
 
 }
 
+// AngelScript‚É“o˜^‚µ‚½’lŒ^—p‚Ì”Ä—pˆ—ƒAƒŒ
+
+template <typename T>
+void AngelScriptValueConstruct(void *address)
+{
+    new (address) T;
+}
+
+template <typename T>
+void AngelScriptValueDestruct(void *address)
+{
+    static_cast<T*>(address)->~T();
+}
+
 
 std::string ConvertUTF8ToShiftJis(std::string utf8str);
 std::string ConvertShiftJisToUTF8(std::string sjisstr);
