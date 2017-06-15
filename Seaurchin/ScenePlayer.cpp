@@ -23,6 +23,18 @@ void RegisterPlayerScene(ExecutionManager * manager)
 {
     auto engine = manager->GetScriptInterfaceUnsafe()->GetEngine();
 
+    engine->RegisterObjectType(SU_IF_PLAY_STATUS, sizeof(PlayStatus), asOBJ_VALUE | asOBJ_POD);
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 JusticeCritical", asOFFSET(PlayStatus, JusticeCritical));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Justice", asOFFSET(PlayStatus, Justice));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Attack", asOFFSET(PlayStatus, Attack));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Miss", asOFFSET(PlayStatus, Miss));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 AllNotes", asOFFSET(PlayStatus, AllNotes));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Combo", asOFFSET(PlayStatus, Combo));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "double CurrentGauge", asOFFSET(PlayStatus, CurrentGauge));
+    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "double GaugeDefaultMax", asOFFSET(PlayStatus, GaugeDefaultMax));
+    engine->RegisterObjectMethod(SU_IF_PLAY_STATUS, "void GetGaugeValue(int &out, double &out)", asMETHOD(PlayStatus, GetGaugeValue), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_PLAY_STATUS, "uint32 GetScore()", asMETHOD(PlayStatus, GetScore), asCALL_THISCALL);
+
     engine->RegisterObjectType(SU_IF_SCENE_PLAYER, 0, asOBJ_REF);
     engine->RegisterObjectBehaviour(SU_IF_SCENE_PLAYER, asBEHAVE_ADDREF, "void f()", asMETHOD(ScenePlayer, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_SCENE_PLAYER, asBEHAVE_RELEASE, "void f()", asMETHOD(ScenePlayer, Release), asCALL_THISCALL);
@@ -30,6 +42,7 @@ void RegisterPlayerScene(ExecutionManager * manager)
     engine->RegisterObjectMethod(SU_IF_SPRITE, SU_IF_SCENE_PLAYER "@ opCast()", asFUNCTION((CastReferenceType<SSprite, ScenePlayer>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<ScenePlayer, SSprite>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void Initialize()", asMETHOD(ScenePlayer, Initialize), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void AdjustCamera(double, double, double)", asMETHOD(ScenePlayer, AdjustCamera), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_IMAGE "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_FONT "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_SOUND "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
@@ -37,21 +50,7 @@ void RegisterPlayerScene(ExecutionManager * manager)
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "bool IsLoadCompleted()", asMETHOD(ScenePlayer, IsLoadCompleted), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void Play()", asMETHOD(ScenePlayer, Play), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "double GetCurrentTime()", asMETHOD(ScenePlayer, GetPlayingTime), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "int GetSeenObjectsCount()", asMETHOD(ScenePlayer, GetSeenObjectsCount), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "int GetCurrentGauge(int &out, double &out)", asMETHOD(ScenePlayer, GetCurrentGauge), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void AdjustCamera(double, double, double)", asMETHOD(ScenePlayer, AdjustCamera), asCALL_THISCALL);
-
-    engine->RegisterObjectType(SU_IF_PLAY_STATUS, sizeof(PlayStatus), asOBJ_VALUE | asOBJ_APP_CLASS_CD);
-    engine->RegisterObjectBehaviour(SU_IF_PLAY_STATUS, asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(AngelScriptValueConstruct<PlayStatus>), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectBehaviour(SU_IF_PLAY_STATUS, asBEHAVE_DESTRUCT, "void f()", asFUNCTION(AngelScriptValueDestruct<PlayStatus>), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 JusticeCritical", asOFFSET(PlayStatus, JusticeCritical));
-    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Justice", asOFFSET(PlayStatus, Justice));
-    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Attack", asOFFSET(PlayStatus, Attack));
-    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Miss", asOFFSET(PlayStatus, Miss));
-    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 AllNotes", asOFFSET(PlayStatus, AllNotes));
-    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "uint32 Combo", asOFFSET(PlayStatus, Combo));
-    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "dobule CurrentGauge", asOFFSET(PlayStatus, CurrentGauge));
-    engine->RegisterObjectProperty(SU_IF_PLAY_STATUS, "double GaugeDefaultMax", asOFFSET(PlayStatus, GaugeDefaultMax));
+    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void GetPlayStatus(" SU_IF_PLAY_STATUS " &out)", asMETHOD(ScenePlayer, GetPlayStatus), asCALL_THISCALL);
 }
 
 
@@ -236,6 +235,7 @@ void ScenePlayer::PrecalculateNotes()
 void ScenePlayer::IncrementCombo()
 {
     Status.Combo++;
+    Status.JusticeCritical++;
     Status.CurrentGauge += Status.GaugeDefaultMax / Status.AllNotes;
 }
 
@@ -662,9 +662,9 @@ double ScenePlayer::GetPlayingTime()
     return bgmStream->GetPlayingPosition();
 }
 
-int ScenePlayer::GetSeenObjectsCount()
+void ScenePlayer::GetPlayStatus(PlayStatus *status)
 {
-    return seenObjects;
+    *status = Status;
 }
 
 void ScenePlayer::AdjustCamera(double cy, double cz, double ctz)
@@ -674,16 +674,28 @@ void ScenePlayer::AdjustCamera(double cy, double cz, double ctz)
     cameraTargetZ += ctz;
 }
 
-void ScenePlayer::GetCurrentGauge(int *fulfilled, double *current)
+// PlayStatus -------------------------------------------------
+
+void PlayStatus::GetGaugeValue(int &fulfilled, double &rest)
 {
-    *fulfilled = 0;
-    *current = 0;
-    double calc = round(Status.CurrentGauge);
+    fulfilled = 0;
+    rest = 0;
+    double calc = round(CurrentGauge);
     double currentMax = 12000;
     while (calc >= currentMax) {
-        *fulfilled += 1;
+        fulfilled += 1;
         calc -= currentMax;
         currentMax += 2000;
     }
-    *current = calc / currentMax;
+    rest = calc / currentMax;
+}
+
+uint32_t PlayStatus::GetScore()
+{
+    double result = 0;
+    double base = 1000000.0 / AllNotes;
+    result += JusticeCritical * base * 1.01;
+    result += Justice * base * 1.00;
+    result += Attack * base * 0.50;
+    return (uint32_t)round(result);
 }

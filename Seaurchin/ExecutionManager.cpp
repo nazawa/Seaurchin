@@ -63,7 +63,7 @@ void ExecutionManager::RegisterGlobalManagementFunction()
     auto engine = ScriptInterface->GetEngine();
     MusicSelectionCursor::RegisterScriptInterface(engine);
 
-    engine->RegisterGlobalFunction("void Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), void), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterGlobalFunction("bool Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), bool), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("void ReloadMusic()", asMETHOD(ExecutionManager, ReloadMusic), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction(SU_IF_SOUNDMIXER "@ GetDefaultMixer(const string &in)", asMETHOD(ExecutionManager, GetDefaultMixer), asCALL_THISCALL_ASGLOBAL, this);
 
@@ -74,7 +74,7 @@ void ExecutionManager::RegisterGlobalManagementFunction()
     engine->RegisterGlobalFunction("int GetIntData(const string &in)", asMETHOD(ExecutionManager, GetData<int>), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("double GetDoubleData(const string &in)", asMETHOD(ExecutionManager, GetData<double>), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("string GetStringData(const string &in)", asMETHOD(ExecutionManager, GetData<string>), asCALL_THISCALL_ASGLOBAL, this);
-    
+
     engine->RegisterObjectBehaviour(SU_IF_MSCURSOR, asBEHAVE_FACTORY, SU_IF_MSCURSOR "@ f()", asMETHOD(ExecutionManager, CreateCursor), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterObjectBehaviour(SU_IF_SCENE_PLAYER, asBEHAVE_FACTORY, SU_IF_SCENE_PLAYER "@ f()", asMETHOD(ExecutionManager, CreatePlayer), asCALL_THISCALL_ASGLOBAL, this);
 }
@@ -88,8 +88,7 @@ void ExecutionManager::EnumerateSkins()
 
     path sepath = Setting::GetRootDirectory() / SU_DATA_DIR / SU_SKIN_DIR;
 
-    for (const auto& fdata : make_iterator_range(directory_iterator(sepath), {}))
-    {
+    for (const auto& fdata : make_iterator_range(directory_iterator(sepath), {})) {
         if (!is_directory(fdata)) continue;
         if (!CheckSkinStructure(fdata.path())) continue;
         SkinNames.push_back(fdata.path().filename().string());
@@ -115,33 +114,29 @@ bool ExecutionManager::CheckSkinStructure(boost::filesystem::path name)
 void ExecutionManager::ExecuteSkin()
 {
     auto sn = SharedSetting->ReadValue<string>(SU_SETTING_GENERAL, SU_SETTING_SKIN, "Default");
-    if (find(SkinNames.begin(), SkinNames.end(), sn) == SkinNames.end())
-    {
+    if (find(SkinNames.begin(), SkinNames.end(), sn) == SkinNames.end()) {
         WriteDebugConsole(("Can't Find Skin " + sn + "!\n").c_str());
         return;
     }
     Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, ScriptInterface, Sound));
     Skin->Initialize();
-    auto obj = Skin->ExecuteSkinScript(SU_SKIN_TITLE_FILE);
-    auto s = CreateSceneFromScriptObject(obj);
-    if (!s)
-    {
-        WriteDebugConsole("Entry Point Not Found!\n");
-        return;
-    }
-    AddScene(s);
+    ExecuteSkin(SU_SKIN_TITLE_FILE);
 }
 
-void ExecutionManager::ExecuteSkin(const string &file)
+bool ExecutionManager::ExecuteSkin(const string &file)
 {
     auto obj = Skin->ExecuteSkinScript(file);
+    if (!obj) {
+        WriteDebugConsole("Can't Compile The Script!\n");
+        return false;
+    }
     auto s = CreateSceneFromScriptObject(obj);
-    if (!s)
-    {
+    if (!s) {
         WriteDebugConsole("Entry Point Not Found!\n");
-        return;
+        return false;
     }
     AddScene(s);
+    return true;
 }
 
 
@@ -151,16 +146,14 @@ void ExecutionManager::ExecuteSystemMenu()
     using namespace boost::filesystem;
 
     path sysmf = Setting::GetRootDirectory() / SU_DATA_DIR / SU_SCRIPT_DIR / SU_SYSTEM_MENU_FILE;
-    if (!exists(sysmf))
-    {
+    if (!exists(sysmf)) {
         WriteDebugConsole("System Menu Script Not Found!\n");
         return;
     }
 
     ScriptInterface->StartBuildModule("SystemMenu", [](auto inc, auto from, auto sb) { return true; });
     ScriptInterface->LoadFile(sysmf.string().c_str());
-    if (!ScriptInterface->FinishBuildModule())
-    {
+    if (!ScriptInterface->FinishBuildModule()) {
         WriteDebugConsole("Can't Comple System Menu!\n");
         return;
     }
@@ -169,16 +162,14 @@ void ExecutionManager::ExecuteSystemMenu()
     //エントリポイント検索
     int cnt = mod->GetObjectTypeCount();
     asITypeInfo *type = nullptr;
-    for (int i = 0; i < cnt; i++)
-    {
+    for (int i = 0; i < cnt; i++) {
         auto cti = mod->GetObjectTypeByIndex(i);
         if (!ScriptInterface->CheckMetaData(cti, "EntryPoint")) continue;
         type = cti;
         type->AddRef();
         break;
     }
-    if (!type)
-    {
+    if (!type) {
         WriteDebugConsole("Entry Point Not Found!\n");
         return;
     }
@@ -199,15 +190,11 @@ void ExecutionManager::Tick(double delta)
     ScenesPending.clear();
     sort(Scenes.begin(), Scenes.end(), [](shared_ptr<Scene> sa, shared_ptr<Scene> sb) { return sa->GetIndex() < sb->GetIndex(); });
     auto i = Scenes.begin();
-    while (i != Scenes.end())
-    {
+    while (i != Scenes.end()) {
         (*i)->Tick(delta);
-        if ((*i)->IsDead())
-        {
+        if ((*i)->IsDead()) {
             i = Scenes.erase(i);
-        }
-        else
-        {
+        } else {
             i++;
         }
     }
@@ -248,18 +235,14 @@ void ExecutionManager::AddScene(shared_ptr<Scene> scene)
 shared_ptr<ScriptScene> ExecutionManager::CreateSceneFromScriptType(asITypeInfo *type)
 {
     shared_ptr<ScriptScene> ret;
-    if (ScriptInterface->CheckImplementation(type, SU_IF_COSCENE))
-    {
+    if (ScriptInterface->CheckImplementation(type, SU_IF_COSCENE)) {
         auto obj = ScriptInterface->InstantiateObject(type);
         return shared_ptr<ScriptScene>(new ScriptCoroutineScene(obj));
-    }
-    else if (ScriptInterface->CheckImplementation(type, SU_IF_SCENE))  //最後
+    } else if (ScriptInterface->CheckImplementation(type, SU_IF_SCENE))  //最後
     {
         auto obj = ScriptInterface->InstantiateObject(type);
         return shared_ptr<ScriptScene>(new ScriptScene(obj));
-    }
-    else
-    {
+    } else {
         ostringstream err;
         err << "Type '" << type->GetName() << "' Doesn't Implement any Scene Interface!\n" << endl;
         WriteDebugConsole(err.str().c_str());
@@ -271,16 +254,12 @@ shared_ptr<ScriptScene> ExecutionManager::CreateSceneFromScriptObject(asIScriptO
 {
     shared_ptr<ScriptScene> ret;
     auto type = obj->GetObjectType();
-    if (ScriptInterface->CheckImplementation(type, SU_IF_COSCENE))
-    {
+    if (ScriptInterface->CheckImplementation(type, SU_IF_COSCENE)) {
         return shared_ptr<ScriptScene>(new ScriptCoroutineScene(obj));
-    }
-    else if (ScriptInterface->CheckImplementation(type, SU_IF_SCENE))  //最後
+    } else if (ScriptInterface->CheckImplementation(type, SU_IF_SCENE))  //最後
     {
         return shared_ptr<ScriptScene>(new ScriptScene(obj));
-    }
-    else
-    {
+    } else {
         ostringstream err;
         err << "Type '" << type->GetName() << "' Doesn't Implement any Scene Interface!\n" << endl;
         WriteDebugConsole(err.str().c_str());
@@ -288,7 +267,8 @@ shared_ptr<ScriptScene> ExecutionManager::CreateSceneFromScriptObject(asIScriptO
     }
 }
 
-void ExecutionManager::ReloadMusic() {
+void ExecutionManager::ReloadMusic()
+{
     Musics->Reload(true);
 }
 
@@ -326,31 +306,31 @@ std::tuple<bool, LRESULT> ExecutionManager::CustomWindowProc(HWND hWnd, UINT msg
 {
     ostringstream buffer;
     switch (msg) {
-    /*
-        //IME
-    case WM_INPUTLANGCHANGE:
-        WriteDebugConsole("Input Language Changed\n");
-        buffer << "CharSet:" << wParam << ", Locale:" << LOWORD(lParam);
-        WriteDebugConsole(buffer.str().c_str());
-        return make_tuple(true, TRUE);
-    case WM_IME_SETCONTEXT:
-        WriteDebugConsole("Input Set Context\n");
-        return make_tuple(false, 0);
-    case WM_IME_STARTCOMPOSITION:
-        WriteDebugConsole("Input Start Composition\n");
-        return make_tuple(false, 0);
-    case WM_IME_COMPOSITION:
-        WriteDebugConsole("Input Conposition\n");
-        return make_tuple(false, 0);
-    case WM_IME_ENDCOMPOSITION:
-        WriteDebugConsole("Input End Composition\n");
-        return make_tuple(false, 0);
-    case WM_IME_NOTIFY:
-        WriteDebugConsole("Input Notify\n");
-        return make_tuple(false, 0);
-        */
-    default:
-        return make_tuple(false, (LRESULT)nullptr);
+        /*
+            //IME
+        case WM_INPUTLANGCHANGE:
+            WriteDebugConsole("Input Language Changed\n");
+            buffer << "CharSet:" << wParam << ", Locale:" << LOWORD(lParam);
+            WriteDebugConsole(buffer.str().c_str());
+            return make_tuple(true, TRUE);
+        case WM_IME_SETCONTEXT:
+            WriteDebugConsole("Input Set Context\n");
+            return make_tuple(false, 0);
+        case WM_IME_STARTCOMPOSITION:
+            WriteDebugConsole("Input Start Composition\n");
+            return make_tuple(false, 0);
+        case WM_IME_COMPOSITION:
+            WriteDebugConsole("Input Conposition\n");
+            return make_tuple(false, 0);
+        case WM_IME_ENDCOMPOSITION:
+            WriteDebugConsole("Input End Composition\n");
+            return make_tuple(false, 0);
+        case WM_IME_NOTIFY:
+            WriteDebugConsole("Input Notify\n");
+            return make_tuple(false, 0);
+            */
+        default:
+            return make_tuple(false, (LRESULT)nullptr);
     }
-    
+
 }

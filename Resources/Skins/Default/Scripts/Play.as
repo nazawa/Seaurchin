@@ -72,12 +72,33 @@ class Play : CoroutineScene {
   array<Sprite@> spGaugeCounts(6);
   Sprite@ spBarBack, spBarFront;
   ClipSprite@ spBarFill;
-  int gMax;
-  double gCurrent;
+  TextSprite@ txtScore;
+  SynthSprite@ spJudges;
   void Main() {
     @spBack = Sprite(skin.GetImage("TitleBack"));
     @spTopCover = Sprite(skin.GetImage("PlayerTopCover"));
     spTopCover.Apply("z:10");
+    // スコアなど
+    @txtScore = TextSprite(font64, "0");
+    txtScore.SetAlignment(TextAlign::Right, TextAlign::Top);
+    txtScore.Apply("x:380, y:0, z:15, scaleX:1.8, scaleY:1.8");
+    @spJudges = SynthSprite(128, 96);
+    spJudges.Transfer(skin.GetImage("JudgeJC"), 0, 0);
+    spJudges.Transfer(skin.GetImage("JudgeJ"), 0, 24);
+    spJudges.Transfer(skin.GetImage("JudgeA"), 0, 48);
+    spJudges.Transfer(skin.GetImage("JudgeM"), 0,72);
+    spJudges.Apply("x:900, y:4, z:15");
+    array<TextSprite@> spCounts = {
+      TextSprite(font32, "0"),
+      TextSprite(font32, "0"),
+      TextSprite(font32, "0"),
+      TextSprite(font32, "0")
+    };
+    for(int i = 0; i < 4; i++) {
+      spCounts[i].Apply("x: 1100, z:15, y:" + (24 * i - 2));
+      spCounts[i].SetAlignment(TextAlign::Right, TextAlign::Top);
+    }
+    // ゲージ
     for(int i = 0; i < 6; i++) {
       @spGaugeCounts[i] = Sprite(imgGCEmpty);
       spGaugeCounts[i].Apply("x:" + (384 + i * 48) + ", y:74, z:11, scaleX:0.8, scaleY:0.5");
@@ -94,20 +115,41 @@ class Play : CoroutineScene {
     
     AddSprite(spBack);
     AddSprite(spTopCover);
+    AddSprite(txtScore);
+    AddSprite(spJudges);
+    for(int i = 0; i < 4; i++) AddSprite(spCounts[i]);
     AddSprite(spBack);
     AddSprite(spBarBack);
     AddSprite(spBarFill);
     AddSprite(spBarFront);
     
+    PlayStatus psNow, psPrev;
+    int gMax = 0;
+    double gCurrent = 0;
     while(true) {
       int pgm = gMax;
-      player.GetCurrentGauge(gMax, gCurrent);
+      double pgc = gCurrent;
+      player.GetPlayStatus(psNow);
+      psNow.GetGaugeValue(gMax, gCurrent);
       if (gMax > pgm) for(int i = pgm; i < gMax; i++) {
          spGaugeCounts[i].SetImage(imgGCFull);
          spGaugeCounts[i].Apply("scaleX:1.0");
          spGaugeCounts[i].AddMove("scale_to(x:0.8, y:0.5, time:0.3)");
       }
-      spBarFill.AddMove("range_size(width:" + formatFloat(gCurrent, '', 1, 4) + ", height: 1, time: 0.1)");
+      if (gCurrent != pgc) {
+        spBarFill.AddMove("range_size(width:" + formatFloat(gCurrent, '', 1, 4) + ", height:1, time:0.1, ease:out_sine)");
+        txtScore.SetText("" + psNow.GetScore());
+        if (psNow.JusticeCritical != psPrev.JusticeCritical) {
+          spCounts[0].SetText("" + psNow.JusticeCritical);
+          spCounts[0].AbortMove();
+          spCounts[0].Apply("scaleX:1.3");
+          spCounts[0].AddMove("scale_to(x:1.0, y:1.0, time:0.3)");
+        }
+        // spCounts[1].SetText("" + psNow.Justice);
+        // spCounts[2].SetText("" + psNow.Attack);
+        // spCounts[3].SetText("" + psNow.Miss);
+      }
+      psPrev = psNow;
       YieldFrame(1);
     }
   }
@@ -115,8 +157,7 @@ class Play : CoroutineScene {
   void KeyInput() {
     while(true) {
       if (IsKeyTriggered(Key::INPUT_ESCAPE)) {
-        Disappear();
-        Execute("Select.as");
+        if (Execute("Select.as")) Disappear();
       }
       
       if (IsKeyTriggered(Key::INPUT_UP)) player.AdjustCamera(10, 0, 0);

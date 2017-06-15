@@ -27,6 +27,10 @@ void InitializeSkin(Skin@ skin) {
   skin.LoadImage("GaugeBarBack", "GaugeBarBack.png");
   skin.LoadImage("GaugeBarFill", "GaugeBarFill.png");
   skin.LoadImage("GaugeBarFront", "GaugeBarFront.png");
+  skin.LoadImage("JudgeJC", "Judge-JC.png");
+  skin.LoadImage("JudgeJ", "Judge-J.png");
+  skin.LoadImage("JudgeA", "Judge-A.png");
+  skin.LoadImage("JudgeM", "Judge-M.png");
   
   skin.LoadImage("MusicSelectFrame", "MusicSelect-Frame.png");
   skin.LoadImage("CursorMenu", "MenuCursor.png");         //320x64

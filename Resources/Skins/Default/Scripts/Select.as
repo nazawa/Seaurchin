@@ -93,8 +93,7 @@ class Title : CoroutineScene {
     while(true) {
       if (IsKeyTriggered(Key::INPUT_RETURN)) {
         if (cursor.Enter() == 2) {
-          Disappear();
-          Execute("Play.as");
+          if (Execute("Play.as")) Disappear();
         } else {
           InitCursor();
         }

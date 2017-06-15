@@ -153,8 +153,7 @@ class Title : CoroutineScene {
         spCursor.AddMove("move_to(time:0.1, x:480, y:" + (400 + 64 * mcur) + ")");
       }
       if (IsKeyTriggered(Key::INPUT_RETURN)) {
-        Disappear();
-        Execute("Select.as");
+        if (Execute("Select.as")) Disappear();
       }
       YieldFrame(1);
     }

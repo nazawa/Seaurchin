@@ -81,8 +81,10 @@ asIScriptObject* SkinHolder::ExecuteSkinScript(string file)
             return true;
         });
         ScriptInterface->LoadFile((SkinRoot / SU_SCRIPT_DIR / file).string().c_str());
-        ScriptInterface->FinishBuildModule();
-
+        if (!ScriptInterface->FinishBuildModule()) {
+            ScriptInterface->GetLastModule()->Discard();
+            return nullptr;
+        }
         mod = ScriptInterface->GetLastModule();
     }
 

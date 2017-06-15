@@ -19,6 +19,7 @@
 #define SU_LANE_Y_AIR 160.0
 #define SU_LANE_ASPECT ((SU_LANE_Z_MAX - SU_LANE_Z_MIN) / (SU_LANE_X_MAX - SU_LANE_X_MIN))
 
+
 // Scene‚Æ‚¢‚¤–¼‘O‚±‚»‚Â‚¢‚Ä‚é‚¯‚Ç‹““®‚Í•Ê•¨
 // SceneManager‚É’Ç‰Á‚³‚ê‚È‚¢
 
@@ -32,6 +33,10 @@ struct PlayStatus {
     uint32_t Combo = 0;
     double CurrentGauge = 0.0;
     double GaugeDefaultMax = 60000.0;
+
+public:
+    void GetGaugeValue(int &fulfilled, double &rest);
+    uint32_t GetScore();
 };
 
 enum NoteAttribute {
@@ -105,6 +110,7 @@ public:
     ScenePlayer(ExecutionManager *exm);
     ~ScenePlayer() override;
 
+    void AdjustCamera(double cy, double cz, double ctz);
     void SetPlayerResource(const std::string &name, SResource *resource);
     void Tick(double delta) override;
     void Draw() override;
@@ -115,9 +121,7 @@ public:
     bool IsLoadCompleted();
     void Play();
     double GetPlayingTime();
-    int GetSeenObjectsCount();
-    void AdjustCamera(double cy, double cz, double ctz);
-    void GetCurrentGauge(int *fulfilled, double *current);
+    void GetPlayStatus(PlayStatus *status);
 };
 
 void RegisterPlayerScene(ExecutionManager *exm);
