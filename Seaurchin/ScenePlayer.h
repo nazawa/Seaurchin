@@ -86,8 +86,13 @@ protected:
     std::vector<std::shared_ptr<SusDrawableNoteData>> seenData;
     std::unordered_map<std::shared_ptr<SusDrawableNoteData>, std::vector<std::tuple<double, double>>> curveData;
     double currentTime = 0;
+    double currentSoundTime = 0;
     double seenDuration = 0.8;
     double precedTime = 0.1;
+    double BackingTime = 0.0;
+    double NextMetronomeTime = 0.0;
+    double SoundBufferingLatency = 0.030;   //TODO: 環境に若干寄り添う
+    int BgmState = -1;  //-2: 読み込み終了 -1: 前カウント 0:プレイ中 1:曲終了
     int seenObjects = 0;
     bool isInHold = false, isInSlide = false, wasInHold = false, wasInSlide = false;
 
@@ -103,7 +108,7 @@ protected:
     std::tuple<double, double> DrawAirActionNotes(std::shared_ptr<SusDrawableNoteData> note);
     void Prepare3DDrawCall();
 
-    void ProcessSound(double time, double duration, double preced);
+    void ProcessSound();
     void ProcessScore(std::shared_ptr<SusDrawableNoteData> note);
 
 public:

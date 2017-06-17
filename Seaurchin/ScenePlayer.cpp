@@ -57,6 +57,7 @@ void RegisterPlayerScene(ExecutionManager * manager)
 ScenePlayer::ScenePlayer(ExecutionManager *exm) : manager(exm)
 {
     soundManager = manager->GetSoundManagerUnsafe();
+    BgmState = -2;
 }
 
 ScenePlayer::~ScenePlayer()
@@ -118,24 +119,125 @@ void ScenePlayer::Finalize()
     DeleteGraph(hAirBuffer);
 }
 
+
+void ScenePlayer::LoadWorker()
+{
+    auto mm = manager->GetMusicsManager();
+    auto scorefile = mm->GetSelectedScorePath();
+
+    analyzer->LoadFromFile(scorefile);
+    analyzer->RenderScoreData(data);
+    for (auto &note : data) {
+        if (note->Type.test(SusNoteType::Slide) || note->Type.test(SusNoteType::AirAction)) CalculateCurves(note);
+    }
+    PrecalculateNotes();
+
+    auto file = boost::filesystem::path(scorefile).parent_path() / ConvertUTF8ToShiftJis(analyzer->SharedMetaData.UWaveFileName);
+    bgmStream = SoundStream::CreateFromFile(file.string().c_str());
+
+    BackingTime = -60.0 / analyzer->GetBpmAt(0, 0) * analyzer->GetBeatsAt(0);
+    NextMetronomeTime = BackingTime;
+    
+
+    isLoadCompleted = true;
+}
+
+void ScenePlayer::PrecalculateNotes()
+{
+    Status.AllNotes = 0;
+    for (auto &note : data) {
+        auto type = note->Type.to_ulong();
+        if (type & 0b0000000011100000) {
+            if (!note->Type.test(SusNoteType::AirAction)) Status.AllNotes++;
+            for (auto &ex : note->ExtraData)
+                if (
+                    ex->Type.test(SusNoteType::End)
+                    || ex->Type.test(SusNoteType::Step)
+                    || ex->Type.test(SusNoteType::ExTap))
+                    Status.AllNotes++;
+        } else if (type & 0b0000000000011110) {
+            Status.AllNotes++;
+        }
+    }
+}
+
+void ScenePlayer::CalculateCurves(std::shared_ptr<SusDrawableNoteData> note)
+{
+    auto lastStep = note;
+    //auto lastStepRelativeY = 1.0 - (lastStep->StartTime - currentTime) / seenDuration;
+    double segmentsPerSecond = 20;   // Buffer上での最小の長さ
+    vector<tuple<double, double>> controlPoints;    // lastStepからの時間, X中央位置(0~1)
+    vector<tuple<double, double>> bezierBuffer;
+
+    controlPoints.push_back(make_tuple(0, (lastStep->StartLane + lastStep->Length / 2.0) / 16.0));
+    for (auto &slideElement : note->ExtraData) {
+        if (slideElement->Type.test(SusNoteType::ExTap)) continue;
+        if (slideElement->Type.test(SusNoteType::Control)) {
+            auto cpi = make_tuple(slideElement->StartTime - lastStep->StartTime, (slideElement->StartLane + slideElement->Length / 2.0) / 16.0);
+            controlPoints.push_back(cpi);
+            continue;
+        }
+        // EndかStep
+        controlPoints.push_back(make_tuple(slideElement->StartTime - lastStep->StartTime, (slideElement->StartLane + slideElement->Length / 2.0) / 16.0));
+        int segmentPoints = segmentsPerSecond * (slideElement->StartTime - lastStep->StartTime) + 2;
+        vector<tuple<double, double>> segmentPositions;
+        for (int j = 0; j < segmentPoints; j++) {
+            double relativeTimeInBlock = j / (double)(segmentPoints - 1);
+            bezierBuffer.clear();
+            copy(controlPoints.begin(), controlPoints.end(), back_inserter(bezierBuffer));
+            for (int k = controlPoints.size() - 1; k >= 0; k--) {
+                for (int l = 0; l < k; l++) {
+                    auto derivedTime = (1.0 - relativeTimeInBlock) * get<0>(bezierBuffer[l]) + relativeTimeInBlock * get<0>(bezierBuffer[l + 1]);
+                    auto derivedPosition = (1.0 - relativeTimeInBlock) * get<1>(bezierBuffer[l]) + relativeTimeInBlock * get<1>(bezierBuffer[l + 1]);
+                    bezierBuffer[l] = make_tuple(derivedTime, derivedPosition);
+                }
+            }
+            segmentPositions.push_back(bezierBuffer[0]);
+        }
+        curveData[slideElement] = segmentPositions;
+        lastStep = slideElement;
+        controlPoints.clear();
+        controlPoints.push_back(make_tuple(0, (slideElement->StartLane + slideElement->Length / 2.0) / 16.0));
+    }
+}
+
+void ScenePlayer::CalculateNotes(double time, double duration, double preced)
+{
+    copy_if(data.begin(), data.end(), back_inserter(seenData), [&](shared_ptr<SusDrawableNoteData> n) {
+        double ptime = time - preced;
+        if (n->Type.to_ulong() & 0b0000000011100000) {
+            // ロング
+            return (ptime <= n->StartTime && n->StartTime <= time + duration)
+                || (ptime <= n->StartTime + n->Duration && n->StartTime + n->Duration <= time + duration)
+                || (n->StartTime <= ptime && time + duration <= n->StartTime + n->Duration);
+        } else {
+            // ショート
+            return (ptime <= n->StartTime && n->StartTime <= time + duration);
+        }
+    });
+}
+
 void ScenePlayer::Tick(double delta)
 {
     textCombo->Tick(delta);
+    
+    if (BgmState != -2) BackingTime += delta;
+    currentTime = GetPlayingTime() - analyzer->SharedMetaData.WaveOffset;
+    currentSoundTime = currentTime + SoundBufferingLatency;
+    seenData.clear();
+    if (BgmState >= -1) CalculateNotes(currentTime, seenDuration, precedTime);
 }
 
 void ScenePlayer::Draw()
 {
-
     vector<tuple<double, double>> airactionStarts;
     ostringstream combo;
-    currentTime = GetPlayingTime() - analyzer->SharedMetaData.WaveOffset;
     int division = 8;
-    seenData.clear();
-    if (isLoadCompleted) CalculateNotes(currentTime, seenDuration, precedTime);
-
     int pCombo = Status.Combo;
     combo << Status.Combo;
     textCombo->set_Text(combo.str());
+
+    ProcessSound();
 
     BEGIN_DRAW_TRANSACTION(hGroundBuffer);
     ClearDrawScreen();
@@ -196,42 +298,6 @@ void ScenePlayer::Draw()
 
 }
 
-void ScenePlayer::LoadWorker()
-{
-    auto mm = manager->GetMusicsManager();
-    auto scorefile = mm->GetSelectedScorePath();
-
-    analyzer->LoadFromFile(scorefile);
-    analyzer->RenderScoreData(data);
-    for (auto &note : data) {
-        if (note->Type.test(SusNoteType::Slide) || note->Type.test(SusNoteType::AirAction)) CalculateCurves(note);
-    }
-    PrecalculateNotes();
-    auto file = boost::filesystem::path(scorefile).parent_path() / ConvertUTF8ToShiftJis(analyzer->SharedMetaData.UWaveFileName);
-    bgmStream = SoundStream::CreateFromFile(file.string().c_str());
-
-    isLoadCompleted = true;
-}
-
-void ScenePlayer::PrecalculateNotes()
-{
-    Status.AllNotes = 0;
-    for (auto &note : data) {
-        auto type = note->Type.to_ulong();
-        if (type & 0b0000000011100000) {
-            if (!note->Type.test(SusNoteType::AirAction)) Status.AllNotes++;
-            for (auto &ex : note->ExtraData)
-                if (
-                    ex->Type.test(SusNoteType::End)
-                    || ex->Type.test(SusNoteType::Step)
-                    || ex->Type.test(SusNoteType::ExTap))
-                    Status.AllNotes++;
-        } else if (type & 0b0000000000011110) {
-            Status.AllNotes++;
-        }
-    }
-}
-
 void ScenePlayer::IncrementCombo()
 {
     Status.Combo++;
@@ -239,61 +305,6 @@ void ScenePlayer::IncrementCombo()
     Status.CurrentGauge += Status.GaugeDefaultMax / Status.AllNotes;
 }
 
-void ScenePlayer::CalculateNotes(double time, double duration, double preced)
-{
-    copy_if(data.begin(), data.end(), back_inserter(seenData), [&](shared_ptr<SusDrawableNoteData> n) {
-        double ptime = time - preced;
-        if (n->Type.to_ulong() & 0b0000000011100000) {
-            // ロング
-            return (ptime <= n->StartTime && n->StartTime <= time + duration)
-                || (ptime <= n->StartTime + n->Duration && n->StartTime + n->Duration <= time + duration)
-                || (n->StartTime <= ptime && time + duration <= n->StartTime + n->Duration);
-        } else {
-            // ショート
-            return (ptime <= n->StartTime && n->StartTime <= time + duration);
-        }
-    });
-}
-
-void ScenePlayer::CalculateCurves(std::shared_ptr<SusDrawableNoteData> note)
-{
-    auto lastStep = note;
-    //auto lastStepRelativeY = 1.0 - (lastStep->StartTime - currentTime) / seenDuration;
-    double segmentsPerSecond = 20;   // Buffer上での最小の長さ
-    vector<tuple<double, double>> controlPoints;    // lastStepからの時間, X中央位置(0~1)
-    vector<tuple<double, double>> bezierBuffer;
-
-    controlPoints.push_back(make_tuple(0, (lastStep->StartLane + lastStep->Length / 2.0) / 16.0));
-    for (auto &slideElement : note->ExtraData) {
-        if (slideElement->Type.test(SusNoteType::ExTap)) continue;
-        if (slideElement->Type.test(SusNoteType::Control)) {
-            auto cpi = make_tuple(slideElement->StartTime - lastStep->StartTime, (slideElement->StartLane + slideElement->Length / 2.0) / 16.0);
-            controlPoints.push_back(cpi);
-            continue;
-        }
-        // EndかStep
-        controlPoints.push_back(make_tuple(slideElement->StartTime - lastStep->StartTime, (slideElement->StartLane + slideElement->Length / 2.0) / 16.0));
-        int segmentPoints = segmentsPerSecond * (slideElement->StartTime - lastStep->StartTime) + 2;
-        vector<tuple<double, double>> segmentPositions;
-        for (int j = 0; j < segmentPoints; j++) {
-            double relativeTimeInBlock = j / (double)(segmentPoints - 1);
-            bezierBuffer.clear();
-            copy(controlPoints.begin(), controlPoints.end(), back_inserter(bezierBuffer));
-            for (int k = controlPoints.size() - 1; k >= 0; k--) {
-                for (int l = 0; l < k; l++) {
-                    auto derivedTime = (1.0 - relativeTimeInBlock) * get<0>(bezierBuffer[l]) + relativeTimeInBlock * get<0>(bezierBuffer[l + 1]);
-                    auto derivedPosition = (1.0 - relativeTimeInBlock) * get<1>(bezierBuffer[l]) + relativeTimeInBlock * get<1>(bezierBuffer[l + 1]);
-                    bezierBuffer[l] = make_tuple(derivedTime, derivedPosition);
-                }
-            }
-            segmentPositions.push_back(bezierBuffer[0]);
-        }
-        curveData[slideElement] = segmentPositions;
-        lastStep = slideElement;
-        controlPoints.clear();
-        controlPoints.push_back(make_tuple(0, (slideElement->StartLane + slideElement->Length / 2.0) / 16.0));
-    }
-}
 
 void ScenePlayer::DrawShortNotes(shared_ptr<SusDrawableNoteData> note)
 {
@@ -536,14 +547,25 @@ void ScenePlayer::Prepare3DDrawCall()
     SetCameraPositionAndTarget_UpVecY(VGet(0, cameraY, cameraZ), VGet(0, SU_LANE_Y_GROUND, cameraTargetZ));
 }
 
-void ScenePlayer::ProcessSound(double time, double duration, double preced)
+void ScenePlayer::ProcessSound()
 {
     //役目不明
+    if (NextMetronomeTime <= BackingTime && NextMetronomeTime < 0) {
+        soundManager->PlayGlobal(soundTap->GetSample());
+        NextMetronomeTime += 60 / analyzer->GetBpmAt(0, 0);
+    }
+    if (BgmState == -1 && BackingTime >= 0) {
+        soundManager->PlayGlobal(bgmStream);
+        BgmState = 0;
+    }
+    if (BgmState == 0) {
+        BackingTime = bgmStream->GetPlayingPosition();
+    }
 }
 
 void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
 {
-    double relpos = (note->StartTime - currentTime) / seenDuration;
+    double relpos = (note->StartTime - currentSoundTime) / seenDuration;
     if (relpos >= 0 || (note->OnTheFlyData.test(NoteAttribute::Finished) && note->ExtraData.size() == 0)) return;
     auto state = note->Type.to_ulong();
 
@@ -556,7 +578,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
         }
 
         for (auto &extra : note->ExtraData) {
-            double pos = (extra->StartTime - currentTime) / seenDuration;
+            double pos = (extra->StartTime - currentSoundTime) / seenDuration;
             if (pos >= 0) continue;
             if (extra->Type.test(SusNoteType::End)) isInHold = false;
             if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
@@ -579,7 +601,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
             return;
         }
         for (auto &extra : note->ExtraData) {
-            double pos = (extra->StartTime - currentTime) / seenDuration;
+            double pos = (extra->StartTime - currentSoundTime) / seenDuration;
             if (pos >= 0) continue;
             if (extra->Type.test(SusNoteType::End)) isInSlide = false;
             if (extra->Type.test(SusNoteType::Control)) continue;
@@ -596,7 +618,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
         }
     } else if (note->Type.test(SusNoteType::AirAction)) {
         for (auto &extra : note->ExtraData) {
-            double pos = (extra->StartTime - currentTime) / seenDuration;
+            double pos = (extra->StartTime - currentSoundTime) / seenDuration;
             if (pos >= 0) continue;
             if (extra->Type.test(SusNoteType::Control)) continue;
             if (extra->Type.test(SusNoteType::Tap)) continue;
@@ -653,13 +675,17 @@ void ScenePlayer::SetPlayerResource(const string & name, SResource * resource)
 
 void ScenePlayer::Play()
 {
-    soundManager->PlayGlobal(bgmStream);
+    BgmState = -1;
 }
 
 double ScenePlayer::GetPlayingTime()
 {
-    if (!bgmStream) return 0;
-    return bgmStream->GetPlayingPosition();
+    // バッファリングの影響なのかBGM再生位置はTickから計算されるより33~36ms遅れる
+    if (BgmState != 0) {
+        return BackingTime - SoundBufferingLatency;
+    } else {
+        return bgmStream->GetPlayingPosition();
+    }
 }
 
 void ScenePlayer::GetPlayStatus(PlayStatus *status)

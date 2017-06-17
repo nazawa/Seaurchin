@@ -72,19 +72,18 @@ private:
     static boost::xpressive::sregex RegexSusCommand;
     static boost::xpressive::sregex RegexSusData;
 
+    double DefaultBeats = 4.0;
+    double DefaultBpm = 120.0;
     uint32_t TicksPerBeat;
     double LongInjectionPerBeat;
     std::function<void(uint32_t, std::string, std::string)> ErrorCallback = nullptr;
     std::vector<std::tuple<SusRelativeNoteTime, SusRawNoteData>> Notes;
+    std::vector<std::tuple<SusRelativeNoteTime, SusRawNoteData>> BpmChanges;
     std::unordered_map<uint32_t, double> BpmDefinitions;
 	std::unordered_map<uint32_t, float> BeatsDefinitions;
 
     void ProcessCommand(const boost::xpressive::smatch &result);
     void ProcessData(const boost::xpressive::smatch &result);
-	float GetBeatsAt(uint32_t measure);
-    double GetAbsoluteTime(uint32_t measure, uint32_t tick);
-    std::tuple<uint32_t, uint32_t> GetRelativeTime(double time);
-    uint32_t GetRelativeTicks(uint32_t measure, uint32_t tick);
 
 public:
     SusMetaData SharedMetaData;
@@ -95,4 +94,9 @@ public:
     void Reset();
     void LoadFromFile(const std::string &fileName, bool analyzeOnlyMetaData = false);
     void RenderScoreData(std::vector<std::shared_ptr<SusDrawableNoteData>> &data);
+    float GetBeatsAt(uint32_t measure);
+    double GetBpmAt(uint32_t measure, uint32_t tick);
+    double GetAbsoluteTime(uint32_t measure, uint32_t tick);
+    std::tuple<uint32_t, uint32_t> GetRelativeTime(double time);
+    uint32_t GetRelativeTicks(uint32_t measure, uint32_t tick);
 };

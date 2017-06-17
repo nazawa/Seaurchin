@@ -1,7 +1,6 @@
 #pragma once
 
-typedef struct
-{
+struct Transform2D {
     double X = 0.0;
     double Y = 0.0;
     double Angle = 0.0;
@@ -10,18 +9,25 @@ typedef struct
     double ScaleX = 1.0;
     double ScaleY = 1.0;
 
-} Transform2D;
+};
 
-typedef struct
-{
+struct Transform3D {
+    double X = 0.0;
+    double Y = 0.0;
+    double Z = 0.0;
+    double AngleX = 0.0;
+    double AngleY = 0.0;
+    double AngleZ = 0.0;
+};
+
+typedef struct {
     unsigned char A;
     unsigned char R;
     unsigned char G;
     unsigned char B;
 } ColorTint;
 
-class Colors final
-{
+class Colors final {
 public:
     static constexpr ColorTint AliceBlue = { 0xFF, 0xF0, 0xF8, 0xFF };
     static constexpr ColorTint AntiqueWhite = { 0xFF, 0xFA, 0xEB, 0xD7 };

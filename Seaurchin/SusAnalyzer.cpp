@@ -136,6 +136,9 @@ void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
     stable_sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
         return get<0>(a).Measure < get<0>(b).Measure;
     });
+    copy_if(Notes.begin(), Notes.end(), back_inserter(BpmChanges), [](tuple<SusRelativeNoteTime, SusRawNoteData> n) {
+        return get<1>(n).Type.test(SusNoteType::Undefined);
+    });
 
     file.close();
 }
@@ -363,7 +366,7 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
 
 float SusAnalyzer::GetBeatsAt(uint32_t measure)
 {
-    float result = 4.0;
+    float result = DefaultBeats;
     uint32_t last = 0;
     for (auto &t : BeatsDefinitions) {
         if (t.first >= last && t.first <= measure) {
@@ -374,24 +377,29 @@ float SusAnalyzer::GetBeatsAt(uint32_t measure)
     return result;
 }
 
+double SusAnalyzer::GetBpmAt(uint32_t measure, uint32_t tick)
+{
+    double result = DefaultBpm;
+    for (auto &t : BpmChanges) {
+        if (get<0>(t).Measure != measure) continue;
+        if (get<0>(t).Tick < tick) continue;
+        result = BpmDefinitions[get<1>(t).DefinitionNumber];
+    }
+    return result;
+}
+
 double SusAnalyzer::GetAbsoluteTime(uint32_t meas, uint32_t tick)
 {
     double time = 0.0;
-    double lastBpm = 120.0;
-    vector<tuple<SusRelativeNoteTime, SusRawNoteData>> bpmchanges;
-
+    double lastBpm = DefaultBpm;
     //超過したtick指定にも対応したほうが使いやすいよね
     while (tick >= GetBeatsAt(meas) * TicksPerBeat) tick -= GetBeatsAt(meas++) * TicksPerBeat;
 
     for (int i = 0; i < meas + 1; i++) {
         auto beats = GetBeatsAt(i);
-
-        bpmchanges.clear();
-        copy_if(Notes.begin(), Notes.end(), back_inserter(bpmchanges), [i](tuple<SusRelativeNoteTime, SusRawNoteData> n) {
-            return get<0>(n).Measure == i && get<1>(n).Type[SusNoteType::Undefined];
-        });
         auto lastChangeTick = 0u;
-        for (auto& bc : bpmchanges) {
+        for (auto& bc : BpmChanges) {
+            if (get<0>(bc).Measure != i) continue;
             auto timing = get<0>(bc);
             if (i == meas && timing.Tick >= tick) break;
             double dur = (60.0 / lastBpm) * ((double)(timing.Tick - lastChangeTick) / TicksPerBeat);
