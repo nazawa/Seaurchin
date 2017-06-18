@@ -48,23 +48,32 @@ class Title : CoroutineScene {
   
   Sprite@ spj;
   TextSprite@ txt;
+  bool isCategory = true;
   void InitCursor() {
     @spj = Sprite();
     @txt = TextSprite(font64, "");
     spj.Apply("scaleX:0.5, scaleY:0.5, x:40, y:40");
     txt.SetAlignment(TextAlign::Center, TextAlign::Top);
-    txt.Apply("x:200, y:408, r:0, g:0, b:0");
     for(int i = 0; i < 5; i++) {
       int add = (7 - center) % 5;
       musics[i].Clear();
       musics[i].Transfer(imgMusicFrame, 0, 0);
-      //ジャケ
-      Image@ jacket = Image(cursor.GetMusicJacketFileName((i + add) % 5 - 2));
-      spj.SetImage(jacket);
-      musics[i].Transfer(spj);
+      
       //タイトル
+      txt.Apply("x:200, y:408, r:0, g:0, b:0");
       txt.SetText(cursor.GetPrimaryString((i + add) % 5 - 2));
       musics[i].Transfer(txt);
+      if (!isCategory) {
+        //ジャケ
+        Image@ jacket = Image(cursor.GetMusicJacketFileName((i + add) % 5 - 2));
+        spj.SetImage(jacket);
+        musics[i].Transfer(spj);
+        
+        //アーティスト
+        txt.Apply("x:200, y:472, r:0, g:0, b:0");
+        txt.SetText(cursor.GetArtistName((i + add) % 5 - 2));
+        musics[i].Transfer(txt);
+      }
     }
   }
   int center = 2;
@@ -78,13 +87,21 @@ class Title : CoroutineScene {
     musics[flew].Apply("x:" + (640 + 480 * adjust * 3));
     musics[flew].Clear();
     musics[flew].Transfer(imgMusicFrame, 0, 0);
-    //ジャケ
-    Image@ jacket = Image(cursor.GetMusicJacketFileName(adjust * 2));
-    spj.SetImage(jacket);
-    musics[flew].Transfer(spj);
+    
     //タイトル
+    txt.Apply("x:200, y:408, r:0, g:0, b:0");
     txt.SetText(cursor.GetPrimaryString(adjust * 2));
     musics[flew].Transfer(txt);
+    if (!isCategory) {
+      //ジャケ
+      Image@ jacket = Image(cursor.GetMusicJacketFileName(adjust * 2));
+      spj.SetImage(jacket);
+      musics[flew].Transfer(spj);
+      //アーティスト
+      txt.Apply("x:200, y:472, r:0, g:0, b:0");
+      txt.SetText(cursor.GetArtistName(adjust * 2));
+      musics[flew].Transfer(txt);
+    }
     center = (5 + center + adjust) % 5;
     for(int i = 0; i < 5; i++) musics[i].AddMove("move_by(x:" + (480 * -adjust) + ", time:0.2, ease:out_quad)");
   }
@@ -95,10 +112,11 @@ class Title : CoroutineScene {
         if (cursor.Enter() == 2) {
           if (Execute("Play.as")) Disappear();
         } else {
+          isCategory = false;
           InitCursor();
         }
       } else if (IsKeyTriggered(Key::INPUT_ESCAPE)) {
-        cursor.Exit();
+        isCategory = cursor.Exit();
         InitCursor();
       } else if (IsKeyTriggered(Key::INPUT_RIGHT)) { 
         cursor.Next();
