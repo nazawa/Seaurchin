@@ -17,6 +17,7 @@
 #define SU_IF_CLPSPRITE "ClipSprite"
 #define SU_IF_EFXSPRITE "EffectSprite"
 #define SU_IF_9SPRITE "NinePatchSprite"
+#define SU_IF_ANIMESPRITE "AnimeSprite"
 
 class ScriptSpriteMover;
 struct Mover;
@@ -201,6 +202,26 @@ public:
     static void RegisterType(asIScriptEngine *engine);
 };
 
+class SAnimeSprite : public SSprite {
+protected:
+    SAnimatedImage *Images;
+    int LoopCount;
+    double Speed;
+    double Time;
+
+public:
+    SAnimeSprite(SAnimatedImage *img);
+    ~SAnimeSprite();
+
+    void Draw() override;
+    void Tick(double delta) override;
+    void SetSpeed(double speed);
+    void SetLoopCount(int lc);
+
+    static SAnimeSprite* Factory(SAnimatedImage *image);
+    static void RegisterType(asIScriptEngine *engine);
+};
+
 class SEffectSprite : public SSprite
 {
 protected:
@@ -273,21 +294,7 @@ void RegisterSpriteBasic(asIScriptEngine *engine, const char *name)
     engine->RegisterObjectMethod(name, "void Draw()", asMETHOD(T, Draw), asCALL_THISCALL);
 }
 
-template<typename From, typename To>
-To* CastReferenceType(From *from)
-{
-    if (!from) return nullptr;
-    To* result = dynamic_cast<To*>(from);
-    if (result) result->AddRef();
-    return result;
-}
 
-//SpriteŒn‘S•”
-//ColorTint GetColorTint(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
-void SpriteCtorTransform2D(void *memory);
-void SpriteDtorTransform2D(void *memory);
-void SpriteCtorColorTint(void *memory);
-void SpriteDtorColorTint(void *memory);
 
 class ExecutionManager;
 void RegisterScriptSprite(ExecutionManager *exm);

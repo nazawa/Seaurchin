@@ -198,7 +198,6 @@
     <ClCompile Include="SceneDebug.cpp" />
     <ClCompile Include="SceneDeveloperMode.cpp" />
     <ClCompile Include="ScenePlayer.cpp" />
-    <ClCompile Include="ScriptExSprite.cpp" />
     <ClCompile Include="ScriptResource.cpp" />
     <ClCompile Include="ScriptScene.cpp" />
     <ClCompile Include="ScriptSprite.cpp" />
@@ -241,7 +240,6 @@
     <ClInclude Include="SceneDebug.h" />
     <ClInclude Include="SceneDeveloperMode.h" />
     <ClInclude Include="ScenePlayer.h" />
-    <ClInclude Include="ScriptExSprite.h" />
     <ClInclude Include="ScriptResource.h" />
     <ClInclude Include="ScriptScene.h" />
     <ClInclude Include="ScriptSprite.h" />

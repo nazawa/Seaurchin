@@ -129,6 +129,11 @@ void SkinHolder::LoadSkinSound(const std::string & key, const std::string & file
 	Sounds[key] = SSound::CreateSoundFromFile(SoundInterface.get(), ConvertShiftJisToUTF8((SkinRoot / SU_SOUND_DIR / filename).string()), 8);
 }
 
+void SkinHolder::LoadSkinAnime(const std::string & key, const std::string & filename, int x, int y, int w, int h, int c, double time)
+{
+    AnimatedImages[key] = SAnimatedImage::CreateLoadedImageFromFile(ConvertShiftJisToUTF8((SkinRoot / SU_IMAGE_DIR / filename).string()), x, y, w, h, c, time);
+}
+
 SImage* SkinHolder::GetSkinImage(const string &key)
 {
     auto it = Images.find(key);
@@ -153,6 +158,14 @@ SSound* SkinHolder::GetSkinSound(const std::string & key)
 	return it->second;
 }
 
+SAnimatedImage * SkinHolder::GetSkinAnime(const std::string & key)
+{
+    auto it = AnimatedImages.find(key);
+    if (it == AnimatedImages.end()) return nullptr;
+    it->second->AddRef();
+    return it->second;
+}
+
 void RegisterScriptSkin(ExecutionManager *exm)
 {
 	auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
@@ -163,9 +176,11 @@ void RegisterScriptSkin(ExecutionManager *exm)
     engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadImage(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinImage), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadFont(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinFont), asCALL_THISCALL);
 	engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadSound(const string &in, const string &in)", asMETHOD(SkinHolder, LoadSkinSound), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SKIN, "void LoadAnime(const string &in, const string &in, int, int, int, int, int, double)", asMETHOD(SkinHolder, LoadSkinAnime), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_IMAGE "@ GetImage(const string &in)", asMETHOD(SkinHolder, GetSkinImage), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_FONT "@ GetFont(const string &in)", asMETHOD(SkinHolder, GetSkinFont), asCALL_THISCALL);
 	engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_SOUND "@ GetSound(const string &in)", asMETHOD(SkinHolder, GetSkinSound), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SKIN, SU_IF_ANIMEIMAGE "@ GetAnime(const string &in)", asMETHOD(SkinHolder, GetSkinAnime), asCALL_THISCALL);
 
     engine->RegisterGlobalFunction(SU_IF_SKIN "@ GetSkin()", asFUNCTION(GetSkinObject), asCALL_CDECL);
 }

@@ -109,6 +109,31 @@ void SNinePatchImage::SetArea(int leftw, int toph, int bodyw, int bodyh)
 	BodyHeight = bodyh;
 }
 
+// SAnimatedImage --------------------------------
+
+SAnimatedImage::SAnimatedImage(int w, int h, int count, double time) : SImage(0)
+{
+    CellWidth = Width = w;
+    CellHeight = Height = h;
+    FrameCount = count;
+    SecondsPerFrame = time;
+}
+
+SAnimatedImage::~SAnimatedImage()
+{
+    for (auto &img : Images) DeleteGraph(img);
+}
+
+SAnimatedImage * SAnimatedImage::CreateLoadedImageFromFile(const std::string & file,int xc, int yc, int w, int h, int count, double time)
+{
+    auto result = new SAnimatedImage(w, h, count, time);
+    result->Images.resize(count);
+    LoadDivGraph(ConvertUTF8ToShiftJis(file).c_str(), count, xc, yc, w, h, result->Images.data());
+    result->AddRef();
+    return result;
+}
+
+
 // SFont --------------------------------------
 
 SFont::SFont()
@@ -311,5 +336,9 @@ void RegisterScriptResource(ExecutionManager *exm)
 	engine->RegisterObjectBehaviour(SU_IF_9IMAGE, asBEHAVE_RELEASE, "void f()", asMETHOD(SNinePatchImage, Release), asCALL_THISCALL);
 	engine->RegisterObjectMethod(SU_IF_9IMAGE, "int get_Width()", asMETHOD(SNinePatchImage, get_Width), asCALL_THISCALL);
 	engine->RegisterObjectMethod(SU_IF_9IMAGE, "int get_Height()", asMETHOD(SNinePatchImage, get_Height), asCALL_THISCALL);
+
+    engine->RegisterObjectType(SU_IF_ANIMEIMAGE, 0, asOBJ_REF);
+    engine->RegisterObjectBehaviour(SU_IF_ANIMEIMAGE, asBEHAVE_ADDREF, "void f()", asMETHOD(SAnimatedImage, AddRef), asCALL_THISCALL);
+    engine->RegisterObjectBehaviour(SU_IF_ANIMEIMAGE, asBEHAVE_RELEASE, "void f()", asMETHOD(SAnimatedImage, Release), asCALL_THISCALL);
 }
 

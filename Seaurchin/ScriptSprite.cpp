@@ -17,6 +17,7 @@ void RegisterScriptSprite(ExecutionManager *exm)
     SSynthSprite::RegisterType(engine);
     SClippingSprite::RegisterType(engine);
     SNinePatchSprite::RegisterType(engine);
+    SAnimeSprite::RegisterType(engine);
 }
 
 //SSprite ------------------
@@ -175,7 +176,6 @@ void SSprite::Tick(double delta)
 
 void SSprite::Draw()
 {
-
     if (!Image) return;
     SetDrawBright(Color.R, Color.G, Color.B);
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
@@ -185,7 +185,6 @@ void SSprite::Draw()
         Transform.ScaleX, Transform.ScaleY,
         Transform.Angle, Image->GetHandle(),
         HasAlpha ? TRUE : FALSE, FALSE);
-
 }
 
 SSprite * SSprite::Clone()
@@ -827,4 +826,67 @@ void SNinePatchSprite::RegisterType(asIScriptEngine * engine)
     engine->RegisterObjectMethod(SU_IF_9SPRITE, SU_IF_SPRITE "@ opImplCast()", asFUNCTION((CastReferenceType<SNinePatchSprite, SSprite>)), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod(SU_IF_9SPRITE, SU_IF_9SPRITE "@ Clone()", asMETHOD(SNinePatchSprite, Clone), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_9SPRITE, "void SetDrawMethod(" SU_IF_9TYPE ", float, float)", asMETHOD(SNinePatchSprite, SetDrawMethod), asCALL_THISCALL);
+}
+
+// SAnimeSprite -------------------------------------------
+SAnimeSprite::SAnimeSprite(SAnimatedImage * img)
+{
+    Images = img;
+    LoopCount = 1;
+    Speed = 1;
+    Time = img->get_CellTime() * img->get_FrameCount();
+}
+
+SAnimeSprite::~SAnimeSprite()
+{
+    if (Images) Images->Release();
+}
+
+void SAnimeSprite::Draw()
+{
+    double at = Images->get_CellTime() * Images->get_FrameCount() - Time;
+    auto ih = Images->GetImageHandleAt(at);
+    if (!ih) return;
+    SetDrawBright(Color.R, Color.G, Color.B);
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
+    DrawRotaGraph3F(
+        Transform.X, Transform.Y,
+        Transform.OriginX, Transform.OriginY,
+        Transform.ScaleX, Transform.ScaleY,
+        Transform.Angle, ih,
+        HasAlpha ? TRUE : FALSE, FALSE);
+}
+
+void SAnimeSprite::Tick(double delta)
+{
+    Time -= delta * Speed;
+    if (Time > 0) return;
+    LoopCount--;
+    if (!LoopCount) Dismiss();
+    Time = Images->get_CellTime() * Images->get_FrameCount();
+}
+
+void SAnimeSprite::SetSpeed(double speed)
+{
+    Speed = speed;
+}
+
+void SAnimeSprite::SetLoopCount(int lc)
+{
+    LoopCount = lc;
+}
+
+SAnimeSprite * SAnimeSprite::Factory(SAnimatedImage * image)
+{
+    auto result = new SAnimeSprite(image);
+    result->AddRef();
+    return result;
+}
+
+void SAnimeSprite::RegisterType(asIScriptEngine * engine)
+{
+    RegisterSpriteBasic<SAnimeSprite>(engine, SU_IF_ANIMESPRITE);
+    engine->RegisterObjectBehaviour(SU_IF_ANIMESPRITE, asBEHAVE_FACTORY, SU_IF_ANIMESPRITE "@ f(" SU_IF_ANIMEIMAGE "@)", asFUNCTIONPR(SAnimeSprite::Factory, (SAnimatedImage*), SAnimeSprite*), asCALL_CDECL);
+    engine->RegisterObjectMethod(SU_IF_ANIMESPRITE, "void SetSpeed(double)", asMETHOD(SAnimeSprite, SetSpeed), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_ANIMESPRITE, "void SetLoopCount(int)", asMETHOD(SAnimeSprite, SetLoopCount), asCALL_THISCALL);
 }

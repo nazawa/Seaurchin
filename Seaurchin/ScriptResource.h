@@ -13,16 +13,15 @@
 #define SU_IF_SOUND "Sound"
 #define SU_IF_EFXDATA "EffectData"
 #define SU_IF_9IMAGE "NinePatchImage"
+#define SU_IF_ANIMEIMAGE "AnimatedImage"
 
 //interface 自動解放対象
-class ISResouceAutoRelease
-{
+class ISResouceAutoRelease {
     virtual bool Dispose() = 0;
 };
 
 //リソース基底クラス
-class SResource
-{
+class SResource {
 protected:
     int Reference = 0;
     int Handle = 0;
@@ -36,8 +35,7 @@ public:
 };
 
 //画像
-class SImage : public SResource
-{
+class SImage : public SResource {
 protected:
     int Width = 0;
     int Height = 0;
@@ -56,8 +54,7 @@ public:
 };
 
 //描画タゲ
-class SRenderTarget : public SImage
-{
+class SRenderTarget : public SImage {
 public:
     SRenderTarget(int w, int h);
 
@@ -79,9 +76,28 @@ public:
     std::tuple<int, int, int, int> GetArea() { return std::make_tuple(LeftSideWidth, TopSideHeight, BodyWidth, BodyHeight); }
 };
 
+//アニメーション用
+class SAnimatedImage : public SImage {
+protected:
+    int CellWidth = 0;
+    int CellHeight = 0;
+    int FrameCount = 0;
+    double SecondsPerFrame = 0.1;
+    std::vector<int> Images;
+
+public:
+    SAnimatedImage(int w, int h, int count, double time);
+    ~SAnimatedImage() override;
+
+    double get_CellTime() { return SecondsPerFrame; }
+    int get_FrameCount() { return FrameCount; }
+    int GetImageHandleAt(double time) { return Images[(int)(time / SecondsPerFrame) % FrameCount]; }
+
+    static SAnimatedImage *CreateLoadedImageFromFile(const std::string &file, int xc, int yc, int w, int h, int count, double time);
+};
+
 //フォント
-class SFont : public SResource
-{
+class SFont : public SResource {
 protected:
     int Size = 0;
     std::vector<GlyphInfo*> Chars;
@@ -99,10 +115,9 @@ public:
 };
 
 //エフェクト
-class SEffect : public SResource
-{
+class SEffect : public SResource {
 protected:
-    
+
 public:
     EffectData *data;
 
@@ -114,7 +129,7 @@ class SSound : public SResource {
     friend class SSoundMixer;
 
 protected:
-	SoundSample *sample;
+    SoundSample *sample;
 
 public:
     SSound(SoundSample *smp);

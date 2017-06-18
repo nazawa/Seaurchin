@@ -138,9 +138,6 @@
     <ClCompile Include="ScenePlayer.cpp">
       <Filter>ビルトインScene</Filter>
     </ClCompile>
-    <ClCompile Include="ScriptExSprite.cpp">
-      <Filter>インターフェース\AngelScript</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -265,9 +262,6 @@
     </ClInclude>
     <ClInclude Include="ScenePlayer.h">
       <Filter>ビルトインScene</Filter>
-    </ClInclude>
-    <ClInclude Include="ScriptExSprite.h">
-      <Filter>インターフェース\AngelScript</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

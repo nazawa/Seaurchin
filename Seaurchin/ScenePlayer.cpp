@@ -46,6 +46,7 @@ void RegisterPlayerScene(ExecutionManager * manager)
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_IMAGE "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_FONT "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_SOUND "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void SetResource(const string &in, " SU_IF_ANIMEIMAGE "@)", asMETHOD(ScenePlayer, SetPlayerResource), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void Load()", asMETHOD(ScenePlayer, Load), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "bool IsLoadCompleted()", asMETHOD(ScenePlayer, IsLoadCompleted), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SCENE_PLAYER, "void Play()", asMETHOD(ScenePlayer, Play), asCALL_THISCALL);
@@ -88,6 +89,9 @@ void ScenePlayer::Initialize()
     imageSlide = dynamic_cast<SImage*>(resources["Slide"]);
     imageSlideStrut = dynamic_cast<SImage*>(resources["SlideStrut"]);
     imageAirAction = dynamic_cast<SImage*>(resources["AirAction"]);
+    animeTap = dynamic_cast<SAnimatedImage*>(resources["EffectTap"]);
+    animeSlideTap = dynamic_cast<SAnimatedImage*>(resources["EffectSlideTap"]);
+    animeSlideLoop = dynamic_cast<SAnimatedImage*>(resources["EffectSlideLoop"]);
 
     soundTap = dynamic_cast<SSound*>(resources["SoundTap"]);
     soundExTap = dynamic_cast<SSound*>(resources["SoundExTap"]);
@@ -120,6 +124,11 @@ void ScenePlayer::Finalize()
 }
 
 
+void ScenePlayer::AddSprite(SSprite *sprite)
+{
+    spritesPending.push_back(sprite);
+}
+
 void ScenePlayer::LoadWorker()
 {
     auto mm = manager->GetMusicsManager();
@@ -137,7 +146,7 @@ void ScenePlayer::LoadWorker()
 
     BackingTime = -60.0 / analyzer->GetBpmAt(0, 0) * analyzer->GetBeatsAt(0);
     NextMetronomeTime = BackingTime;
-    
+
 
     isLoadCompleted = true;
 }
@@ -220,12 +229,39 @@ void ScenePlayer::CalculateNotes(double time, double duration, double preced)
 void ScenePlayer::Tick(double delta)
 {
     textCombo->Tick(delta);
-    
+
+    for (auto& sprite : spritesPending) sprites.emplace(sprite);
+    spritesPending.clear();
+    auto i = sprites.begin();
+    while (i != sprites.end()) {
+        (*i)->Tick(delta);
+        if ((*i)->IsDead) {
+            (*i)->Release();
+            i = sprites.erase(i);
+        } else {
+            i++;
+        }
+    }
+
     if (BgmState != -2) BackingTime += delta;
     currentTime = GetPlayingTime() - analyzer->SharedMetaData.WaveOffset;
     currentSoundTime = currentTime + SoundBufferingLatency;
     seenData.clear();
     if (BgmState >= -1) CalculateNotes(currentTime, seenDuration, precedTime);
+
+    bool SlideCheck = false;
+    bool HoldCheck = false;
+    for (auto& note : seenData) {
+        ProcessScore(note);
+        SlideCheck = isInSlide || SlideCheck;
+        HoldCheck = isInHold || HoldCheck;
+    }
+    if (!wasInSlide && SlideCheck) soundManager->PlayGlobal(soundSlideLoop->GetSample());
+    if (wasInSlide && !SlideCheck) soundManager->StopGlobal(soundSlideLoop->GetSample());
+    if (!wasInHold && HoldCheck) soundManager->PlayGlobal(soundHoldLoop->GetSample());
+    if (wasInHold && !HoldCheck) soundManager->StopGlobal(soundHoldLoop->GetSample());
+    wasInHold = HoldCheck;
+    wasInSlide = SlideCheck;
 }
 
 void ScenePlayer::Draw()
@@ -248,9 +284,6 @@ void ScenePlayer::Draw()
     FINISH_DRAW_TRANSACTION;
 
     // Ground
-    bool SlideCheck = false;
-    bool HoldCheck = false;
-
     BEGIN_DRAW_TRANSACTION(hGroundBuffer);
     for (auto& note : seenData) {
         auto &type = note->Type;
@@ -259,19 +292,11 @@ void ScenePlayer::Draw()
         if (type.test(SusNoteType::Tap)) DrawShortNotes(note);
         if (type.test(SusNoteType::ExTap)) DrawShortNotes(note);
         if (type.test(SusNoteType::Flick)) DrawShortNotes(note);
-        ProcessScore(note);
-        SlideCheck = isInSlide || SlideCheck;
-        HoldCheck = isInHold || HoldCheck;
     }
     FINISH_DRAW_TRANSACTION;
-
-    if (!wasInSlide && SlideCheck) soundManager->PlayGlobal(soundSlideLoop->GetSample());
-    if (wasInSlide && !SlideCheck) soundManager->StopGlobal(soundSlideLoop->GetSample());
-    if (!wasInHold && HoldCheck) soundManager->PlayGlobal(soundHoldLoop->GetSample());
-    if (wasInHold && !HoldCheck) soundManager->StopGlobal(soundHoldLoop->GetSample());
     Prepare3DDrawCall();
     DrawPolygonIndexed3D(GroundVertices, 4, RectVertexIndices, 2, hGroundBuffer, TRUE);
-
+    for (auto& i : sprites) i->Draw();
     //Air
 
     BEGIN_DRAW_TRANSACTION(hAirBuffer);
@@ -286,16 +311,11 @@ void ScenePlayer::Draw()
     }
     for (auto& note : seenData) if (note->Type.test(SusNoteType::Air)) DrawAirNotes(note);
 
-    //Œãˆ—
     if (Status.Combo > pCombo) {
         textCombo->AbortMove(true);
         textCombo->Apply("scaleY:8.4, scaleX:8.4");
         textCombo->AddMove("scale_to(x:8, y:8, time:0.2, ease:out_quad)");
     }
-
-    wasInHold = HoldCheck;
-    wasInSlide = SlideCheck;
-
 }
 
 void ScenePlayer::IncrementCombo()
@@ -303,6 +323,34 @@ void ScenePlayer::IncrementCombo()
     Status.Combo++;
     Status.JusticeCritical++;
     Status.CurrentGauge += Status.GaugeDefaultMax / Status.AllNotes;
+}
+
+// position ‚Í 0 ~ 16
+void ScenePlayer::SpawnJudgeEffect(double position, JudgeType type)
+{
+    Prepare3DDrawCall();
+    auto x = (1.0 - position / 16.0) * SU_LANE_X_MIN + (position / 16.0) *  SU_LANE_X_MAX;
+    auto spawnAt = ConvWorldPosToScreenPos(VGet(x, SU_LANE_Y_GROUND, SU_LANE_Z_MIN));
+    switch (type) {
+        case JudgeType::ShortNormal: {
+            animeTap->AddRef();
+            auto sp = SAnimeSprite::Factory(animeTap);
+            sp->Apply("origX:128, origY:224");
+            sp->Transform.X = spawnAt.x;
+            sp->Transform.Y = spawnAt.y;
+            AddSprite(sp);
+            break;
+        }
+        case JudgeType::SlideTap: {
+            animeSlideTap->AddRef();
+            auto sp = SAnimeSprite::Factory(animeSlideTap);
+            sp->Apply("origX:128, origY:224");
+            sp->Transform.X = spawnAt.x;
+            sp->Transform.Y = spawnAt.y;
+            AddSprite(sp);
+            break;
+        }
+    }
 }
 
 
@@ -573,6 +621,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
         isInHold = true;
         if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
             soundManager->PlayGlobal(soundTap->GetSample());
+            SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
             IncrementCombo();
             note->OnTheFlyData.set(NoteAttribute::Finished);
         }
@@ -588,6 +637,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
                 return;
             }
             if (!extra->Type.test(SusNoteType::Tap)) soundManager->PlayGlobal(soundTap->GetSample());
+            SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
             IncrementCombo();
             extra->OnTheFlyData.set(NoteAttribute::Finished);
             return;
@@ -596,6 +646,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
         isInSlide = true;
         if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
             soundManager->PlayGlobal(soundTap->GetSample());
+            SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::SlideTap);
             IncrementCombo();
             note->OnTheFlyData.set(NoteAttribute::Finished);
             return;
@@ -612,6 +663,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
                 return;
             }
             if (!extra->Type.test(SusNoteType::Tap)) soundManager->PlayGlobal(soundTap->GetSample());
+            SpawnJudgeEffect(extra->StartLane + extra->Length / 2.0, JudgeType::SlideTap);
             IncrementCombo();
             extra->OnTheFlyData.set(NoteAttribute::Finished);
             return;
@@ -635,18 +687,22 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
         }
     } else if (note->Type.test(SusNoteType::Air)) {
         soundManager->PlayGlobal(soundAir->GetSample());
+        SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::Tap)) {
         soundManager->PlayGlobal(soundTap->GetSample());
+        SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::ExTap)) {
         soundManager->PlayGlobal(soundExTap->GetSample());
+        SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::Flick)) {
         soundManager->PlayGlobal(soundFlick->GetSample());
+        SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else {

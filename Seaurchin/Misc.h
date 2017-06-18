@@ -44,6 +44,15 @@ void AngelScriptValueDestruct(void *address)
     static_cast<T*>(address)->~T();
 }
 
+template<typename From, typename To>
+To* CastReferenceType(From *from)
+{
+    if (!from) return nullptr;
+    To* result = dynamic_cast<To*>(from);
+    if (result) result->AddRef();
+    return result;
+}
+
 
 std::string ConvertUTF8ToShiftJis(std::string utf8str);
 std::string ConvertShiftJisToUTF8(std::string sjisstr);

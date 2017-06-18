@@ -44,6 +44,12 @@ enum NoteAttribute {
     Finished,
 };
 
+enum JudgeType {
+    ShortNormal = 0,
+    ShortEx,
+    SlideTap,
+};
+
 class ExecutionManager;
 class ScenePlayer : public SSprite {
 protected:
@@ -54,6 +60,9 @@ protected:
     SoundManager *soundManager;
     std::unique_ptr<SusAnalyzer> analyzer;
     std::map<std::string, SResource*> resources;
+    std::multiset<SSprite*, SSprite::Comparator> sprites;
+    std::vector<SSprite*> spritesPending;
+
     SoundStream *bgmStream;
     bool isLoadCompleted = false;
 
@@ -74,6 +83,7 @@ protected:
     SImage *imageSlide, *imageSlideStrut;
     SImage *imageAirAction;
     SFont *fontCombo;
+    SAnimatedImage *animeTap, *animeSlideTap, *animeSlideLoop;
     STextSprite *textCombo;
     unsigned int slideLineColor = GetColor(0, 200, 255);
     unsigned int airActionLineColor = GetColor(0, 255, 32);
@@ -84,6 +94,7 @@ protected:
     // ‹È‚Ì“r’†‚Å•Ï‰»‚·‚é‚â‚Â‚ç
     std::vector<std::shared_ptr<SusDrawableNoteData>> data;
     std::vector<std::shared_ptr<SusDrawableNoteData>> seenData;
+    std::unordered_map<std::shared_ptr<SusDrawableNoteData>, SAnimeSprite*> SlideEffects;
     std::unordered_map<std::shared_ptr<SusDrawableNoteData>, std::vector<std::tuple<double, double>>> curveData;
     double currentTime = 0;
     double currentSoundTime = 0;
@@ -96,9 +107,11 @@ protected:
     int seenObjects = 0;
     bool isInHold = false, isInSlide = false, wasInHold = false, wasInSlide = false;
 
+    void AddSprite(SSprite *sprite);
     void LoadWorker();
     void PrecalculateNotes();
     void IncrementCombo();
+    void SpawnJudgeEffect(double position, JudgeType type);
     void CalculateNotes(double time, double duration, double preced);
     void CalculateCurves(std::shared_ptr<SusDrawableNoteData> note);
     void DrawShortNotes(std::shared_ptr<SusDrawableNoteData> note);
