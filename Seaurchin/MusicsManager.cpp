@@ -118,6 +118,24 @@ void CategoryInfo::Reload(bool recreateCache)
 }
 
 //MusicSelectionCursor ------------------------------------------
+
+std::shared_ptr<MusicMetaInfo> MusicSelectionCursor::GetMusicAt(int32_t relative)
+{
+    auto current = Manager->Categories[CategoryIndex];
+    if (current->Musics.size() == 0) return nullptr;
+    int32_t actual = relative + MusicIndex;
+    while (actual < 0) actual += current->Musics.size();
+    return current->Musics[actual % current->Musics.size()];
+}
+
+std::shared_ptr<MusicScoreInfo> MusicSelectionCursor::GetScoreVariantAt(int32_t relative)
+{
+    auto music = GetMusicAt(relative);
+    if (!music) return nullptr;
+    auto variant = music->Scores[max((unsigned int)VariantIndex, music->Scores.size() - 1)];
+    return variant;
+}
+
 MusicSelectionCursor::MusicSelectionCursor(MusicsManager *manager)
 {
     Manager = manager;
@@ -149,23 +167,42 @@ string MusicSelectionCursor::GetCategoryName(int32_t relativeIndex)
 
 string MusicSelectionCursor::GetMusicName(int32_t relativeIndex)
 {
-    auto current = Manager->Categories[CategoryIndex];
-    if (current->Musics.size() == 0) return "Unavailable!";
-    int32_t actual = relativeIndex + MusicIndex;
-    while (actual < 0) actual += current->Musics.size();
-    return current->Musics[actual % current->Musics.size()]->Name;
+    auto music = GetMusicAt(relativeIndex);
+    return music ? music->Name : "Unavailable!";
+}
+
+string MusicSelectionCursor::GetArtistName(int32_t relativeIndex)
+{
+    auto music = GetMusicAt(relativeIndex);
+    return music ? music->Artist : "Unavailable!";
 }
 
 string MusicSelectionCursor::GetMusicJacketFileName(int32_t relativeIndex)
 {
+    auto music = GetMusicAt(relativeIndex);
     auto current = Manager->Categories[CategoryIndex];
-    if (current->Musics.size() == 0) return "";
-    int32_t actual = relativeIndex + MusicIndex;
-    while (actual < 0) actual += current->Musics.size();
-    auto music = current->Musics[actual % current->Musics.size()];
+    if (!music) return "";
     if (music->JacketPath == "") return "";
     auto result = (Setting::GetRootDirectory() / SU_MUSIC_DIR / ConvertUTF8ToShiftJis(current->GetName()) / music->JacketPath).string();
     return ConvertShiftJisToUTF8(result);
+}
+
+int MusicSelectionCursor::GetDifficulty(int32_t relativeIndex)
+{
+    auto variant = GetScoreVariantAt(relativeIndex);
+    return variant->Difficulty;
+}
+
+int MusicSelectionCursor::GetLevel(int32_t relativeIndex)
+{
+    auto variant = GetScoreVariantAt(relativeIndex);
+    return variant->Level;
+}
+
+std::string MusicSelectionCursor::GetDesignerName(int32_t relativeIndex)
+{
+    auto variant = GetScoreVariantAt(relativeIndex);
+    return variant->Designer;
 }
 
 int MusicSelectionCursor::Enter()
@@ -215,6 +252,8 @@ int MusicSelectionCursor::Next()
             auto current = Manager->Categories[CategoryIndex];
             if (current->Musics.size() == 0) return -1;
             MusicIndex = (MusicIndex + 1) % current->Musics.size();
+            auto nm = GetMusicAt(MusicIndex);
+            VariantIndex = max((unsigned int)VariantIndex, nm->Scores.size() - 1);
         }
         default:
             return 0;
@@ -233,6 +272,40 @@ int MusicSelectionCursor::Previous()
             auto current = Manager->Categories[CategoryIndex];
             if (current->Musics.size() == 0) return -1;
             MusicIndex = (MusicIndex + current->Musics.size() - 1) % current->Musics.size();
+            auto nm = GetMusicAt(MusicIndex);
+            VariantIndex = max((unsigned int)VariantIndex, nm->Scores.size() - 1);
+        }
+        default:
+            return 0;
+    }
+    return 0;
+}
+
+int MusicSelectionCursor::NextVariant()
+{
+    switch (State) {
+        case 0:
+            return -1;
+        case 1: {
+            auto music = GetMusicAt(MusicIndex);
+            if (!music) return -1;
+            VariantIndex = (VariantIndex + 1) % music->Scores.size();
+        }
+        default:
+            return 0;
+    }
+    return 0;
+}
+
+int MusicSelectionCursor::PreviousVariant()
+{
+    switch (State) {
+        case 0:
+            return -1;
+        case 1: {
+            auto music = GetMusicAt(MusicIndex);
+            if (!music) return -1;
+            VariantIndex = (VariantIndex + music->Scores.size() - 1) % music->Scores.size();
         }
         default:
             return 0;
@@ -248,9 +321,15 @@ void MusicSelectionCursor::RegisterScriptInterface(asIScriptEngine *engine)
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetPrimaryString(int)", asMETHOD(MusicSelectionCursor, GetPrimaryString), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetCategoryName(int)", asMETHOD(MusicSelectionCursor, GetCategoryName), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetMusicName(int)", asMETHOD(MusicSelectionCursor, GetMusicName), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetArtistName(int)", asMETHOD(MusicSelectionCursor, GetArtistName), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetMusicJacketFileName(int)", asMETHOD(MusicSelectionCursor, GetMusicJacketFileName), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int GetDifficulty(int)", asMETHOD(MusicSelectionCursor, GetArtistName), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int GetLevel(int)", asMETHOD(MusicSelectionCursor, GetArtistName), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetDesignerName(int)", asMETHOD(MusicSelectionCursor, GetArtistName), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int Next()", asMETHOD(MusicSelectionCursor, Next), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int Previous()", asMETHOD(MusicSelectionCursor, Previous), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int NextVariant()", asMETHOD(MusicSelectionCursor, NextVariant), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int PreviousVariant()", asMETHOD(MusicSelectionCursor, PreviousVariant), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int Enter()", asMETHOD(MusicSelectionCursor, Enter), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "bool Exit()", asMETHOD(MusicSelectionCursor, Exit), asCALL_THISCALL);
 }

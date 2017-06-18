@@ -79,6 +79,9 @@ private:
     uint16_t VariantIndex;
     uint16_t State;
 
+    std::shared_ptr<MusicMetaInfo> GetMusicAt(int32_t relative);
+    std::shared_ptr<MusicScoreInfo> GetScoreVariantAt(int32_t relative);
+
 public:
     MusicSelectionCursor(MusicsManager *manager);
     void AddRef() { refcount++; }
@@ -87,13 +90,19 @@ public:
     std::string GetPrimaryString(int32_t relativeIndex);
     std::string GetCategoryName(int32_t relativeIndex);
     std::string GetMusicName(int32_t relativeIndex);
+    std::string GetArtistName(int32_t relativeIndex);
     std::string GetMusicJacketFileName(int32_t relativeIndex);
+    int GetDifficulty(int32_t relativeIndex);
+    int GetLevel(int32_t relativeIndex);
+    std::string GetDesignerName(int32_t relativeIndex);
 
     int Enter();
     bool Exit();
     bool Start();
     int Next();
     int Previous();
+    int NextVariant();
+    int PreviousVariant();
 
     static void RegisterScriptInterface(asIScriptEngine *engine);
 };

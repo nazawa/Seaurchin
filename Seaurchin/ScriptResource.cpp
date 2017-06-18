@@ -204,6 +204,7 @@ SFont * SFont::CreateLoadedFontFromFile(const string & file)
 	for (int i = 0; i < header.GlyphCount; i++) {
 		GlyphInfo *info = new GlyphInfo();
 		font.read((char*)info, sizeof(GlyphInfo));
+        if (result->Chars[info->letter]) continue; //TODO:wchar_t”ÍˆÍŠO‚Ì•¶Žš‚Ì‘Î‰ž
 		result->Chars[info->letter] = info;
 	}
 	int size;
