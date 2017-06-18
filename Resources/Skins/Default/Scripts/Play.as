@@ -55,6 +55,11 @@ class Play : CoroutineScene {
     player.SetResource("SoundAirAction", skin.GetSound("*Sound-AirAction"));
     player.SetResource("SoundHoldLoop", skin.GetSound("*Sound-SlideLoop"));
     player.SetResource("SoundSlideLoop", skin.GetSound("*Sound-HoldLoop"));
+    player.SetResource("EffectTap", skin.GetAnime("*Anime-Tap"));
+    player.SetResource("EffectExTap", skin.GetAnime("*Anime-ExTap"));
+    player.SetResource("EffectAirAction", skin.GetAnime("*Anime-AirAction"));
+    player.SetResource("EffectSlideTap", skin.GetAnime("*Anime-SlideTap"));
+    player.SetResource("EffectSlideLoop", skin.GetAnime("*Anime-SlideLoop"));
   }
   
   void RunPlayer() {
@@ -69,7 +74,7 @@ class Play : CoroutineScene {
   }
   
   Sprite@ spTopCover, spBack;
-  array<Sprite@> spGaugeCounts(6);
+  array<Sprite@> spGaugeCounts(10);
   Sprite@ spBarBack, spBarFront;
   ClipSprite@ spBarFill;
   TextSprite@ txtScore;
@@ -81,13 +86,13 @@ class Play : CoroutineScene {
     // スコアなど
     @txtScore = TextSprite(font64, "0");
     txtScore.SetAlignment(TextAlign::Right, TextAlign::Top);
-    txtScore.Apply("x:380, y:0, z:15, scaleX:1.8, scaleY:1.8");
-    @spJudges = SynthSprite(128, 96);
+    txtScore.Apply("x:1276, y:-4, z:15");
+    @spJudges = SynthSprite(384, 96);
     spJudges.Transfer(skin.GetImage("JudgeJC"), 0, 0);
     spJudges.Transfer(skin.GetImage("JudgeJ"), 0, 24);
-    spJudges.Transfer(skin.GetImage("JudgeA"), 0, 48);
-    spJudges.Transfer(skin.GetImage("JudgeM"), 0,72);
-    spJudges.Apply("x:900, y:4, z:15");
+    spJudges.Transfer(skin.GetImage("JudgeA"), 176, 0);
+    spJudges.Transfer(skin.GetImage("JudgeM"), 176,24);
+    spJudges.Apply("x:900, y:56, z:15");
     array<TextSprite@> spCounts = {
       TextSprite(font32, "0"),
       TextSprite(font32, "0"),
@@ -95,11 +100,11 @@ class Play : CoroutineScene {
       TextSprite(font32, "0")
     };
     for(int i = 0; i < 4; i++) {
-      spCounts[i].Apply("x: 1100, z:15, y:" + (24 * i - 2));
+      spCounts[i].Apply("x: " + (1100 + i / 2 * 176) + ", z:15, y:" + (24 * (i % 2) + 50));
       spCounts[i].SetAlignment(TextAlign::Right, TextAlign::Top);
     }
     // ゲージ
-    for(int i = 0; i < 6; i++) {
+    for(int i = 0; i < 10; i++) {
       @spGaugeCounts[i] = Sprite(imgGCEmpty);
       spGaugeCounts[i].Apply("x:" + (384 + i * 48) + ", y:74, z:11, scaleX:0.8, scaleY:0.5");
       AddSprite(spGaugeCounts[i]);

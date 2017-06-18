@@ -41,6 +41,12 @@ void InitializeSkin(Skin@ skin) {
   skin.LoadFont("Normal64", "Normal64.sif");
   skin.LoadFont("Latin128", "Latin128.sif");
   
+  skin.LoadAnime("*Anime-Tap", "Effect-Tap.png", 8, 8, 256, 256, 60, 0.0166);
+  skin.LoadAnime("*Anime-ExTap", "Effect-ExTap.png", 8, 4, 256, 256, 30, 0.0166);
+  skin.LoadAnime("*Anime-AirAction", "Effect-AirAction.png", 8, 6, 256, 256, 48, 0.008);
+  skin.LoadAnime("*Anime-SlideTap", "Effect-SlideTap.png", 8, 8, 256, 256, 60, 0.0166);
+  skin.LoadAnime("*Anime-SlideLoop", "Effect-SlideLoop.png", 4, 4, 256, 256, 16, 0.0166);
+  
   skin.LoadSound("*Sound-Tap", "Tap.wav");
   skin.LoadSound("*Sound-ExTap", "ExTap.wav");
   skin.LoadSound("*Sound-Flick", "Flick.wav");

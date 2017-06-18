@@ -90,8 +90,10 @@ void ScenePlayer::Initialize()
     imageSlideStrut = dynamic_cast<SImage*>(resources["SlideStrut"]);
     imageAirAction = dynamic_cast<SImage*>(resources["AirAction"]);
     animeTap = dynamic_cast<SAnimatedImage*>(resources["EffectTap"]);
+    animeExTap = dynamic_cast<SAnimatedImage*>(resources["EffectExTap"]);
     animeSlideTap = dynamic_cast<SAnimatedImage*>(resources["EffectSlideTap"]);
     animeSlideLoop = dynamic_cast<SAnimatedImage*>(resources["EffectSlideLoop"]);
+    animeAirAction = dynamic_cast<SAnimatedImage*>(resources["EffectAirAction"]);
 
     soundTap = dynamic_cast<SSound*>(resources["SoundTap"]);
     soundExTap = dynamic_cast<SSound*>(resources["SoundExTap"]);
@@ -146,7 +148,6 @@ void ScenePlayer::LoadWorker()
 
     BackingTime = -60.0 / analyzer->GetBpmAt(0, 0) * analyzer->GetBeatsAt(0);
     NextMetronomeTime = BackingTime;
-
 
     isLoadCompleted = true;
 }
@@ -249,6 +250,7 @@ void ScenePlayer::Tick(double delta)
     seenData.clear();
     if (BgmState >= -1) CalculateNotes(currentTime, seenDuration, precedTime);
 
+    int pCombo = Status.Combo;
     bool SlideCheck = false;
     bool HoldCheck = false;
     for (auto& note : seenData) {
@@ -262,6 +264,13 @@ void ScenePlayer::Tick(double delta)
     if (wasInHold && !HoldCheck) soundManager->StopGlobal(soundHoldLoop->GetSample());
     wasInHold = HoldCheck;
     wasInSlide = SlideCheck;
+    if (Status.Combo > pCombo) {
+        textCombo->AbortMove(true);
+        textCombo->Apply("scaleY:8.4, scaleX:8.4");
+        textCombo->AddMove("scale_to(x:8, y:8, time:0.2, ease:out_quad)");
+    }
+
+    UpdateSlideEffect();
 }
 
 void ScenePlayer::Draw()
@@ -269,7 +278,6 @@ void ScenePlayer::Draw()
     vector<tuple<double, double>> airactionStarts;
     ostringstream combo;
     int division = 8;
-    int pCombo = Status.Combo;
     combo << Status.Combo;
     textCombo->set_Text(combo.str());
 
@@ -310,12 +318,6 @@ void ScenePlayer::Draw()
         DrawLine3D(VGet(x, SU_LANE_Y_AIR, get<1>(position)), VGet(x, SU_LANE_Y_GROUND, get<1>(position)), airActionLineColor);
     }
     for (auto& note : seenData) if (note->Type.test(SusNoteType::Air)) DrawAirNotes(note);
-
-    if (Status.Combo > pCombo) {
-        textCombo->AbortMove(true);
-        textCombo->Apply("scaleY:8.4, scaleX:8.4");
-        textCombo->AddMove("scale_to(x:8, y:8, time:0.2, ease:out_quad)");
-    }
 }
 
 void ScenePlayer::IncrementCombo()
@@ -326,13 +328,13 @@ void ScenePlayer::IncrementCombo()
 }
 
 // position ‚Í 0 ~ 16
-void ScenePlayer::SpawnJudgeEffect(double position, JudgeType type)
+void ScenePlayer::SpawnJudgeEffect(shared_ptr<SusDrawableNoteData> target, JudgeType type)
 {
-    Prepare3DDrawCall();
+    auto position = target->StartLane + target->Length / 2.0;
     auto x = (1.0 - position / 16.0) * SU_LANE_X_MIN + (position / 16.0) *  SU_LANE_X_MAX;
-    auto spawnAt = ConvWorldPosToScreenPos(VGet(x, SU_LANE_Y_GROUND, SU_LANE_Z_MIN));
     switch (type) {
         case JudgeType::ShortNormal: {
+            auto spawnAt = ConvWorldPosToScreenPos(VGet(x, SU_LANE_Y_GROUND, SU_LANE_Z_MIN));
             animeTap->AddRef();
             auto sp = SAnimeSprite::Factory(animeTap);
             sp->Apply("origX:128, origY:224");
@@ -341,7 +343,19 @@ void ScenePlayer::SpawnJudgeEffect(double position, JudgeType type)
             AddSprite(sp);
             break;
         }
+        case JudgeType::ShortEx: {
+            auto spawnAt = ConvWorldPosToScreenPos(VGet(x, SU_LANE_Y_GROUND, SU_LANE_Z_MIN));
+            animeExTap->AddRef();
+            auto sp = SAnimeSprite::Factory(animeExTap);
+            sp->Apply("origX:128, origY:256");
+            sp->Transform.X = spawnAt.x;
+            sp->Transform.Y = spawnAt.y;
+            sp->Transform.ScaleX = target->Length / 6.0;
+            AddSprite(sp);
+            break;
+        }
         case JudgeType::SlideTap: {
+            auto spawnAt = ConvWorldPosToScreenPos(VGet(x, SU_LANE_Y_GROUND, SU_LANE_Z_MIN));
             animeSlideTap->AddRef();
             auto sp = SAnimeSprite::Factory(animeSlideTap);
             sp->Apply("origX:128, origY:224");
@@ -350,6 +364,78 @@ void ScenePlayer::SpawnJudgeEffect(double position, JudgeType type)
             AddSprite(sp);
             break;
         }
+        case JudgeType::Action: {
+            auto spawnAt = ConvWorldPosToScreenPos(VGet(x, SU_LANE_Y_AIR, SU_LANE_Z_MIN));
+            animeAirAction->AddRef();
+            auto sp = SAnimeSprite::Factory(animeAirAction);
+            sp->Apply("origX:128, origY:128");
+            sp->Transform.X = spawnAt.x;
+            sp->Transform.Y = spawnAt.y;
+            AddSprite(sp);
+            break;
+        }
+    }
+}
+
+void ScenePlayer::SpawnSlideLoopEffect(shared_ptr<SusDrawableNoteData> target)
+{
+    animeSlideLoop->AddRef();
+    imageTap->AddRef();
+    auto loopefx = SAnimeSprite::Factory(animeSlideLoop);
+    loopefx->Apply("origX:128, origY:224");
+    SpawnJudgeEffect(target, JudgeType::SlideTap);
+    loopefx->SetLoopCount(-1);
+    SlideEffects[target] = loopefx;
+    AddSprite(loopefx);
+}
+
+void ScenePlayer::UpdateSlideEffect()
+{
+    auto it = SlideEffects.begin();
+    while (it != SlideEffects.end()) {
+        auto note = (*it).first;
+        auto effect = (*it).second;
+        if (currentTime >= note->StartTime + note->Duration) {
+            effect->Dismiss();
+            it = SlideEffects.erase(it);
+            continue;
+        }
+        auto last = note;
+
+        for (auto &slideElement : note->ExtraData) {
+            if (slideElement->Type.test(SusNoteType::Control)) continue;
+            if (slideElement->Type.test(SusNoteType::ExTap)) continue;
+            if (currentTime >= slideElement->StartTime) {
+                last = slideElement;
+                continue;
+            }
+            auto &segmentPositions = curveData[slideElement];
+
+            auto lastSegmentPosition = segmentPositions[0];
+            double lastTimeInBlock = get<0>(lastSegmentPosition) / (slideElement->StartTime - last->StartTime);
+            bool comp = false;
+            for (auto &segmentPosition : segmentPositions) {
+                if (lastSegmentPosition == segmentPosition) continue;
+                double currentTimeInBlock = get<0>(segmentPosition) / (slideElement->StartTime - last->StartTime);
+                if (currentTime >= ((1.0 - currentTimeInBlock) * last->StartTime + currentTimeInBlock * slideElement->StartTime)) {
+                    lastSegmentPosition = segmentPosition;
+                    lastTimeInBlock = currentTimeInBlock;
+                    continue;
+                }
+                double lst = (1.0 - lastTimeInBlock) * last->StartTime + lastTimeInBlock * slideElement->StartTime;
+                double cst = (1.0 - currentTimeInBlock) * last->StartTime + currentTimeInBlock * slideElement->StartTime;
+                double t = (currentTime - lst) / (cst - lst);
+                double x = (1.0 - t) * get<1>(lastSegmentPosition) + t * get<1>(segmentPosition);
+                double absx = (1.0 - x) * SU_LANE_X_MIN + x * SU_LANE_X_MAX;
+                auto at = ConvWorldPosToScreenPos(VGet(absx, SU_LANE_Y_GROUND, SU_LANE_Z_MIN));
+                effect->Transform.X = at.x;
+                effect->Transform.Y = at.y;
+                comp = true;
+                break;
+            }
+            if (comp) break;
+        }
+        it++;
     }
 }
 
@@ -393,7 +479,7 @@ void ScenePlayer::DrawAirNotes(shared_ptr<SusDrawableNoteData> note)
 
     VERTEX3D vertices[] = {
         {
-            VGet(left + xadjust, SU_LANE_Y_AIR, z),
+            VGet(left + xadjust, SU_LANE_Y_AIRINDICATE, z),
             VGet(0, 0, -1),
             GetColorU8(255, 255, 255, 255),
             GetColorU8(0, 0, 0, 0),
@@ -401,7 +487,7 @@ void ScenePlayer::DrawAirNotes(shared_ptr<SusDrawableNoteData> note)
             0.0f, 0.0f
         },
         {
-            VGet(right + xadjust, SU_LANE_Y_AIR, z),
+            VGet(right + xadjust, SU_LANE_Y_AIRINDICATE, z),
             VGet(0, 0, -1),
             GetColorU8(255, 255, 255, 255),
             GetColorU8(0, 0, 0, 0),
@@ -621,7 +707,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
         isInHold = true;
         if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
             soundManager->PlayGlobal(soundTap->GetSample());
-            SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
+            SpawnJudgeEffect(note, JudgeType::ShortNormal);
             IncrementCombo();
             note->OnTheFlyData.set(NoteAttribute::Finished);
         }
@@ -637,7 +723,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
                 return;
             }
             if (!extra->Type.test(SusNoteType::Tap)) soundManager->PlayGlobal(soundTap->GetSample());
-            SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
+            SpawnJudgeEffect(note, JudgeType::ShortNormal);
             IncrementCombo();
             extra->OnTheFlyData.set(NoteAttribute::Finished);
             return;
@@ -646,7 +732,8 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
         isInSlide = true;
         if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
             soundManager->PlayGlobal(soundTap->GetSample());
-            SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::SlideTap);
+            SpawnSlideLoopEffect(note);
+
             IncrementCombo();
             note->OnTheFlyData.set(NoteAttribute::Finished);
             return;
@@ -663,7 +750,7 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
                 return;
             }
             if (!extra->Type.test(SusNoteType::Tap)) soundManager->PlayGlobal(soundTap->GetSample());
-            SpawnJudgeEffect(extra->StartLane + extra->Length / 2.0, JudgeType::SlideTap);
+            SpawnJudgeEffect(extra, JudgeType::SlideTap);
             IncrementCombo();
             extra->OnTheFlyData.set(NoteAttribute::Finished);
             return;
@@ -682,27 +769,30 @@ void ScenePlayer::ProcessScore(shared_ptr<SusDrawableNoteData> note)
             }
             if (pos >= 0) continue;
             soundManager->PlayGlobal(soundAirAction->GetSample());
+            SpawnJudgeEffect(extra, JudgeType::Action);
             IncrementCombo();
             extra->OnTheFlyData.set(NoteAttribute::Finished);
         }
     } else if (note->Type.test(SusNoteType::Air)) {
         soundManager->PlayGlobal(soundAir->GetSample());
-        SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
+        SpawnJudgeEffect(note, JudgeType::ShortNormal);
+        SpawnJudgeEffect(note, JudgeType::ShortEx);
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::Tap)) {
         soundManager->PlayGlobal(soundTap->GetSample());
-        SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
+        SpawnJudgeEffect(note, JudgeType::ShortNormal);
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::ExTap)) {
         soundManager->PlayGlobal(soundExTap->GetSample());
-        SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
+        SpawnJudgeEffect(note, JudgeType::ShortNormal);
+        SpawnJudgeEffect(note, JudgeType::ShortEx);
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else if (note->Type.test(SusNoteType::Flick)) {
         soundManager->PlayGlobal(soundFlick->GetSample());
-        SpawnJudgeEffect(note->StartLane + note->Length / 2.0, JudgeType::ShortNormal);
+        SpawnJudgeEffect(note, JudgeType::ShortNormal);
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else {
