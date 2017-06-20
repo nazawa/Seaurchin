@@ -503,10 +503,10 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
                 if (curPos.Measure == time.Measure && curPos.Tick < time.Tick) continue;
                 switch (ltype) {
                     case SusNoteType::Hold: {
-                        if (curNo.Type.test(SusNoteType::Step) || curNo.Type.test(SusNoteType::Control))
-                            if (ErrorCallback) ErrorCallback(0, "Error", "HoldでStep/Controlは指定できません。");
+                        if (curNo.Type.test(SusNoteType::Control))
+                            if (ErrorCallback) ErrorCallback(0, "Error", "HoldでControlは指定できません。");
                         if (curNo.NotePosition.StartLane != info.NotePosition.StartLane || curNo.NotePosition.Length != info.NotePosition.Length)
-                            if (ErrorCallback) ErrorCallback(0, "Error", "Holdの始点と終点が一致していません。");
+                            if (ErrorCallback) ErrorCallback(0, "Error", "Holdの長さ/位置が始点と一致していません。");
                         if (curNo.Type.test(SusNoteType::Start)) break;
                         auto nextNote = make_shared<SusDrawableNoteData>();
                         nextNote->StartTime = GetAbsoluteTime(curPos.Measure, curPos.Tick);
@@ -523,8 +523,10 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
                             noteData->ExtraData.push_back(injection);
                         }
                         noteData->ExtraData.push_back(nextNote);
-                        noteData->Duration = nextNote->StartTime - noteData->StartTime;
-                        completed = true;
+                        if (curNo.Type.test(SusNoteType::End)) {
+                            noteData->Duration = nextNote->StartTime - noteData->StartTime;
+                            completed = true;
+                        }
                         break;
                     }
                     case SusNoteType::Slide:

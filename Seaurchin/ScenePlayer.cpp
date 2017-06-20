@@ -520,19 +520,18 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
     auto length = note->Length;
     auto slane = note->StartLane;
     double relpos = 1.0 - (note->StartTime - currentTime) / seenDuration;
-    double relendpos = 1.0;
-    for (auto &ex : note->ExtraData) {
-        if (ex->Type.test(SusNoteType::ExTap)) continue;
-        relendpos = 1.0 - (ex->StartTime - currentTime) / seenDuration;
-    }
+    //’†g‚¾‚¯æ‚É•`‰æ
+    auto endpoint = note->ExtraData.back();
+    double reltailpos = 1.0 - (endpoint->StartTime - currentTime) / seenDuration;
     SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
     DrawModiGraphF(
         slane * widthPerLane, laneBufferY * relpos,
         (slane + length) * widthPerLane, laneBufferY * relpos,
-        (slane + length) * widthPerLane, laneBufferY * relendpos,
-        slane * widthPerLane, laneBufferY * relendpos,
+        (slane + length) * widthPerLane, laneBufferY * reltailpos,
+        slane * widthPerLane, laneBufferY * reltailpos,
         imageHoldStrut->GetHandle(), TRUE
     );
+
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
     for (int i = 0; i < length * 2; i++) {
         int type = i ? (i == length * 2 - 1 ? 2 : 1) : 0;
@@ -543,13 +542,22 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
             0, noteImageBlockY / 2,
             actualNoteScaleX, actualNoteScaleY,
             0, imageHold->GetHandle(), TRUE, FALSE);
-        DrawRectRotaGraph3F(
-            (slane * 2 + i) * widthPerLane / 2, laneBufferY * relendpos,
-            noteImageBlockX * type, (0),
-            noteImageBlockX, noteImageBlockY,
-            0, noteImageBlockY / 2,
-            actualNoteScaleX, actualNoteScaleY,
-            0, imageHold->GetHandle(), TRUE, FALSE);
+    }
+
+    
+    for (auto &ex : note->ExtraData) {
+        if (ex->Type.test(SusNoteType::ExTap)) continue;
+        double relendpos = 1.0 - (ex->StartTime - currentTime) / seenDuration;
+        for (int i = 0; i < length * 2; i++) {
+            int type = i ? (i == length * 2 - 1 ? 2 : 1) : 0;
+            DrawRectRotaGraph3F(
+                (slane * 2 + i) * widthPerLane / 2, laneBufferY * relendpos,
+                noteImageBlockX * type, (0),
+                noteImageBlockX, noteImageBlockY,
+                0, noteImageBlockY / 2,
+                actualNoteScaleX, actualNoteScaleY,
+                0, imageHold->GetHandle(), TRUE, FALSE);
+        }
     }
 }
 
