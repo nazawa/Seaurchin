@@ -422,20 +422,15 @@ tuple<uint32_t, uint32_t> SusAnalyzer::GetRelativeTime(double time)
     // TODO: いつ使うかわからんが実装したい
     double restTime = time;
     uint32_t meas = 0, tick = 0;
-    vector<tuple<SusRelativeNoteTime, SusRawNoteData>> bpmchanges;
     double secPerBeat = (60.0 / 120.0);
 
     while (true) {
         auto beats = GetBeatsAt(meas);
-
-        bpmchanges.clear();
-        copy_if(Notes.begin(), Notes.end(), back_inserter(bpmchanges), [meas](tuple<SusRelativeNoteTime, SusRawNoteData> n) {
-            return get<0>(n).Measure == meas && get<1>(n).Type[SusNoteType::Undefined];
-        });
         auto lastChangeTick = 0u;
 
-        for (auto& bc : bpmchanges) {
+        for (auto& bc : BpmChanges) {
             auto timing = get<0>(bc);
+            if (timing.Measure != meas) continue;
             double dur = secPerBeat * ((double)(timing.Tick - lastChangeTick) / TicksPerBeat);
             if (dur >= restTime) return make_tuple(meas, lastChangeTick + restTime / secPerBeat * TicksPerBeat);
             restTime -= dur;

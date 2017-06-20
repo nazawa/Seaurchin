@@ -287,12 +287,9 @@ void ScenePlayer::Draw()
     ClearDrawScreen();
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
     DrawGraph(0, 0, resources["LaneGround"]->GetHandle(), TRUE);
-    for (int i = 1; i < division; i++) DrawLineAA(laneBufferX / division * i, 0, laneBufferX / division * i, laneBufferY, GetColor(255, 255, 255), 2);
     textCombo->Draw();
-    FINISH_DRAW_TRANSACTION;
 
-    // Ground
-    BEGIN_DRAW_TRANSACTION(hGroundBuffer);
+    DrawMeasureLines();
     for (auto& note : seenData) {
         auto &type = note->Type;
         if (type.test(SusNoteType::Hold)) DrawHoldNotes(note);
@@ -544,7 +541,6 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
             0, imageHold->GetHandle(), TRUE, FALSE);
     }
 
-    
     for (auto &ex : note->ExtraData) {
         if (ex->Type.test(SusNoteType::ExTap)) continue;
         double relendpos = 1.0 - (ex->StartTime - currentTime) / seenDuration;
@@ -681,6 +677,20 @@ tuple<double, double> ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNote
         lastStepRelativeY = currentStepRelativeY;
     }
     return make_tuple((note->StartLane + note->Length / 2.0) / 16.0, SU_LANE_Z_MAX * (note->StartTime - currentTime) / seenDuration);
+}
+
+void ScenePlayer::DrawMeasureLines()
+{
+    int division = 8;
+    for (int i = 1; i < division; i++) DrawLineAA(laneBufferX / division * i, 0, laneBufferX / division * i, laneBufferY, GetColor(255, 255, 255), 3);
+
+    auto rbeg = analyzer->GetRelativeTime(currentTime);
+    auto rend = analyzer->GetRelativeTime(currentTime + seenDuration);
+    for (int i = get<0>(rbeg); i < get<0>(rend) + 1; i++) {
+        auto pos = analyzer->GetAbsoluteTime(i, 0);
+        double relpos = 1.0 - (pos - currentTime) / seenDuration;
+        DrawLineAA(0, relpos * laneBufferY, laneBufferX, relpos * laneBufferY, GetColor(255, 255, 255), 6);
+    }
 }
 
 void ScenePlayer::Prepare3DDrawCall()

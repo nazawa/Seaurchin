@@ -123,6 +123,7 @@ protected:
     void DrawHoldNotes(std::shared_ptr<SusDrawableNoteData> note);
     void DrawSlideNotes(std::shared_ptr<SusDrawableNoteData> note);
     std::tuple<double, double> DrawAirActionNotes(std::shared_ptr<SusDrawableNoteData> note);
+    void DrawMeasureLines();
     void Prepare3DDrawCall();
 
     void ProcessSound();
