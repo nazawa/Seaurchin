@@ -680,14 +680,13 @@ void ScenePlayer::Prepare3DDrawCall()
 
 void ScenePlayer::ProcessSound()
 {
-    //–ð–Ú•s–¾
-    if (NextMetronomeTime <= BackingTime && NextMetronomeTime < 0) {
-        soundManager->PlayGlobal(soundTap->GetSample());
-        NextMetronomeTime += 60 / analyzer->GetBpmAt(0, 0);
-    }
     if (BgmState == -1 && BackingTime >= 0) {
         soundManager->PlayGlobal(bgmStream);
         BgmState = 0;
+    }
+    if (BgmState != 0 && NextMetronomeTime <= BackingTime && NextMetronomeTime < 0) {
+        soundManager->PlayGlobal(soundTap->GetSample());
+        NextMetronomeTime += 60 / analyzer->GetBpmAt(0, 0);
     }
     if (BgmState == 0) {
         BackingTime = bgmStream->GetPlayingPosition();
