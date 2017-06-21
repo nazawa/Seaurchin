@@ -164,13 +164,12 @@ class Play : CoroutineScene {
       if (IsKeyTriggered(Key::INPUT_ESCAPE)) {
         if (Execute("Select.as")) Disappear();
       }
-      
-      if (IsKeyTriggered(Key::INPUT_UP)) player.AdjustCamera(10, 0, 0);
-      if (IsKeyTriggered(Key::INPUT_DOWN)) player.AdjustCamera(-10, 0, 0);
-      if (IsKeyTriggered(Key::INPUT_ADD)) player.AdjustCamera(0, 10, 0);
-      if (IsKeyTriggered(Key::INPUT_SUBTRACT)) player.AdjustCamera(0, -10, 0);
-      if (IsKeyTriggered(Key::INPUT_NUMPAD8)) player.AdjustCamera(0, 0, 10);
-      if (IsKeyTriggered(Key::INPUT_NUMPAD2)) player.AdjustCamera(0, 0, -10);
+      if (IsKeyTriggered(Key::INPUT_LEFT)) {
+        player.MovePositionByMeasure(-1);
+      }
+      if (IsKeyTriggered(Key::INPUT_RIGHT)) {
+        player.MovePositionByMeasure(1);
+      }
       
       YieldFrame(1);
     }
