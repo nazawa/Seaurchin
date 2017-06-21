@@ -91,7 +91,7 @@ void AutoPlayerProcessor::MovePosition(double relative)
     // ‘—‚è: ”ò‚Î‚µ‚½•”•ª‚ðFinished‚É
     // –ß‚µ: “ü‚Á‚Ä‚­‚é•”•ª‚ðUn-Finished‚É
     for (auto &note : data) {
-        if (note->Type.test(SusNoteType::Hold) || note->Type.test(SusNoteType::Hold) || note->Type.test(SusNoteType::Hold)) {
+        if (note->Type.test(SusNoteType::Hold) || note->Type.test(SusNoteType::Slide) || note->Type.test(SusNoteType::AirAction)) {
             if (note->StartTime <= newTime) note->OnTheFlyData.set(NoteAttribute::Finished);
             for (auto &extra : note->ExtraData) {
                 if (extra->Type.test(SusNoteType::Tap)) continue;
