@@ -34,6 +34,9 @@
     <Filter Include="インターフェース\AngelScript">
       <UniqueIdentifier>{1220e150-8ad3-43eb-b58f-b1d804884224}</UniqueIdentifier>
     </Filter>
+    <Filter Include="プレーヤー">
+      <UniqueIdentifier>{11aa0908-b61d-4bd3-a637-f3eec17d03df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -136,7 +139,10 @@
       <Filter>インターフェース\C++</Filter>
     </ClCompile>
     <ClCompile Include="ScenePlayer.cpp">
-      <Filter>ビルトインScene</Filter>
+      <Filter>プレーヤー</Filter>
+    </ClCompile>
+    <ClCompile Include="ScoreProcessor.cpp">
+      <Filter>プレーヤー</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -261,7 +267,10 @@
       <Filter>インターフェース\C++</Filter>
     </ClInclude>
     <ClInclude Include="ScenePlayer.h">
-      <Filter>ビルトインScene</Filter>
+      <Filter>プレーヤー</Filter>
+    </ClInclude>
+    <ClInclude Include="ScoreProcessor.h">
+      <Filter>プレーヤー</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

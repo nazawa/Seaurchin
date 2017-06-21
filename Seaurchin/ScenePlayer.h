@@ -5,6 +5,7 @@
 #include "ScriptSprite.h"
 #include "ScriptResource.h"
 #include "SusAnalyzer.h"
+#include "ScoreProcessor.h"
 #include "SoundManager.h"
 #include "MusicsManager.h"
 
@@ -23,28 +24,6 @@
 
 // Sceneという名前こそついてるけど挙動は別物
 // SceneManagerに追加されない
-
-struct PlayStatus {
-    uint32_t JusticeCritical = 0;
-    uint32_t Justice = 0;
-    uint32_t Attack = 0;
-    uint32_t Miss = 0;
-
-    uint32_t AllNotes = 0;
-    uint32_t Combo = 0;
-    double CurrentGauge = 0.0;
-    double GaugeDefaultMax = 60000.0;
-
-public:
-    void GetGaugeValue(int &fulfilled, double &rest);
-    uint32_t GetScore();
-};
-
-enum NoteAttribute {
-    Invisible = 0,
-    Finished,
-};
-
 enum JudgeType {
     ShortNormal = 0,
     ShortEx,
@@ -54,6 +33,9 @@ enum JudgeType {
 
 class ExecutionManager;
 class ScenePlayer : public SSprite {
+    friend class ScoreProcessor;
+    friend class AutoPlayerProcessor;
+
 protected:
     int reference = 0;
     int hGroundBuffer;
@@ -66,6 +48,7 @@ protected:
     std::vector<SSprite*> spritesPending;
 
     SoundStream *bgmStream;
+    ScoreProcessor *processor;
     bool isLoadCompleted = false;
 
     double cameraZ = -340, cameraY = 620, cameraTargetZ = 580; // スクショから計測
@@ -107,14 +90,10 @@ protected:
     double SoundBufferingLatency = 0.030;   //TODO: 環境に若干寄り添う
     int BgmState = -1;  //-2: 読み込み終了 -1: 前カウント 0:プレイ中 1:曲終了
     int seenObjects = 0;
-    bool isInHold = false, isInSlide = false, wasInHold = false, wasInSlide = false;
 
     void AddSprite(SSprite *sprite);
     void LoadWorker();
-    void PrecalculateNotes();
-    void IncrementCombo();
-    void SpawnJudgeEffect(std::shared_ptr<SusDrawableNoteData> target, JudgeType type);
-    void SpawnSlideLoopEffect(std::shared_ptr<SusDrawableNoteData> target);
+    void RemoveSlideEffect();
     void UpdateSlideEffect();
     void CalculateNotes(double time, double duration, double preced);
     void CalculateCurves(std::shared_ptr<SusDrawableNoteData> note);
@@ -127,7 +106,18 @@ protected:
     void Prepare3DDrawCall();
 
     void ProcessSound();
-    void ProcessScore(std::shared_ptr<SusDrawableNoteData> note);
+
+    void SpawnJudgeEffect(std::shared_ptr<SusDrawableNoteData> target, JudgeType type);
+    void SpawnSlideLoopEffect(std::shared_ptr<SusDrawableNoteData> target);
+    void PlaySoundTap() { soundManager->PlayGlobal(soundTap->GetSample()); }
+    void PlaySoundExTap() { soundManager->PlayGlobal(soundExTap->GetSample()); }
+    void PlaySoundFlick() { soundManager->PlayGlobal(soundFlick->GetSample()); }
+    void PlaySoundAir() { soundManager->PlayGlobal(soundAir->GetSample()); }
+    void PlaySoundAirAction() { soundManager->PlayGlobal(soundAirAction->GetSample()); }
+    void PlaySoundHold() { soundManager->PlayGlobal(soundHoldLoop->GetSample()); }
+    void StopSoundHold() { soundManager->StopGlobal(soundHoldLoop->GetSample()); }
+    void PlaySoundSlide() { soundManager->PlayGlobal(soundSlideLoop->GetSample()); }
+    void StopSoundSlide() { soundManager->StopGlobal(soundSlideLoop->GetSample()); }
 
 public:
     ScenePlayer(ExecutionManager *exm);
@@ -145,6 +135,8 @@ public:
     void Play();
     double GetPlayingTime();
     void GetPlayStatus(PlayStatus *status);
+    void MovePositionBySecond(double sec);
+    void MovePositionByMeasure(int meas);
 };
 
 void RegisterPlayerScene(ExecutionManager *exm);
