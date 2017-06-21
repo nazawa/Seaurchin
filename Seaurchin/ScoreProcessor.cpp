@@ -80,12 +80,12 @@ void AutoPlayerProcessor::Update(vector<shared_ptr<SusDrawableNoteData>> &notes)
 void AutoPlayerProcessor::MovePosition(double relative)
 {
     double newTime = Player->currentSoundTime + relative;
-    Status.Combo = 0;
+    Status.JusticeCritical = Status.Justice = Status.Attack = Status.Miss = Status.Combo = Status.CurrentGauge = 0;
 
     wasInHold = isInHold = false;
     wasInSlide = isInSlide = false;
-    StopSoundHold();
-    StopSoundSlide();
+    Player->StopSoundHold();
+    Player->StopSoundSlide();
     Player->RemoveSlideEffect();
 
     // ‘—‚è: ”ò‚Î‚µ‚½•”•ª‚ðFinished‚É
