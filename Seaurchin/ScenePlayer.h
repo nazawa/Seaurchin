@@ -35,6 +35,7 @@ class ExecutionManager;
 class ScenePlayer : public SSprite {
     friend class ScoreProcessor;
     friend class AutoPlayerProcessor;
+    friend class PlayableProcessor;
 
 protected:
     int reference = 0;
@@ -84,7 +85,7 @@ protected:
     double currentTime = 0;
     double currentSoundTime = 0;
     double seenDuration = 0.8;
-    double precedTime = 0.1;
+    double precedTime = 0.2;
     double BackingTime = 0.0;
     double NextMetronomeTime = 0.0;
     double SoundBufferingLatency = 0.030;   //TODO: ŠÂ‹«‚ÉŽáŠ±Šñ‚è“Y‚¤

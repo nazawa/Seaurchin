@@ -72,7 +72,7 @@ void ScenePlayer::Initialize()
 {
     analyzer = make_unique<SusAnalyzer>(192);
 
-    processor = new AutoPlayerProcessor(this);
+    processor = new PlayableProcessor(this);
 
     // 2^xêßå¿Ç™Ç†ÇÈÇÃÇ≈Ç±Ç±Ç≈åvéZ
     double bufferY = 2;

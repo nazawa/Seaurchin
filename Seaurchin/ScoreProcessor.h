@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SusAnalyzer.h"
+#include "Scene.h"
 
 struct PlayStatus {
     uint32_t JusticeCritical = 0;
@@ -26,6 +27,8 @@ enum NoteAttribute {
 class ScenePlayer;
 class ScoreProcessor {
 public:
+    static std::vector<std::shared_ptr<SusDrawableNoteData>> DefaultDataValue;
+
     virtual void Reset() = 0;
     virtual void Update(std::vector<std::shared_ptr<SusDrawableNoteData>> &notes) = 0;
     virtual void MovePosition(double relative) = 0;
@@ -33,16 +36,36 @@ public:
     virtual PlayStatus *GetPlayStatus() = 0;
 };
 
+class PlayableProcessor : public ScoreProcessor {
+protected:
+    ScenePlayer *Player;
+    PlayStatus Status;
+    std::shared_ptr<KeyState> CurrentKeyState;
+    std::vector<std::shared_ptr<SusDrawableNoteData>> &data = DefaultDataValue;
+    bool isInHold = false, isInSlide = false, wasInHold = false, wasInSlide = false;
+
+    void ProcessScore(std::shared_ptr<SusDrawableNoteData> notes);
+    bool CheckJudgement(std::shared_ptr<SusDrawableNoteData> note);
+    void IncrementCombo();
+
+public:
+    PlayableProcessor(ScenePlayer *player);
+
+    void Reset() override;
+    void Update(std::vector<std::shared_ptr<SusDrawableNoteData>> &notes) override;
+    void MovePosition(double relative) override;
+    void Draw() override;
+    PlayStatus *GetPlayStatus() override;
+};
+
 class AutoPlayerProcessor : public ScoreProcessor {
 protected:
-    static std::vector<std::shared_ptr<SusDrawableNoteData>> DefaultDataValue;
-
     ScenePlayer *Player;
     PlayStatus Status;
     std::vector<std::shared_ptr<SusDrawableNoteData>> &data = DefaultDataValue;
     bool isInHold = false, isInSlide = false, wasInHold = false, wasInSlide = false;
 
-    void ProcessScore(std::shared_ptr<SusDrawableNoteData>notes);
+    void ProcessScore(std::shared_ptr<SusDrawableNoteData> notes);
     void IncrementCombo();
 
 public:
