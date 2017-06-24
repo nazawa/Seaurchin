@@ -88,7 +88,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_SCL_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Programming\DXLib\include;C:\Programming\AngelScript\angelscript\include;C:\Programming\AngelScript\add_on;C:\Programming\Boost\include\boost-1_61;C:\Programming\FreeType\include;C:\Programming\libpng\include;C:\Programming\BASS\c;C:\Programming\MsgPack\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Programming\DXLib\include;C:\Programming\AngelScript\angelscript\include;C:\Programming\AngelScript\add_on;C:\Programming\Boost\include\boost-1_61;C:\Programming\FreeType\include;C:\Programming\libpng\include;C:\Programming\BASS\c;C:\Programming\MsgPack\include;C:\Programming\Wacom_Feel_SDK\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
@@ -129,7 +129,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_SCL_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Programming\DXLib\include;C:\Programming\AngelScript\angelscript\include;C:\Programming\AngelScript\add_on;C:\Programming\Boost\include\boost-1_61;C:\Programming\FreeType\include;C:\Programming\libpng\include;C:\Programming\BASS\c;C:\Programming\MsgPack\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Programming\DXLib\include;C:\Programming\AngelScript\angelscript\include;C:\Programming\AngelScript\add_on;C:\Programming\Boost\include\boost-1_61;C:\Programming\FreeType\include;C:\Programming\libpng\include;C:\Programming\BASS\c;C:\Programming\MsgPack\include;C:\Programming\Wacom_Feel_SDK\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
@@ -175,7 +175,9 @@
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptmath\scriptmathcomplex.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring_utils.cpp" />
+    <ClCompile Include="..\..\..\Wacom_Feel_SDK\src\cpp\WacomMultiTouch.cpp" />
     <ClCompile Include="AngelScriptManager.cpp" />
+    <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="DxLibResource.cpp" />
     <ClCompile Include="Easing.cpp" />
@@ -223,6 +225,7 @@
     <ClInclude Include="..\..\..\DXLib\include\DxLib.h" />
     <ClInclude Include="AngelScriptManager.h" />
     <ClInclude Include="Config.h" />
+    <ClInclude Include="Controller.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Easing.h" />
     <ClInclude Include="EffectBuilder.h" />

@@ -37,6 +37,12 @@
     <Filter Include="プレーヤー">
       <UniqueIdentifier>{11aa0908-b61d-4bd3-a637-f3eec17d03df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="コントローラー">
+      <UniqueIdentifier>{6814a1c8-b90e-4020-9381-3099759babcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="コントローラー\依存">
+      <UniqueIdentifier>{10ac2997-3d62-4b33-bb73-ed4bf0e4431c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -143,6 +149,12 @@
     </ClCompile>
     <ClCompile Include="ScoreProcessor.cpp">
       <Filter>プレーヤー</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller.cpp">
+      <Filter>コントローラー</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Wacom_Feel_SDK\src\cpp\WacomMultiTouch.cpp">
+      <Filter>コントローラー\依存</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -271,6 +283,9 @@
     </ClInclude>
     <ClInclude Include="ScoreProcessor.h">
       <Filter>プレーヤー</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller.h">
+      <Filter>コントローラー</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

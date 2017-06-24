@@ -285,7 +285,7 @@ bool ScriptSceneIsKeyHeld(int keynum)
         ScriptSceneWarnOutOf("Scene Class", ctx);
         return false;
     }
-    return psc->GetManager()->GetKeyStateUnsafe()->Current[keynum];
+    return psc->GetManager()->GetControlStateUnsafe()->GetCurrentState(ControllerSource::RawKeyboard, keynum);
 }
 
 bool ScriptSceneIsKeyTriggered(int keynum)
@@ -296,7 +296,7 @@ bool ScriptSceneIsKeyTriggered(int keynum)
         ScriptSceneWarnOutOf("Scene Class", ctx);
         return false;
     }
-    return  psc->GetManager()->GetKeyStateUnsafe()->Trigger[keynum];
+    return  psc->GetManager()->GetControlStateUnsafe()->GetTriggerState(ControllerSource::RawKeyboard, keynum);
 }
 
 void ScriptSceneAddScene(asIScriptObject *sceneObject)

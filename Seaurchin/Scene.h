@@ -2,14 +2,6 @@
 
 
 class ExecutionManager;
-
-typedef struct
-{
-    char Current[256];
-    char Last[256];
-    char Trigger[256];
-} KeyState;
-
 class Scene
 {
 protected:

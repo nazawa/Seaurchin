@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SusAnalyzer.h"
-#include "Scene.h"
+#include "Controller.h"
 
 struct PlayStatus {
     uint32_t JusticeCritical = 0;
@@ -40,7 +40,7 @@ class PlayableProcessor : public ScoreProcessor {
 protected:
     ScenePlayer *Player;
     PlayStatus Status;
-    std::shared_ptr<KeyState> CurrentKeyState;
+    std::shared_ptr<ControlState> CurrentState;
     std::vector<std::shared_ptr<SusDrawableNoteData>> &data = DefaultDataValue;
     bool isInHold = false, isInSlide = false, wasInHold = false, wasInSlide = false;
 

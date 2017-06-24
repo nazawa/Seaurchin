@@ -10,6 +10,7 @@
 #include "MusicsManager.h"
 #include "SoundManager.h"
 #include "ScenePlayer.h"
+#include "Controller.h"
 
 class ExecutionManager final {
 private:
@@ -17,7 +18,7 @@ private:
     std::shared_ptr<AngelScript> ScriptInterface;
     std::vector<std::shared_ptr<Scene>> Scenes;
     std::vector<std::shared_ptr<Scene>> ScenesPending;
-    std::shared_ptr<KeyState> SharedKeyState;
+    std::shared_ptr<ControlState> SharedControlState;
     std::vector<std::string> SkinNames;
     std::unique_ptr<SkinHolder> Skin;
     std::unique_ptr<EffectBuilder> SuEffect;
@@ -43,8 +44,8 @@ public:
     inline int GetSceneCount() { return Scenes.size(); }
 
     inline std::shared_ptr<MusicsManager> GetMusicsManager() { return Musics; }
-    inline std::shared_ptr<KeyState> GetKeyStateSafe() { return SharedKeyState; }
-    inline KeyState* GetKeyStateUnsafe() { return SharedKeyState.get(); }
+    inline std::shared_ptr<ControlState> GetControlStateSafe() { return SharedControlState; }
+    inline ControlState* GetControlStateUnsafe() { return SharedControlState.get(); }
     inline AngelScript* GetScriptInterfaceUnsafe() { return ScriptInterface.get(); }
     inline SoundManager* GetSoundManagerUnsafe() { return Sound.get(); }
 
@@ -65,7 +66,6 @@ public:
 
 private:
     bool CheckSkinStructure(boost::filesystem::path name);
-    void UpdateKeyState();
     void RegisterGlobalManagementFunction();
 };
 

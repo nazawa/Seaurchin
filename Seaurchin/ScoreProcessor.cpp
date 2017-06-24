@@ -367,7 +367,7 @@ bool PlayableProcessor::CheckJudgement(std::shared_ptr<SusDrawableNoteData> note
         return false;
     }
     for (int i = note->StartLane; i < note->StartLane + note->Length; i++) {
-        if (!CurrentKeyState->Trigger[GroundKeys[i]]) continue;
+        if (!CurrentState->GetTriggerState(ControllerSource::IntegratedSliders, i)) continue;
         reltime = fabs(reltime);
         if (reltime <= jthJC) {
             note->OnTheFlyData.set(NoteAttribute::Finished);
@@ -393,7 +393,7 @@ bool PlayableProcessor::CheckJudgement(std::shared_ptr<SusDrawableNoteData> note
 PlayableProcessor::PlayableProcessor(ScenePlayer * player)
 {
     Player = player;
-    CurrentKeyState = Player->manager->GetKeyStateSafe();
+    CurrentState = Player->manager->GetControlStateSafe();
 }
 
 void PlayableProcessor::Reset()

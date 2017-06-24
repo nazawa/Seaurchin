@@ -23,7 +23,7 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     Sound = make_shared<SoundManager>();
     Random = make_shared<mt19937>(seed());
     SuEffect = unique_ptr<EffectBuilder>(new EffectBuilder(Random));
-    SharedKeyState = make_shared<KeyState>();
+    SharedControlState = make_shared<ControlState>();
     Musics = make_shared<MusicsManager>(SharedSetting);
 
 }
@@ -44,6 +44,8 @@ void ExecutionManager::Initialize()
     MixerSE = SSoundMixer::CreateMixer(Sound.get());
     MixerBGM->AddRef();
     MixerSE->AddRef();
+    
+    SharedControlState->Initialize();
     /*
     hImc = ImmGetContext(GetMainWindowHandle());
     if (!ImmGetOpenStatus(hImc)) ImmSetOpenStatus(hImc, TRUE);
@@ -183,7 +185,7 @@ void ExecutionManager::ExecuteSystemMenu()
 //Tick
 void ExecutionManager::Tick(double delta)
 {
-    UpdateKeyState();
+    SharedControlState->Update();
 
     //ƒV[ƒ“‘€ì
     for (auto& scene : ScenesPending) Scenes.push_back(scene);
@@ -216,13 +218,6 @@ void ExecutionManager::Draw()
     ClearDrawScreen();
     for (const auto& s : Scenes) s->Draw();
     ScreenFlip();
-}
-
-void ExecutionManager::UpdateKeyState()
-{
-    memcpy_s(SharedKeyState->Last, 256, SharedKeyState->Current, 256);
-    GetHitKeyStateAll(SharedKeyState->Current);
-    for (int i = 0; i < 256; i++) SharedKeyState->Trigger[i] = !SharedKeyState->Last[i] && SharedKeyState->Current[i];
 }
 
 void ExecutionManager::AddScene(shared_ptr<Scene> scene)
