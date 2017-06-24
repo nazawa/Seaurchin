@@ -234,14 +234,6 @@ void AutoPlayerProcessor::ProcessScore(shared_ptr<SusDrawableNoteData> note)
 }
 
 // ---------------------------------------------------
-
-static uint8_t GroundKeys[] = {
-    KEY_INPUT_A, KEY_INPUT_Z, KEY_INPUT_S, KEY_INPUT_X,
-    KEY_INPUT_D, KEY_INPUT_C, KEY_INPUT_F, KEY_INPUT_V,
-    KEY_INPUT_G, KEY_INPUT_B, KEY_INPUT_H, KEY_INPUT_N,
-    KEY_INPUT_J, KEY_INPUT_M, KEY_INPUT_K, KEY_INPUT_COMMA
-};
-
 void PlayableProcessor::IncrementCombo()
 {
     Status.Combo++;
@@ -419,6 +411,12 @@ void PlayableProcessor::Reset()
 
 void PlayableProcessor::Update(std::vector<std::shared_ptr<SusDrawableNoteData>>& notes)
 {
+    ostringstream ss;
+    for (int i = 0; i < 16; i++) {
+        ss << (CurrentState->GetCurrentState(ControllerSource::IntegratedSliders, i) ? "Åú" : "Åõ");    
+    }
+    SetMainWindowText(ss.str().c_str());
+
     bool SlideCheck = false;
     bool HoldCheck = false;
     for (auto& note : notes) {

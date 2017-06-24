@@ -10,6 +10,8 @@
 * LZMA SDK
 * BASS Audio Library
 * msgpack-c
+* [Wacom feel™ Multi-Touch SDK](http://wdnet.jp/library/feelmulti-touch)
+
 
 # ライセンス
 本体はMIT License

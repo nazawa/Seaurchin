@@ -56,6 +56,7 @@ void ExecutionManager::Initialize()
 
 void ExecutionManager::Shutdown()
 {
+    SharedControlState->Terminate();
     MixerBGM->Release();
     MixerSE->Release();
 }

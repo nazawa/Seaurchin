@@ -66,6 +66,8 @@
 #include <scriptdictionary\scriptdictionary.h>
 //#include "as_smart_ptr_wrapper.h"
 
+#include <WacomMultiTouch.h>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
