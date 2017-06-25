@@ -37,6 +37,7 @@ class Play : CoroutineScene {
   
   void SetPlayerResource() {
     player.SetResource("LaneGround", skin.GetImage("*Lane-Ground"));
+    player.SetResource("LaneHoldLight", skin.GetImage("*Lane-HoldLight"));
     player.SetResource("FontCombo", font64);
     player.SetResource("Tap", skin.GetImage("*Note-Tap"));
     player.SetResource("ExTap", skin.GetImage("*Note-ExTap"));
@@ -144,16 +145,31 @@ class Play : CoroutineScene {
       if (gCurrent != pgc) {
         spBarFill.AddMove("range_size(width:" + formatFloat(gCurrent, '', 1, 4) + ", height:1, time:0.1, ease:out_sine)");
         txtScore.SetText("" + psNow.GetScore());
-        if (psNow.JusticeCritical != psPrev.JusticeCritical) {
+      }
+      if (psNow.JusticeCritical != psPrev.JusticeCritical) {
           spCounts[0].SetText("" + psNow.JusticeCritical);
           spCounts[0].AbortMove();
           spCounts[0].Apply("scaleX:1.3");
           spCounts[0].AddMove("scale_to(x:1.0, y:1.0, time:0.3)");
         }
-        // spCounts[1].SetText("" + psNow.Justice);
-        // spCounts[2].SetText("" + psNow.Attack);
-        // spCounts[3].SetText("" + psNow.Miss);
-      }
+        if (psNow.Justice != psPrev.Justice) {
+          spCounts[1].SetText("" + psNow.Justice);
+          spCounts[1].AbortMove();
+          spCounts[1].Apply("scaleX:1.3");
+          spCounts[1].AddMove("scale_to(x:1.0, y:1.0, time:0.3)");
+        }
+        if (psNow.Attack != psPrev.Attack) {
+          spCounts[2].SetText("" + psNow.Attack);
+          spCounts[2].AbortMove();
+          spCounts[2].Apply("scaleX:1.3");
+          spCounts[2].AddMove("scale_to(x:1.0, y:1.0, time:0.3)");
+        }
+        if (psNow.Miss != psPrev.Miss) {
+          spCounts[3].SetText("" + psNow.Miss);
+          spCounts[3].AbortMove();
+          spCounts[3].Apply("scaleX:1.3");
+          spCounts[3].AddMove("scale_to(x:1.0, y:1.0, time:0.3)");
+        }
       psPrev = psNow;
       YieldFrame(1);
     }
