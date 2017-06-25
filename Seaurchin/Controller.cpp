@@ -101,6 +101,7 @@ void ControlState::SetSliderKey(int sliderNumber, int keyboardNumber)
 
 void ControlState::InitializeWacomTouchDevice()
 {
+    IsWacomDeviceAvailable = false;
     if (!LoadWacomMTLib()) {
         WriteDebugConsole("Wacom Touch Library Unavailable.\n");
         return;

@@ -60,7 +60,7 @@ void RegisterPlayerScene(ExecutionManager * manager)
 ScenePlayer::ScenePlayer(ExecutionManager *exm) : manager(exm)
 {
     soundManager = manager->GetSoundManagerUnsafe();
-    BgmState = -2;
+    State = -2;
 }
 
 ScenePlayer::~ScenePlayer()
@@ -71,7 +71,6 @@ ScenePlayer::~ScenePlayer()
 void ScenePlayer::Initialize()
 {
     analyzer = make_unique<SusAnalyzer>(192);
-
     processor = new PlayableProcessor(this);
 
     // 2^x制限があるのでここで計算
@@ -147,12 +146,18 @@ void ScenePlayer::LoadWorker()
         if (note->Type.test(SusNoteType::Slide) || note->Type.test(SusNoteType::AirAction)) CalculateCurves(note);
     }
     processor->Reset();
+    State = PlayingState::BgmNotLoaded;
 
     auto file = boost::filesystem::path(scorefile).parent_path() / ConvertUTF8ToShiftJis(analyzer->SharedMetaData.UWaveFileName);
     bgmStream = SoundStream::CreateFromFile(file.string().c_str());
+    State = PlayingState::ReadyToStart;
 
+    // 前カウントの計算
+    // WaveOffsetが1小節分より長いとめんどくさそうなので差し引いてく
     BackingTime = -60.0 / analyzer->GetBpmAt(0, 0) * analyzer->GetBeatsAt(0);
     NextMetronomeTime = BackingTime;
+    while(BackingTime > analyzer->SharedMetaData.WaveOffset) BackingTime -= 60.0 / analyzer->GetBpmAt(0, 0) * analyzer->GetBeatsAt(0);
+    CurrentTime = BackingTime;
 
     isLoadCompleted = true;
 }
@@ -230,11 +235,11 @@ void ScenePlayer::Tick(double delta)
         }
     }
 
-    if (BgmState != -2) BackingTime += delta;
-    currentTime = GetPlayingTime() - analyzer->SharedMetaData.WaveOffset;
-    currentSoundTime = currentTime + SoundBufferingLatency;
+    if (State != -2) BackingTime += delta;
+    CurrentTime = GetPlayingTime() - analyzer->SharedMetaData.WaveOffset;
+    CurrentSoundTime = CurrentTime + SoundBufferingLatency;
     seenData.clear();
-    if (BgmState >= -1) CalculateNotes(currentTime, seenDuration, precedTime);
+    if (State >= -1) CalculateNotes(CurrentTime, SeenDuration, PreloadingTime);
 
     int pCombo = Status.Combo;
     processor->Update(seenData);
@@ -262,6 +267,7 @@ void ScenePlayer::Draw()
     ClearDrawScreen();
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
     DrawGraph(0, 0, resources["LaneGround"]->GetHandle(), TRUE);
+    processor->Draw();
     textCombo->Draw();
 
     DrawMeasureLines();
@@ -371,7 +377,7 @@ void ScenePlayer::UpdateSlideEffect()
     while (it != SlideEffects.end()) {
         auto note = (*it).first;
         auto effect = (*it).second;
-        if (currentTime >= note->StartTime + note->Duration) {
+        if (CurrentTime >= note->StartTime + note->Duration) {
             effect->Dismiss();
             it = SlideEffects.erase(it);
             continue;
@@ -381,7 +387,7 @@ void ScenePlayer::UpdateSlideEffect()
         for (auto &slideElement : note->ExtraData) {
             if (slideElement->Type.test(SusNoteType::Control)) continue;
             if (slideElement->Type.test(SusNoteType::ExTap)) continue;
-            if (currentTime >= slideElement->StartTime) {
+            if (CurrentTime >= slideElement->StartTime) {
                 last = slideElement;
                 continue;
             }
@@ -393,14 +399,14 @@ void ScenePlayer::UpdateSlideEffect()
             for (auto &segmentPosition : segmentPositions) {
                 if (lastSegmentPosition == segmentPosition) continue;
                 double currentTimeInBlock = get<0>(segmentPosition) / (slideElement->StartTime - last->StartTime);
-                if (currentTime >= ((1.0 - currentTimeInBlock) * last->StartTime + currentTimeInBlock * slideElement->StartTime)) {
+                if (CurrentTime >= ((1.0 - currentTimeInBlock) * last->StartTime + currentTimeInBlock * slideElement->StartTime)) {
                     lastSegmentPosition = segmentPosition;
                     lastTimeInBlock = currentTimeInBlock;
                     continue;
                 }
                 double lst = (1.0 - lastTimeInBlock) * last->StartTime + lastTimeInBlock * slideElement->StartTime;
                 double cst = (1.0 - currentTimeInBlock) * last->StartTime + currentTimeInBlock * slideElement->StartTime;
-                double t = (currentTime - lst) / (cst - lst);
+                double t = (CurrentTime - lst) / (cst - lst);
                 double x = (1.0 - t) * get<1>(lastSegmentPosition) + t * get<1>(segmentPosition);
                 double absx = (1.0 - x) * SU_LANE_X_MIN + x * SU_LANE_X_MAX;
                 auto at = ConvWorldPosToScreenPos(VGet(absx, SU_LANE_Y_GROUND, SU_LANE_Z_MIN));
@@ -419,7 +425,7 @@ void ScenePlayer::UpdateSlideEffect()
 void ScenePlayer::DrawShortNotes(shared_ptr<SusDrawableNoteData> note)
 {
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-    double relpos = 1.0 - (note->StartTime - currentTime) / seenDuration;
+    double relpos = 1.0 - (note->StartTime - CurrentTime) / SeenDuration;
     auto length = note->Length;
     auto slane = note->StartLane;
     int handleToDraw = 0;
@@ -441,7 +447,7 @@ void ScenePlayer::DrawShortNotes(shared_ptr<SusDrawableNoteData> note)
 
 void ScenePlayer::DrawAirNotes(shared_ptr<SusDrawableNoteData> note)
 {
-    double relpos = 1.0 - (note->StartTime - currentTime) / seenDuration;
+    double relpos = 1.0 - (note->StartTime - CurrentTime) / SeenDuration;
     double z = (1.0 - relpos) * SU_LANE_Z_MAX + relpos * SU_LANE_Z_MIN;
     if (relpos >= 1.0 || relpos < 0) return;
 
@@ -450,7 +456,7 @@ void ScenePlayer::DrawAirNotes(shared_ptr<SusDrawableNoteData> note)
     auto left = (1.0 - slane / 16.0) * SU_LANE_X_MIN + slane / 16.0 * SU_LANE_X_MAX;
     auto right = (1.0 - (slane + length) / 16.0) * SU_LANE_X_MIN + (slane + length) / 16.0 * SU_LANE_X_MAX;
     auto xadjust = note->Type.test(SusNoteType::Left) ? -80.0 : (note->Type.test(SusNoteType::Right) ? 80.0 : 0);
-    auto role = note->Type.test(SusNoteType::Up) ? fmod(currentTime* 2.0, 0.5) : 0.5 - fmod(currentTime* 2.0, 0.5);
+    auto role = note->Type.test(SusNoteType::Up) ? fmod(CurrentTime* 2.0, 0.5) : 0.5 - fmod(CurrentTime* 2.0, 0.5);
     auto handle = note->Type.test(SusNoteType::Up) ? imageAirUp->GetHandle() : imageAirDown->GetHandle();
 
     VERTEX3D vertices[] = {
@@ -495,10 +501,10 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
 {
     auto length = note->Length;
     auto slane = note->StartLane;
-    double relpos = 1.0 - (note->StartTime - currentTime) / seenDuration;
+    double relpos = 1.0 - (note->StartTime - CurrentTime) / SeenDuration;
     //中身だけ先に描画
     auto endpoint = note->ExtraData.back();
-    double reltailpos = 1.0 - (endpoint->StartTime - currentTime) / seenDuration;
+    double reltailpos = 1.0 - (endpoint->StartTime - CurrentTime) / SeenDuration;
     SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
     DrawModiGraphF(
         slane * widthPerLane, laneBufferY * relpos,
@@ -522,7 +528,7 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
 
     for (auto &ex : note->ExtraData) {
         if (ex->Type.test(SusNoteType::ExTap)) continue;
-        double relendpos = 1.0 - (ex->StartTime - currentTime) / seenDuration;
+        double relendpos = 1.0 - (ex->StartTime - CurrentTime) / SeenDuration;
         for (int i = 0; i < length * 2; i++) {
             int type = i ? (i == length * 2 - 1 ? 2 : 1) : 0;
             DrawRectRotaGraph3F(
@@ -539,7 +545,7 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
 void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
 {
     auto lastStep = note;
-    auto lastStepRelativeY = 1.0 - (lastStep->StartTime - currentTime) / seenDuration;
+    auto lastStepRelativeY = 1.0 - (lastStep->StartTime - CurrentTime) / SeenDuration;
     double segmentLength = 128.0;   // Buffer上での最小の長さ
 
     for (int i = 0; i < lastStep->Length * 2; i++) {
@@ -556,18 +562,18 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
     for (auto &slideElement : note->ExtraData) {
         if (slideElement->Type.test(SusNoteType::Control)) continue;
         if (slideElement->Type.test(SusNoteType::ExTap)) continue;
-        double currentStepRelativeY = 1.0 - (slideElement->StartTime - currentTime) / seenDuration;
+        double currentStepRelativeY = 1.0 - (slideElement->StartTime - CurrentTime) / SeenDuration;
         auto &segmentPositions = curveData[slideElement];
 
         auto lastSegmentPosition = segmentPositions[0];
         double lastSegmentLength = lastStep->Length;
         double lastTimeInBlock = get<0>(lastSegmentPosition) / (slideElement->StartTime - lastStep->StartTime);
-        auto lastSegmentRelativeY = 1.0 - (lastStep->StartTime - currentTime) / seenDuration;
+        auto lastSegmentRelativeY = 1.0 - (lastStep->StartTime - CurrentTime) / SeenDuration;
         for (auto &segmentPosition : segmentPositions) {
             if (lastSegmentPosition == segmentPosition) continue;
             double currentTimeInBlock = get<0>(segmentPosition) / (slideElement->StartTime - lastStep->StartTime);
             double currentSegmentLength = (1.0 - currentTimeInBlock) * lastStep->Length + currentTimeInBlock * slideElement->Length;
-            double currentSegmentRelativeY = 1.0 - (lastStep->StartTime + get<0>(segmentPosition) - currentTime) / seenDuration;
+            double currentSegmentRelativeY = 1.0 - (lastStep->StartTime + get<0>(segmentPosition) - CurrentTime) / SeenDuration;
 
             SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
             DrawRectModiGraphF(
@@ -609,25 +615,25 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
 tuple<double, double> ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNoteData> note)
 {
     auto lastStep = note;
-    auto lastStepRelativeY = 1.0 - (lastStep->StartTime - currentTime) / seenDuration;
+    auto lastStepRelativeY = 1.0 - (lastStep->StartTime - CurrentTime) / SeenDuration;
     double segmentLength = 128.0;   // Buffer上での最小の長さ
 
 
     for (auto &slideElement : note->ExtraData) {
         if (slideElement->Type.test(SusNoteType::Control)) continue;
         if (slideElement->Type.test(SusNoteType::ExTap)) continue;
-        double currentStepRelativeY = 1.0 - (slideElement->StartTime - currentTime) / seenDuration;
+        double currentStepRelativeY = 1.0 - (slideElement->StartTime - CurrentTime) / SeenDuration;
         auto &segmentPositions = curveData[slideElement];
 
         auto lastSegmentPosition = segmentPositions[0];
         double lastSegmentLength = lastStep->Length;
         double lastTimeInBlock = get<0>(lastSegmentPosition) / (slideElement->StartTime - lastStep->StartTime);
-        auto lastSegmentRelativeY = 1.0 - (lastStep->StartTime - currentTime) / seenDuration;
+        auto lastSegmentRelativeY = 1.0 - (lastStep->StartTime - CurrentTime) / SeenDuration;
         for (auto &segmentPosition : segmentPositions) {
             if (lastSegmentPosition == segmentPosition) continue;
             double currentTimeInBlock = get<0>(segmentPosition) / (slideElement->StartTime - lastStep->StartTime);
             double currentSegmentLength = (1.0 - currentTimeInBlock) * lastStep->Length + currentTimeInBlock * slideElement->Length;
-            double currentSegmentRelativeY = 1.0 - (lastStep->StartTime + get<0>(segmentPosition) - currentTime) / seenDuration;
+            double currentSegmentRelativeY = 1.0 - (lastStep->StartTime + get<0>(segmentPosition) - CurrentTime) / SeenDuration;
 
             SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
             DrawLineAA(
@@ -655,7 +661,7 @@ tuple<double, double> ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNote
         lastStep = slideElement;
         lastStepRelativeY = currentStepRelativeY;
     }
-    return make_tuple((note->StartLane + note->Length / 2.0) / 16.0, SU_LANE_Z_MAX * (note->StartTime - currentTime) / seenDuration);
+    return make_tuple((note->StartLane + note->Length / 2.0) / 16.0, SU_LANE_Z_MAX * (note->StartTime - CurrentTime) / SeenDuration);
 }
 
 void ScenePlayer::DrawMeasureLines()
@@ -663,11 +669,11 @@ void ScenePlayer::DrawMeasureLines()
     int division = 8;
     for (int i = 1; i < division; i++) DrawLineAA(laneBufferX / division * i, 0, laneBufferX / division * i, laneBufferY, GetColor(255, 255, 255), 3);
 
-    auto rbeg = analyzer->GetRelativeTime(currentTime);
-    auto rend = analyzer->GetRelativeTime(currentTime + seenDuration);
+    auto rbeg = analyzer->GetRelativeTime(CurrentTime);
+    auto rend = analyzer->GetRelativeTime(CurrentTime + SeenDuration);
     for (int i = get<0>(rbeg); i < get<0>(rend) + 1; i++) {
         auto pos = analyzer->GetAbsoluteTime(i, 0);
-        double relpos = 1.0 - (pos - currentTime) / seenDuration;
+        double relpos = 1.0 - (pos - CurrentTime) / SeenDuration;
         DrawLineAA(0, relpos * laneBufferY, laneBufferX, relpos * laneBufferY, GetColor(255, 255, 255), 6);
     }
 }
@@ -680,15 +686,15 @@ void ScenePlayer::Prepare3DDrawCall()
 
 void ScenePlayer::ProcessSound()
 {
-    if (BgmState == -1 && BackingTime >= 0) {
+    if (State == -1 && BackingTime >= 0) {
         soundManager->PlayGlobal(bgmStream);
-        BgmState = 0;
+        State = 0;
     }
-    if (BgmState != 0 && NextMetronomeTime <= BackingTime && NextMetronomeTime < 0) {
+    if (State != 0 && NextMetronomeTime <= BackingTime && NextMetronomeTime < 0) {
         soundManager->PlayGlobal(soundTap->GetSample());
         NextMetronomeTime += 60 / analyzer->GetBpmAt(0, 0);
     }
-    if (BgmState == 0) {
+    if (State == 0) {
         BackingTime = bgmStream->GetPlayingPosition();
     }
 }
@@ -714,13 +720,13 @@ void ScenePlayer::SetPlayerResource(const string & name, SResource * resource)
 
 void ScenePlayer::Play()
 {
-    BgmState = -1;
+    State = -1;
 }
 
 double ScenePlayer::GetPlayingTime()
 {
     // バッファリングの影響なのかBGM再生位置はTickから計算されるより33~36ms遅れる
-    if (BgmState != 0) {
+    if (State != 0) {
         return BackingTime - SoundBufferingLatency;
     } else {
         return bgmStream->GetPlayingPosition();
@@ -734,8 +740,8 @@ void ScenePlayer::GetPlayStatus(PlayStatus *status)
 
 void ScenePlayer::MovePositionBySecond(double sec)
 {
-    if (BgmState != 0) return;
-    double newTime = currentTime + sec;
+    if (State != 0) return;
+    double newTime = CurrentTime + sec;
     auto pos = BASS_ChannelSeconds2Bytes(bgmStream->GetSoundHandle(), newTime);
     BASS_ChannelSetPosition(bgmStream->GetSoundHandle(), pos, BASS_POS_BYTE);
     processor->MovePosition(sec);
@@ -743,10 +749,10 @@ void ScenePlayer::MovePositionBySecond(double sec)
 
 void ScenePlayer::MovePositionByMeasure(int meas)
 {
-    if (BgmState != 0) return;
-    auto cp = analyzer->GetRelativeTime(currentTime);
+    if (State != 0) return;
+    auto cp = analyzer->GetRelativeTime(CurrentTime);
     double newTime = analyzer->GetAbsoluteTime(get<0>(cp) + meas, 0);
-    double rel = newTime - currentTime;
+    double rel = newTime - CurrentTime;
     auto pos = BASS_ChannelSeconds2Bytes(bgmStream->GetSoundHandle(), newTime);
     BASS_ChannelSetPosition(bgmStream->GetSoundHandle(), pos, BASS_POS_BYTE);
     processor->MovePosition(rel);

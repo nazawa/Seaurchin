@@ -31,6 +31,19 @@ enum JudgeType {
     Action,
 };
 
+enum PlayingState {
+    
+    ScoreNotLoaded,     //何も始まっていない
+    BgmNotLoaded,       //譜面だけ読み込んだ
+    ReadyToStart,       //読み込みが終わったので始められる
+    ReadyCounting,      //BGM読み終わって前カウントしてる
+    BgmPreceding,       //前カウント中だけどBGM始まってる
+    OnlyScoreOngoing,   //譜面始まったけどBGMまだ
+    BothOngoing,        //両方再生してる
+    ScoreLasting,       //譜面残ってる
+    BgmLasting,         //曲残ってる
+};
+
 class ExecutionManager;
 class ScenePlayer : public SSprite {
     friend class ScoreProcessor;
@@ -82,14 +95,14 @@ protected:
     std::vector<std::shared_ptr<SusDrawableNoteData>> seenData;
     std::unordered_map<std::shared_ptr<SusDrawableNoteData>, SSprite*> SlideEffects;
     std::unordered_map<std::shared_ptr<SusDrawableNoteData>, std::vector<std::tuple<double, double>>> curveData;
-    double currentTime = 0;
-    double currentSoundTime = 0;
-    double seenDuration = 0.8;
-    double precedTime = 0.2;
+    double CurrentTime = 0;
+    double CurrentSoundTime = 0;
+    double SeenDuration = 0.8;
+    double PreloadingTime = 0.2;
     double BackingTime = 0.0;
     double NextMetronomeTime = 0.0;
     double SoundBufferingLatency = 0.030;   //TODO: 環境に若干寄り添う
-    int BgmState = -1;  //-2: 読み込み終了 -1: 前カウント 0:プレイ中 1:曲終了
+    PlayingState State = PlayingState::ScoreNotLoaded;
     int seenObjects = 0;
 
     void AddSprite(SSprite *sprite);

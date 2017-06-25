@@ -2,6 +2,7 @@
 
 #include "SusAnalyzer.h"
 #include "Controller.h"
+#include "ScriptResource.h"
 
 struct PlayStatus {
     uint32_t JusticeCritical = 0;
@@ -43,6 +44,7 @@ protected:
     std::shared_ptr<ControlState> CurrentState;
     std::vector<std::shared_ptr<SusDrawableNoteData>> &data = DefaultDataValue;
     bool isInHold = false, isInSlide = false, wasInHold = false, wasInSlide = false;
+    SImage *imageHoldLight;
 
     void ProcessScore(std::shared_ptr<SusDrawableNoteData> notes);
     bool CheckJudgement(std::shared_ptr<SusDrawableNoteData> note);

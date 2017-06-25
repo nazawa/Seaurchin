@@ -81,7 +81,7 @@ void AutoPlayerProcessor::Update(vector<shared_ptr<SusDrawableNoteData>> &notes)
 
 void AutoPlayerProcessor::MovePosition(double relative)
 {
-    double newTime = Player->currentSoundTime + relative;
+    double newTime = Player->CurrentSoundTime + relative;
     Status.JusticeCritical = Status.Justice = Status.Attack = Status.Miss = Status.Combo = Status.CurrentGauge = 0;
 
     wasInHold = isInHold = false;
@@ -132,7 +132,7 @@ void AutoPlayerProcessor::IncrementCombo()
 
 void AutoPlayerProcessor::ProcessScore(shared_ptr<SusDrawableNoteData> note)
 {
-    double relpos = (note->StartTime - Player->currentSoundTime) / Player->seenDuration;
+    double relpos = (note->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
     if (relpos >= 0 || (note->OnTheFlyData.test(NoteAttribute::Finished) && note->ExtraData.size() == 0)) return;
     auto state = note->Type.to_ulong();
 
@@ -146,7 +146,7 @@ void AutoPlayerProcessor::ProcessScore(shared_ptr<SusDrawableNoteData> note)
         }
 
         for (auto &extra : note->ExtraData) {
-            double pos = (extra->StartTime - Player->currentSoundTime) / Player->seenDuration;
+            double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
             if (extra->Type.test(SusNoteType::End)) isInHold = false;
             if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
@@ -172,7 +172,7 @@ void AutoPlayerProcessor::ProcessScore(shared_ptr<SusDrawableNoteData> note)
             return;
         }
         for (auto &extra : note->ExtraData) {
-            double pos = (extra->StartTime - Player->currentSoundTime) / Player->seenDuration;
+            double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
             if (extra->Type.test(SusNoteType::End)) isInSlide = false;
             if (extra->Type.test(SusNoteType::Control)) continue;
@@ -190,7 +190,7 @@ void AutoPlayerProcessor::ProcessScore(shared_ptr<SusDrawableNoteData> note)
         }
     } else if (note->Type.test(SusNoteType::AirAction)) {
         for (auto &extra : note->ExtraData) {
-            double pos = (extra->StartTime - Player->currentSoundTime) / Player->seenDuration;
+            double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
             if (extra->Type.test(SusNoteType::Control)) continue;
             if (extra->Type.test(SusNoteType::Tap)) continue;
@@ -243,7 +243,7 @@ void PlayableProcessor::IncrementCombo()
 
 void PlayableProcessor::ProcessScore(std::shared_ptr<SusDrawableNoteData> note)
 {
-    double relpos = (note->StartTime - Player->currentSoundTime) / Player->seenDuration;
+    double relpos = (note->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
     if (note->OnTheFlyData.test(NoteAttribute::Finished) && note->ExtraData.size() == 0) return;
     auto state = note->Type.to_ulong();
 
@@ -258,7 +258,7 @@ void PlayableProcessor::ProcessScore(std::shared_ptr<SusDrawableNoteData> note)
         }
 
         for (auto &extra : note->ExtraData) {
-            double pos = (extra->StartTime - Player->currentSoundTime) / Player->seenDuration;
+            double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
             if (extra->Type.test(SusNoteType::End)) isInHold = false;
             if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
@@ -285,7 +285,7 @@ void PlayableProcessor::ProcessScore(std::shared_ptr<SusDrawableNoteData> note)
             return;
         }
         for (auto &extra : note->ExtraData) {
-            double pos = (extra->StartTime - Player->currentSoundTime) / Player->seenDuration;
+            double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
             if (extra->Type.test(SusNoteType::End)) isInSlide = false;
             if (extra->Type.test(SusNoteType::Control)) continue;
@@ -304,7 +304,7 @@ void PlayableProcessor::ProcessScore(std::shared_ptr<SusDrawableNoteData> note)
     } else if (note->Type.test(SusNoteType::AirAction)) {
         if (relpos > 0) return;
         for (auto &extra : note->ExtraData) {
-            double pos = (extra->StartTime - Player->currentSoundTime) / Player->seenDuration;
+            double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
             if (extra->Type.test(SusNoteType::Control)) continue;
             if (extra->Type.test(SusNoteType::Tap)) continue;
@@ -348,11 +348,11 @@ void PlayableProcessor::ProcessScore(std::shared_ptr<SusDrawableNoteData> note)
 
 bool PlayableProcessor::CheckJudgement(std::shared_ptr<SusDrawableNoteData> note)
 {
-    double jthJC = 0.020, jthJ = 0.033, jthA = 0.040;
-    double reltime = note->StartTime - Player->currentSoundTime;
+    double jthJC = 0.033, jthJ = 0.048, jthA = 0.072, judgeAdjust = 0.033;
+    double reltime = Player->CurrentSoundTime - note->StartTime;
     if (note->OnTheFlyData.test(NoteAttribute::Finished)) return false;
-    if (reltime > jthA) return false;
-    if (reltime < -jthA) {
+    if (reltime < -jthA) return false;
+    if (reltime > jthA) {
         note->OnTheFlyData.set(NoteAttribute::Finished);
         Status.Miss++;
         Status.Combo = 0;
@@ -360,6 +360,11 @@ bool PlayableProcessor::CheckJudgement(std::shared_ptr<SusDrawableNoteData> note
     }
     for (int i = note->StartLane; i < note->StartLane + note->Length; i++) {
         if (!CurrentState->GetTriggerState(ControllerSource::IntegratedSliders, i)) continue;
+
+        ostringstream ss;
+        ss << reltime << endl;
+        WriteDebugConsole(ss.str().c_str());
+
         reltime = fabs(reltime);
         if (reltime <= jthJC) {
             note->OnTheFlyData.set(NoteAttribute::Finished);
@@ -407,16 +412,12 @@ void PlayableProcessor::Reset()
             Status.AllNotes++;
         }
     }
+
+    imageHoldLight = dynamic_cast<SImage*>(Player->resources["LaneHoldLight"]);
 }
 
 void PlayableProcessor::Update(std::vector<std::shared_ptr<SusDrawableNoteData>>& notes)
 {
-    ostringstream ss;
-    for (int i = 0; i < 16; i++) {
-        ss << (CurrentState->GetCurrentState(ControllerSource::IntegratedSliders, i) ? "Åú" : "Åõ");    
-    }
-    SetMainWindowText(ss.str().c_str());
-
     bool SlideCheck = false;
     bool HoldCheck = false;
     for (auto& note : notes) {
@@ -436,7 +437,7 @@ void PlayableProcessor::Update(std::vector<std::shared_ptr<SusDrawableNoteData>>
 
 void PlayableProcessor::MovePosition(double relative)
 {
-    double newTime = Player->currentSoundTime + relative;
+    double newTime = Player->CurrentSoundTime + relative;
     Status.JusticeCritical = Status.Justice = Status.Attack = Status.Miss = Status.Combo = Status.CurrentGauge = 0;
 
     wasInHold = isInHold = false;
@@ -471,7 +472,19 @@ void PlayableProcessor::MovePosition(double relative)
 }
 
 void PlayableProcessor::Draw()
-{}
+{
+    if (!imageHoldLight) return;
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+    for (int i = 0; i < 16; i++)
+        if (CurrentState->GetCurrentState(ControllerSource::IntegratedSliders, i))
+            DrawRectRotaGraph3F(
+                Player->widthPerLane * i, Player->laneBufferY,
+                0, 0,
+                imageHoldLight->get_Width(), imageHoldLight->get_Height(),
+                0, imageHoldLight->get_Height(),
+                1, 2, 0,
+                imageHoldLight->GetHandle(), TRUE, FALSE);
+}
 
 PlayStatus *PlayableProcessor::GetPlayStatus()
 {
