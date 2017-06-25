@@ -60,7 +60,6 @@ void RegisterPlayerScene(ExecutionManager * manager)
 ScenePlayer::ScenePlayer(ExecutionManager *exm) : manager(exm)
 {
     soundManager = manager->GetSoundManagerUnsafe();
-    State = -2;
 }
 
 ScenePlayer::~ScenePlayer()
@@ -235,11 +234,10 @@ void ScenePlayer::Tick(double delta)
         }
     }
 
-    if (State != -2) BackingTime += delta;
-    CurrentTime = GetPlayingTime() - analyzer->SharedMetaData.WaveOffset;
+    if (State >= PlayingState::ReadyCounting) CurrentTime += delta;
     CurrentSoundTime = CurrentTime + SoundBufferingLatency;
     seenData.clear();
-    if (State >= -1) CalculateNotes(CurrentTime, SeenDuration, PreloadingTime);
+    if (State >= PlayingState::ReadyCounting) CalculateNotes(CurrentTime, SeenDuration, PreloadingTime);
 
     int pCombo = Status.Combo;
     processor->Update(seenData);
@@ -686,16 +684,35 @@ void ScenePlayer::Prepare3DDrawCall()
 
 void ScenePlayer::ProcessSound()
 {
-    if (State == -1 && BackingTime >= 0) {
-        soundManager->PlayGlobal(bgmStream);
-        State = 0;
-    }
-    if (State != 0 && NextMetronomeTime <= BackingTime && NextMetronomeTime < 0) {
-        soundManager->PlayGlobal(soundTap->GetSample());
-        NextMetronomeTime += 60 / analyzer->GetBpmAt(0, 0);
-    }
-    if (State == 0) {
-        BackingTime = bgmStream->GetPlayingPosition();
+    double ActualOffset = analyzer->SharedMetaData.WaveOffset - SoundBufferingLatency;
+    if (State < PlayingState::ReadyCounting) return;
+    
+    switch (State) {
+        case PlayingState::ReadyCounting:
+            if (ActualOffset < 0 && CurrentTime >= ActualOffset) {
+                soundManager->PlayGlobal(bgmStream);
+                State = PlayingState::BgmPreceding;
+            } else if (CurrentTime >= 0) {
+                State = PlayingState::OnlyScoreOngoing;
+            } else if (NextMetronomeTime < 0 && CurrentTime >= NextMetronomeTime) {
+                //TODO: NextMetronomeにもLatency適用？
+                soundManager->PlayGlobal(soundTap->GetSample());
+                NextMetronomeTime += 60 / analyzer->GetBpmAt(0, 0);
+            }
+            break;
+        case PlayingState::BgmPreceding:
+            if (CurrentTime >= 0) State = PlayingState::BothOngoing;
+            break;
+        case PlayingState::OnlyScoreOngoing:
+            if (CurrentTime >= ActualOffset) {
+                soundManager->PlayGlobal(bgmStream);
+                State = PlayingState::BothOngoing;
+            }
+            break;
+        case PlayingState::BothOngoing:
+            // BgmLastingは実質なさそうですね…
+            //TODO: 曲の再生に応じてScoreLastingへ移行
+            break;
     }
 }
 
@@ -720,17 +737,13 @@ void ScenePlayer::SetPlayerResource(const string & name, SResource * resource)
 
 void ScenePlayer::Play()
 {
-    State = -1;
+    if (State < PlayingState::ReadyToStart) return;
+    State = PlayingState::ReadyCounting;
 }
 
 double ScenePlayer::GetPlayingTime()
 {
-    // バッファリングの影響なのかBGM再生位置はTickから計算されるより33~36ms遅れる
-    if (State != 0) {
-        return BackingTime - SoundBufferingLatency;
-    } else {
-        return bgmStream->GetPlayingPosition();
-    }
+    return CurrentTime;
 }
 
 void ScenePlayer::GetPlayStatus(PlayStatus *status)

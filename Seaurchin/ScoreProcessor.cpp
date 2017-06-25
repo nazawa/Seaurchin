@@ -348,8 +348,8 @@ void PlayableProcessor::ProcessScore(std::shared_ptr<SusDrawableNoteData> note)
 
 bool PlayableProcessor::CheckJudgement(std::shared_ptr<SusDrawableNoteData> note)
 {
-    double jthJC = 0.033, jthJ = 0.048, jthA = 0.072, judgeAdjust = 0.033;
-    double reltime = Player->CurrentSoundTime - note->StartTime;
+    double jthJC = 0.033, jthJ = 0.048, jthA = 0.072, judgeAdjust = 0.020;
+    double reltime = Player->CurrentTime - note->StartTime + judgeAdjust;
     if (note->OnTheFlyData.test(NoteAttribute::Finished)) return false;
     if (reltime < -jthA) return false;
     if (reltime > jthA) {
@@ -362,7 +362,7 @@ bool PlayableProcessor::CheckJudgement(std::shared_ptr<SusDrawableNoteData> note
         if (!CurrentState->GetTriggerState(ControllerSource::IntegratedSliders, i)) continue;
 
         ostringstream ss;
-        ss << reltime << endl;
+        ss << (reltime >= 0 ? "+" : "") << (int)(reltime*1000.0) << "ms" << endl;
         WriteDebugConsole(ss.str().c_str());
 
         reltime = fabs(reltime);
