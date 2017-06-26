@@ -202,165 +202,173 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
     auto pattern = result[3].str();
     ba::erase_all(pattern, " ");
 
-    if (xp::regex_match(meas, AllNumeric)) {
-        // 配置データ
-        auto noteCount = pattern.length() / 2;
-        auto step = (uint32_t)(TicksPerBeat * GetBeatsAt(ConvertInteger(meas))) / noteCount;
+    /*
+     判定順について
+     0. #...** (BPMなど)
+     1. #---0* (特殊データ、定義分割不可)
+     2. #---1* (Short)
+     3. #---5* (Air)
+     4. #---[234]*. (Long)
+    */
 
-        if (lane.length() == 3) {
-            // ロングタイプ
-            for (auto i = 0; i < noteCount; i++) {
-                auto note = pattern.substr(i * 2, 2);
-                SusRawNoteData noteData;
-                SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
-                noteData.NotePosition.StartLane = ConvertHexatridecimal(lane.substr(1, 1));
-                noteData.NotePosition.Length = ConvertHexatridecimal(note.substr(1, 1));
-                noteData.Extra = ConvertHexatridecimal(lane.substr(2, 1));
+    auto noteCount = pattern.length() / 2;
+    auto step = (uint32_t)(TicksPerBeat * GetBeatsAt(ConvertInteger(meas))) / (!noteCount ? 1 : noteCount);
 
-                switch (lane[0]) {
-                    case '2':
-                        noteData.Type.set(SusNoteType::Hold);
-                        break;
-                    case '3':
-                        noteData.Type.set(SusNoteType::Slide);
-                        break;
-                    case '4':
-                        noteData.Type.set(SusNoteType::AirAction);
-                        break;
-                    default:
-                        if (ErrorCallback) ErrorCallback(0, "Error", "ロングレーンの指定が不正です。");
-                        break;
-                }
-                switch (note[0]) {
-                    case '1':
-                        noteData.Type.set(SusNoteType::Start);
-                        break;
-                    case '2':
-                        noteData.Type.set(SusNoteType::End);
-                        break;
-                    case '3':
-                        noteData.Type.set(SusNoteType::Step);
-                        break;
-                    case '4':
-                        noteData.Type.set(SusNoteType::Control);
-                        break;
-                    case '5':
-                        noteData.Type.set(SusNoteType::Tap);
-                        noteData.Type.set(SusNoteType::Step);
-                        break;
-                    default:
-                        if (note[1] == '0') continue;
-                        if (ErrorCallback) ErrorCallback(0, "Error", "ノーツ種類の指定が不正です。");
-                        break;
-                }
-                Notes.push_back(make_tuple(time, noteData));
-            }
-        } else if (lane[0] == '1') {
-            // ショートノーツ
-            for (auto i = 0; i < noteCount; i++) {
-                auto note = pattern.substr(i * 2, 2);
-                SusRawNoteData noteData;
-                SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
-                noteData.NotePosition.StartLane = ConvertHexatridecimal(lane.substr(1, 1));
-                noteData.NotePosition.Length = ConvertHexatridecimal(note.substr(1, 1));
-
-                switch (note[0]) {
-                    case '1':
-                        noteData.Type.set(SusNoteType::Tap);
-                        break;
-                    case '2':
-                        noteData.Type.set(SusNoteType::ExTap);
-                        break;
-                    case '3':
-                        noteData.Type.set(SusNoteType::Flick);
-                        break;
-                    case '4':
-                        // 本来はHell
-                        noteData.Type.set(SusNoteType::Tap);
-                        break;
-                    default:
-                        if (note[1] == '0') continue;
-                        if (ErrorCallback) ErrorCallback(0, "Error", "ショートレーンの指定が不正です。");
-                        break;
-                }
-                Notes.push_back(make_tuple(time, noteData));
-            }
-        } else if (lane[0] == '5') {
-            // Airノーツ
-            for (auto i = 0; i < noteCount; i++) {
-                auto note = pattern.substr(i * 2, 2);
-                SusRawNoteData noteData;
-                SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
-                noteData.NotePosition.StartLane = ConvertHexatridecimal(lane.substr(1, 1));
-                noteData.NotePosition.Length = ConvertHexatridecimal(note.substr(1, 1));
-
-                switch (note[0]) {
-                    case '1':
-                        noteData.Type.set(SusNoteType::Air);
-                        noteData.Type.set(SusNoteType::Up);
-                        break;
-                    case '2':
-                        noteData.Type.set(SusNoteType::Air);
-                        noteData.Type.set(SusNoteType::Down);
-                        break;
-                    case '3':
-                        noteData.Type.set(SusNoteType::Air);
-                        noteData.Type.set(SusNoteType::Up);
-                        noteData.Type.set(SusNoteType::Left);
-                        break;
-                    case '4':
-                        noteData.Type.set(SusNoteType::Air);
-                        noteData.Type.set(SusNoteType::Up);
-                        noteData.Type.set(SusNoteType::Right);
-                        break;
-                    case '5':
-                        noteData.Type.set(SusNoteType::Air);
-                        noteData.Type.set(SusNoteType::Down);
-                        noteData.Type.set(SusNoteType::Right);
-                        break;
-                    case '6':
-                        noteData.Type.set(SusNoteType::Air);
-                        noteData.Type.set(SusNoteType::Down);
-                        noteData.Type.set(SusNoteType::Left);
-                        break;
-                    default:
-                        if (note[1] == '0') continue;
-                        if (ErrorCallback) ErrorCallback(0, "Error", "Airレーンの指定が不正です。");
-                        break;
-                }
-                Notes.push_back(make_tuple(time, noteData));
-            }
-        } else {
-            // BPMなど
-            switch (lane[1]) {
-                case '2':
-                    // 小節長
-                    BeatsDefinitions[ConvertInteger(meas)] = ConvertFloat(pattern);
-                    break;
-                case '8': {
-                    // BPM
-                    for (auto i = 0; i < noteCount; i++) {
-                        auto note = pattern.substr(i * 2, 2);
-                        SusRawNoteData noteData;
-                        SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
-                        noteData.Type.set(SusNoteType::Undefined);
-                        noteData.DefinitionNumber = ConvertHexatridecimal(note);
-                        Notes.push_back(make_tuple(time, noteData));
-                    }
-                    break;
-                }
-                default:
-                    if (ErrorCallback) ErrorCallback(0, "Error", "不正なデータコマンドです");
-                    break;
-            }
-        }
-    } else {
+    if (!xp::regex_match(meas, AllNumeric)) {
         // コマンドデータ
         transform(meas.cbegin(), meas.cend(), meas.begin(), toupper);
         if (meas == "BPM") {
             auto number = ConvertHexatridecimal(lane);
             BpmDefinitions[number] = ConvertFloat(pattern);
         }
+    } else if (lane[0] == '0') {
+        switch (lane[1]) {
+            case '2':
+                // 小節長
+                BeatsDefinitions[ConvertInteger(meas)] = ConvertFloat(pattern);
+                break;
+            case '8': {
+                // BPM
+                for (auto i = 0; i < noteCount; i++) {
+                    auto note = pattern.substr(i * 2, 2);
+                    SusRawNoteData noteData;
+                    SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
+                    noteData.Type.set(SusNoteType::Undefined);
+                    noteData.DefinitionNumber = ConvertHexatridecimal(note);
+                    Notes.push_back(make_tuple(time, noteData));
+                }
+                break;
+            }
+            default:
+                if (ErrorCallback) ErrorCallback(0, "Error", "不正なデータコマンドです");
+                break;
+        }
+    } else if (lane[0] == '1') {
+        // ショートノーツ
+        for (auto i = 0; i < noteCount; i++) {
+            auto note = pattern.substr(i * 2, 2);
+            SusRawNoteData noteData;
+            SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
+            noteData.NotePosition.StartLane = ConvertHexatridecimal(lane.substr(1, 1));
+            noteData.NotePosition.Length = ConvertHexatridecimal(note.substr(1, 1));
+
+            switch (note[0]) {
+                case '1':
+                    noteData.Type.set(SusNoteType::Tap);
+                    break;
+                case '2':
+                    noteData.Type.set(SusNoteType::ExTap);
+                    break;
+                case '3':
+                    noteData.Type.set(SusNoteType::Flick);
+                    break;
+                case '4':
+                    // 本来はHell
+                    noteData.Type.set(SusNoteType::Tap);
+                    break;
+                default:
+                    if (note[1] == '0') continue;
+                    if (ErrorCallback) ErrorCallback(0, "Error", "ショートレーンの指定が不正です。");
+                    break;
+            }
+            Notes.push_back(make_tuple(time, noteData));
+        }
+    } else if (lane[0] == '5') {
+        // Airノーツ
+        for (auto i = 0; i < noteCount; i++) {
+            auto note = pattern.substr(i * 2, 2);
+            SusRawNoteData noteData;
+            SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
+            noteData.NotePosition.StartLane = ConvertHexatridecimal(lane.substr(1, 1));
+            noteData.NotePosition.Length = ConvertHexatridecimal(note.substr(1, 1));
+
+            switch (note[0]) {
+                case '1':
+                    noteData.Type.set(SusNoteType::Air);
+                    noteData.Type.set(SusNoteType::Up);
+                    break;
+                case '2':
+                    noteData.Type.set(SusNoteType::Air);
+                    noteData.Type.set(SusNoteType::Down);
+                    break;
+                case '3':
+                    noteData.Type.set(SusNoteType::Air);
+                    noteData.Type.set(SusNoteType::Up);
+                    noteData.Type.set(SusNoteType::Left);
+                    break;
+                case '4':
+                    noteData.Type.set(SusNoteType::Air);
+                    noteData.Type.set(SusNoteType::Up);
+                    noteData.Type.set(SusNoteType::Right);
+                    break;
+                case '5':
+                    noteData.Type.set(SusNoteType::Air);
+                    noteData.Type.set(SusNoteType::Down);
+                    noteData.Type.set(SusNoteType::Right);
+                    break;
+                case '6':
+                    noteData.Type.set(SusNoteType::Air);
+                    noteData.Type.set(SusNoteType::Down);
+                    noteData.Type.set(SusNoteType::Left);
+                    break;
+                default:
+                    if (note[1] == '0') continue;
+                    if (ErrorCallback) ErrorCallback(0, "Error", "Airレーンの指定が不正です。");
+                    break;
+            }
+            Notes.push_back(make_tuple(time, noteData));
+        }
+    } else if (lane.length() == 3) {
+        // ロングタイプ
+        for (auto i = 0; i < noteCount; i++) {
+            auto note = pattern.substr(i * 2, 2);
+            SusRawNoteData noteData;
+            SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
+            noteData.NotePosition.StartLane = ConvertHexatridecimal(lane.substr(1, 1));
+            noteData.NotePosition.Length = ConvertHexatridecimal(note.substr(1, 1));
+            noteData.Extra = ConvertHexatridecimal(lane.substr(2, 1));
+
+            switch (lane[0]) {
+                case '2':
+                    noteData.Type.set(SusNoteType::Hold);
+                    break;
+                case '3':
+                    noteData.Type.set(SusNoteType::Slide);
+                    break;
+                case '4':
+                    noteData.Type.set(SusNoteType::AirAction);
+                    break;
+                default:
+                    if (ErrorCallback) ErrorCallback(0, "Error", "ロングレーンの指定が不正です。");
+                    break;
+            }
+            switch (note[0]) {
+                case '1':
+                    noteData.Type.set(SusNoteType::Start);
+                    break;
+                case '2':
+                    noteData.Type.set(SusNoteType::End);
+                    break;
+                case '3':
+                    noteData.Type.set(SusNoteType::Step);
+                    break;
+                case '4':
+                    noteData.Type.set(SusNoteType::Control);
+                    break;
+                case '5':
+                    noteData.Type.set(SusNoteType::Tap);
+                    noteData.Type.set(SusNoteType::Step);
+                    break;
+                default:
+                    if (note[1] == '0') continue;
+                    if (ErrorCallback) ErrorCallback(0, "Error", "ノーツ種類の指定が不正です。");
+                    break;
+            }
+            Notes.push_back(make_tuple(time, noteData));
+        }
+    } else {
+        // 不正
+        if (ErrorCallback) ErrorCallback(0, "Error", "不正なデータ定義です。");
     }
 }
 
