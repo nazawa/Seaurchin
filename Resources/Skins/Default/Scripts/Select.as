@@ -125,7 +125,25 @@ class Title : CoroutineScene {
         cursor.Previous();
         UpdateCursor(-1);
       }
+      
+      if (IsKeyTriggered(Key::INPUT_A)) {
+        SetData("AutoPlay", 1);
+        ShowMessage("オートプレイ: ON");
+      }
+      if (IsKeyTriggered(Key::INPUT_M)) {
+        SetData("AutoPlay", 0);
+        ShowMessage("オートプレイ: OFF");
+      }
+      
       YieldFrame(1);
     }
+  }
+  
+  void ShowMessage(string mes) {
+    TextSprite@ spmes = TextSprite(font32, mes);
+    spmes.Apply("y:-32, z:20, r:0, g:0, b:0");
+    spmes.AddMove("move_by(y:32, time:0.5, ease:out_sine)");
+    spmes.AddMove("move_by(y:-32, time:0.5, wait:1.0, ease:in_sine)");
+    AddSprite(spmes);
   }
 }

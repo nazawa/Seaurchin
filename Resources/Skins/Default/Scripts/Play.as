@@ -44,6 +44,7 @@ class Play : CoroutineScene {
     player.SetResource("AirUp", skin.GetImage("*Note-AirUp"));
     player.SetResource("AirDown", skin.GetImage("*Note-AirDown"));
     player.SetResource("Flick", skin.GetImage("*Note-Flick"));
+    player.SetResource("HellTap", skin.GetImage("*Note-HellTap"));
     player.SetResource("Hold", skin.GetImage("*Note-Hold"));
     player.SetResource("HoldStrut", skin.GetImage("*Note-HoldStrut"));
     player.SetResource("Slide", skin.GetImage("*Note-Slide"));
