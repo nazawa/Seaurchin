@@ -131,6 +131,9 @@ void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
         }
     }
     sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
+        return get<1>(a).Type.to_ulong() > get<1>(a).Type.to_ulong();
+    });
+    sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
         return get<0>(a).Tick < get<0>(b).Tick;
     });
     stable_sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
