@@ -70,8 +70,12 @@ ScenePlayer::~ScenePlayer()
 void ScenePlayer::Initialize()
 {
     analyzer = make_unique<SusAnalyzer>(192);
-    processor = new PlayableProcessor(this);
 
+    if (manager->ExistsData("AutoPlay") ? manager->GetData<int>("AutoPlay") : 1) {
+        processor = new AutoPlayerProcessor(this);
+    } else {
+        processor = new PlayableProcessor(this);
+    }
     // 2^x§ŒÀ‚ª‚ ‚é‚Ì‚Å‚±‚±‚ÅŒvŽZ
     double bufferY = 2;
     while (laneBufferY > bufferY) bufferY *= 2;

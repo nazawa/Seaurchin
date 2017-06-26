@@ -130,9 +130,9 @@ void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
             if (ErrorCallback) ErrorCallback(0, "Error", "SUS有効行ですが解析できませんでした。");
         }
     }
-    sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
-        return get<1>(a).Type.to_ulong() > get<1>(a).Type.to_ulong();
-    });
+    //sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
+    //    return get<1>(a).Type.to_ulong() > get<1>(b).Type.to_ulong();
+    //});
     sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
         return get<0>(a).Tick < get<0>(b).Tick;
     });
@@ -487,7 +487,7 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             noteData->Length = info.NotePosition.Length;
 
             int ltype = 0;
-            switch ((bits >> 5) & 7) {
+            switch ((bits >> 6) & 7) {
                 case 1:
                     ltype = SusNoteType::Hold;
                     break;
