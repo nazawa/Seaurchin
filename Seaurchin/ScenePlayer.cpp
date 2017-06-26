@@ -434,6 +434,9 @@ void ScenePlayer::DrawShortNotes(shared_ptr<SusDrawableNoteData> note)
         handleToDraw = imageExTap->GetHandle();
     } else if (note->Type.test(SusNoteType::Flick)) {
         handleToDraw = imageFlick->GetHandle();
+    } else if (note->Type.test(SusNoteType::HellTap)) {
+        //TODO: ‚³‚Á‚³‚Æ‘‚«Š·‚¦‚ë
+        handleToDraw = imageTap->GetHandle();
     }
 
     //64*3 x 64 ‚ð•`‰æ‚·‚é‚©‚ç1/2‚Å‚â‚é•K—v‚ª‚ ‚é
