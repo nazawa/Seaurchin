@@ -155,7 +155,7 @@ void ScenePlayer::LoadWorker()
     // WaveOffset‚ª1¬ß•ª‚æ‚è’·‚¢‚Æ‚ß‚ñ‚Ç‚­‚³‚»‚¤‚È‚Ì‚Å·‚µˆø‚¢‚Ä‚­
     BackingTime = -60.0 / analyzer->GetBpmAt(0, 0) * analyzer->GetBeatsAt(0);
     NextMetronomeTime = BackingTime;
-    while(BackingTime > analyzer->SharedMetaData.WaveOffset) BackingTime -= 60.0 / analyzer->GetBpmAt(0, 0) * analyzer->GetBeatsAt(0);
+    while (BackingTime > analyzer->SharedMetaData.WaveOffset) BackingTime -= 60.0 / analyzer->GetBpmAt(0, 0) * analyzer->GetBeatsAt(0);
     CurrentTime = BackingTime;
 
     isLoadCompleted = true;
@@ -573,21 +573,22 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
             double currentSegmentLength = (1.0 - currentTimeInBlock) * lastStep->Length + currentTimeInBlock * slideElement->Length;
             double currentSegmentRelativeY = 1.0 - (lastStep->StartTime + get<0>(segmentPosition) - CurrentTime) / SeenDuration;
 
-            SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
-            DrawRectModiGraphF(
-                get<1>(lastSegmentPosition) * laneBufferX - lastSegmentLength / 2 * widthPerLane, laneBufferY * lastSegmentRelativeY,
-                get<1>(lastSegmentPosition) * laneBufferX + lastSegmentLength / 2 * widthPerLane, laneBufferY * lastSegmentRelativeY,
-                get<1>(segmentPosition) * laneBufferX + currentSegmentLength / 2 * widthPerLane, laneBufferY * currentSegmentRelativeY,
-                get<1>(segmentPosition) * laneBufferX - currentSegmentLength / 2 * widthPerLane, laneBufferY * currentSegmentRelativeY,
-                0, 192.0 * lastTimeInBlock, noteImageBlockX, 192.0 * (currentTimeInBlock - lastTimeInBlock),
-                imageSlideStrut->GetHandle(), TRUE
-            );
-            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-            DrawLineAA(
-                get<1>(lastSegmentPosition) * laneBufferX, laneBufferY * lastSegmentRelativeY,
-                get<1>(segmentPosition) * laneBufferX, laneBufferY * currentSegmentRelativeY,
-                slideLineColor, 16);
-
+            if (currentSegmentRelativeY < 1.0) {
+                SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
+                DrawRectModiGraphF(
+                    get<1>(lastSegmentPosition) * laneBufferX - lastSegmentLength / 2 * widthPerLane, laneBufferY * lastSegmentRelativeY,
+                    get<1>(lastSegmentPosition) * laneBufferX + lastSegmentLength / 2 * widthPerLane, laneBufferY * lastSegmentRelativeY,
+                    get<1>(segmentPosition) * laneBufferX + currentSegmentLength / 2 * widthPerLane, laneBufferY * currentSegmentRelativeY,
+                    get<1>(segmentPosition) * laneBufferX - currentSegmentLength / 2 * widthPerLane, laneBufferY * currentSegmentRelativeY,
+                    0, 192.0 * lastTimeInBlock, noteImageBlockX, 192.0 * (currentTimeInBlock - lastTimeInBlock),
+                    imageSlideStrut->GetHandle(), TRUE
+                );
+                SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+                DrawLineAA(
+                    get<1>(lastSegmentPosition) * laneBufferX, laneBufferY * lastSegmentRelativeY,
+                    get<1>(segmentPosition) * laneBufferX, laneBufferY * currentSegmentRelativeY,
+                    slideLineColor, 16);
+            }
             lastSegmentPosition = segmentPosition;
             lastSegmentLength = currentSegmentLength;
             lastSegmentRelativeY = currentSegmentRelativeY;
@@ -632,12 +633,14 @@ tuple<double, double> ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNote
             double currentTimeInBlock = get<0>(segmentPosition) / (slideElement->StartTime - lastStep->StartTime);
             double currentSegmentLength = (1.0 - currentTimeInBlock) * lastStep->Length + currentTimeInBlock * slideElement->Length;
             double currentSegmentRelativeY = 1.0 - (lastStep->StartTime + get<0>(segmentPosition) - CurrentTime) / SeenDuration;
-
-            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-            DrawLineAA(
-                get<1>(lastSegmentPosition) * laneBufferX, laneBufferY * lastSegmentRelativeY,
-                get<1>(segmentPosition) * laneBufferX, laneBufferY * currentSegmentRelativeY,
-                airActionLineColor, 16);
+            
+            if (currentSegmentRelativeY < 1.0) {
+                SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+                DrawLineAA(
+                    get<1>(lastSegmentPosition) * laneBufferX, laneBufferY * lastSegmentRelativeY,
+                    get<1>(segmentPosition) * laneBufferX, laneBufferY * currentSegmentRelativeY,
+                    airActionLineColor, 16);
+            }
 
             lastSegmentPosition = segmentPosition;
             lastSegmentLength = currentSegmentLength;
@@ -686,7 +689,7 @@ void ScenePlayer::ProcessSound()
 {
     double ActualOffset = analyzer->SharedMetaData.WaveOffset - SoundBufferingLatency;
     if (State < PlayingState::ReadyCounting) return;
-    
+
     switch (State) {
         case PlayingState::ReadyCounting:
             if (ActualOffset < 0 && CurrentTime >= ActualOffset) {
