@@ -88,7 +88,7 @@ void ScenePlayer::Initialize()
     imageTap = dynamic_cast<SImage*>(resources["Tap"]);
     imageExTap = dynamic_cast<SImage*>(resources["ExTap"]);
     imageFlick = dynamic_cast<SImage*>(resources["Flick"]);
-    imageFlick = dynamic_cast<SImage*>(resources["HellTap"]);
+    imageHellTap = dynamic_cast<SImage*>(resources["HellTap"]);
     imageAirUp = dynamic_cast<SImage*>(resources["AirUp"]);
     imageAirDown = dynamic_cast<SImage*>(resources["AirDown"]);
     imageHold = dynamic_cast<SImage*>(resources["Hold"]);
@@ -281,6 +281,7 @@ void ScenePlayer::Draw()
         if (type.test(SusNoteType::Tap)) DrawShortNotes(note);
         if (type.test(SusNoteType::ExTap)) DrawShortNotes(note);
         if (type.test(SusNoteType::Flick)) DrawShortNotes(note);
+        if (type.test(SusNoteType::HellTap)) DrawShortNotes(note);
     }
     FINISH_DRAW_TRANSACTION;
     Prepare3DDrawCall();

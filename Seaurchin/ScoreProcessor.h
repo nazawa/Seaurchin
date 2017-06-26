@@ -23,6 +23,7 @@ public:
 enum NoteAttribute {
     Invisible = 0,
     Finished,
+    HellChecking,
 };
 
 class ScenePlayer;
@@ -48,6 +49,7 @@ protected:
 
     void ProcessScore(std::shared_ptr<SusDrawableNoteData> notes);
     bool CheckJudgement(std::shared_ptr<SusDrawableNoteData> note);
+    bool CheckHellJudgement(std::shared_ptr<SusDrawableNoteData> note);
     void IncrementCombo();
 
 public:

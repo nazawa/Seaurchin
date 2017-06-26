@@ -229,7 +229,11 @@ void AutoPlayerProcessor::ProcessScore(shared_ptr<SusDrawableNoteData> note)
         IncrementCombo();
         note->OnTheFlyData.set(NoteAttribute::Finished);
     } else {
-        // Œ»Ý‚È‚µ 
+        //Hell
+        Player->PlaySoundTap();
+        Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
+        IncrementCombo();
+        note->OnTheFlyData.set(NoteAttribute::Finished);
     }
 }
 
@@ -240,6 +244,8 @@ void PlayableProcessor::IncrementCombo()
     Status.JusticeCritical++;
     Status.CurrentGauge += Status.GaugeDefaultMax / Status.AllNotes;
 }
+
+// TODO: ŒvŽZŽ®‚ªˆê•”“K“–‚È‚ñ‚ÅŽ¡‚·
 
 void PlayableProcessor::ProcessScore(std::shared_ptr<SusDrawableNoteData> note)
 {
@@ -342,9 +348,47 @@ void PlayableProcessor::ProcessScore(std::shared_ptr<SusDrawableNoteData> note)
         Player->PlaySoundFlick();
         Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
     } else {
-        // Œ»Ý‚È‚µ 
+        // Hell
+        if (!CheckHellJudgement(note)) return;
+        Player->PlaySoundTap();
+        Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
     }
 }
+
+bool PlayableProcessor::CheckHellJudgement(std::shared_ptr<SusDrawableNoteData> note)
+{
+    double jthA = 0.072, judgeAdjust = 0.020;
+    double reltime = Player->CurrentTime - note->StartTime;
+    if (note->OnTheFlyData.test(NoteAttribute::Finished)) return false;
+    if (reltime < -jthA) return false;
+    if (reltime > jthA) {
+        note->OnTheFlyData.reset(NoteAttribute::HellChecking);
+        note->OnTheFlyData.set(NoteAttribute::Finished);
+        return false;
+    }
+    if (reltime >= 0 && !note->OnTheFlyData.test(NoteAttribute::HellChecking)) {
+        note->OnTheFlyData.set(NoteAttribute::HellChecking);
+        Status.JusticeCritical++;
+        Status.Combo++;
+        Status.CurrentGauge += Status.GaugeDefaultMax / Status.AllNotes;
+        return true;
+    }
+
+    for (int i = note->StartLane; i < note->StartLane + note->Length; i++) {
+        if (!CurrentState->GetTriggerState(ControllerSource::IntegratedSliders, i)) continue;
+        reltime = fabs(reltime);
+        if (reltime <= jthA) {
+            if (note->OnTheFlyData.test(NoteAttribute::HellChecking)) Status.JusticeCritical--;
+            Status.Miss++;
+            Status.Combo = 0;
+            Status.CurrentGauge -= Status.GaugeDefaultMax / Status.AllNotes * 2;
+            note->OnTheFlyData.set(NoteAttribute::Finished);
+        }
+        return false;
+    }
+    return false;
+}
+
 
 bool PlayableProcessor::CheckJudgement(std::shared_ptr<SusDrawableNoteData> note)
 {
@@ -360,11 +404,6 @@ bool PlayableProcessor::CheckJudgement(std::shared_ptr<SusDrawableNoteData> note
     }
     for (int i = note->StartLane; i < note->StartLane + note->Length; i++) {
         if (!CurrentState->GetTriggerState(ControllerSource::IntegratedSliders, i)) continue;
-
-        ostringstream ss;
-        ss << (reltime >= 0 ? "+" : "") << (int)(reltime*1000.0) << "ms" << endl;
-        WriteDebugConsole(ss.str().c_str());
-
         reltime = fabs(reltime);
         if (reltime <= jthJC) {
             note->OnTheFlyData.set(NoteAttribute::Finished);
