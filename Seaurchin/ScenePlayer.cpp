@@ -205,7 +205,7 @@ void ScenePlayer::CalculateNotes(double time, double duration, double preced)
 {
     copy_if(data.begin(), data.end(), back_inserter(seenData), [&](shared_ptr<SusDrawableNoteData> n) {
         double ptime = time - preced;
-        if (n->Type.to_ulong() & 0b0000000011100000) {
+        if (n->Type.to_ulong() & SU_NOTE_LONG_MASK) {
             // ƒƒ“ƒO
             return (ptime <= n->StartTime && n->StartTime <= time + duration)
                 || (ptime <= n->StartTime + n->Duration && n->StartTime + n->Duration <= time + duration)

@@ -1,25 +1,33 @@
 #pragma once
 
+#define SU_NOTE_LONG_MASK 0b00000000000111000000
+#define SU_NOTE_SHORT_MASK 0b00000000000000111110
+
 enum SusNoteType : uint16_t {
 	Undefined = 0,  // BPMノーツなど
     Tap,            // Invisible Stepに使う
     ExTap,          // 中割り コンボだけ加算
 	Flick,
 	Air,
+    HellTap,
 
-    Hold = 5,
+    Hold = 6,
     Slide,
 	AirAction,
 
-    Start = 8,
+    Start = 9,
     Step,
 	Control,
     End,
 
-    Up = 12,
+    Up = 13,
     Down,
     Left,
     Right,
+
+    Unused1 = 17,
+    Unused2,
+    Unused3,
 };
 
 struct SusRelativeNoteTime {
@@ -28,7 +36,7 @@ struct SusRelativeNoteTime {
 };
 
 struct SusRawNoteData {
-    std::bitset<16> Type;
+    std::bitset<20> Type;
     union {
         uint16_t DefinitionNumber;
         struct {
@@ -40,7 +48,7 @@ struct SusRawNoteData {
 };
 
 struct SusDrawableNoteData {
-    std::bitset<16> Type;
+    std::bitset<20> Type;
     std::bitset<8> OnTheFlyData;
     uint8_t StartLane;
     uint8_t Length;

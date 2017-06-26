@@ -267,7 +267,7 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
                     break;
                 case '4':
                     // 本来はHell
-                    noteData.Type.set(SusNoteType::Tap);
+                    noteData.Type.set(SusNoteType::HellTap);
                     break;
                 default:
                     if (note[1] == '0') continue;
@@ -480,7 +480,7 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
 
         auto bits = info.Type.to_ulong();
         auto noteData = make_shared<SusDrawableNoteData>();
-        if (bits & 0b0000000011100000) {
+        if (bits & SU_NOTE_LONG_MASK) {
             noteData->Type = info.Type;
             noteData->StartTime = GetAbsoluteTime(time.Measure, time.Tick);
             noteData->StartLane = info.NotePosition.StartLane;
@@ -568,7 +568,7 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             } else {
                 data.push_back(noteData);
             }
-        } else if (bits & 0b0000000000011110) {
+        } else if (bits & SU_NOTE_SHORT_MASK) {
             // ショート
             if (info.NotePosition.StartLane + info.NotePosition.Length > 16) {
                 if (ErrorCallback) ErrorCallback(0, "Error", "ショートノーツがはみ出しています。");

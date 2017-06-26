@@ -46,7 +46,7 @@ void AutoPlayerProcessor::Reset()
     Status.AllNotes = 0;
     for (auto &note : data) {
         auto type = note->Type.to_ulong();
-        if (type & 0b0000000011100000) {
+        if (type & SU_NOTE_LONG_MASK) {
             if (!note->Type.test(SusNoteType::AirAction)) Status.AllNotes++;
             for (auto &ex : note->ExtraData)
                 if (
@@ -54,7 +54,7 @@ void AutoPlayerProcessor::Reset()
                     || ex->Type.test(SusNoteType::Step)
                     || ex->Type.test(SusNoteType::ExTap))
                     Status.AllNotes++;
-        } else if (type & 0b0000000000011110) {
+        } else if (type & SU_NOTE_SHORT_MASK) {
             Status.AllNotes++;
         }
     }
@@ -400,7 +400,7 @@ void PlayableProcessor::Reset()
     Status.AllNotes = 0;
     for (auto &note : data) {
         auto type = note->Type.to_ulong();
-        if (type & 0b0000000011100000) {
+        if (type & SU_NOTE_LONG_MASK) {
             if (!note->Type.test(SusNoteType::AirAction)) Status.AllNotes++;
             for (auto &ex : note->ExtraData)
                 if (
@@ -408,7 +408,7 @@ void PlayableProcessor::Reset()
                     || ex->Type.test(SusNoteType::Step)
                     || ex->Type.test(SusNoteType::ExTap))
                     Status.AllNotes++;
-        } else if (type & 0b0000000000011110) {
+        } else if (type & SU_NOTE_SHORT_MASK) {
             Status.AllNotes++;
         }
     }
