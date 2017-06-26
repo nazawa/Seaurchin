@@ -88,6 +88,7 @@ void ScenePlayer::Initialize()
     imageTap = dynamic_cast<SImage*>(resources["Tap"]);
     imageExTap = dynamic_cast<SImage*>(resources["ExTap"]);
     imageFlick = dynamic_cast<SImage*>(resources["Flick"]);
+    imageFlick = dynamic_cast<SImage*>(resources["HellTap"]);
     imageAirUp = dynamic_cast<SImage*>(resources["AirUp"]);
     imageAirDown = dynamic_cast<SImage*>(resources["AirDown"]);
     imageHold = dynamic_cast<SImage*>(resources["Hold"]);
@@ -440,7 +441,7 @@ void ScenePlayer::DrawShortNotes(shared_ptr<SusDrawableNoteData> note)
         handleToDraw = imageFlick->GetHandle();
     } else if (note->Type.test(SusNoteType::HellTap)) {
         //TODO: ‚³‚Á‚³‚Æ‘‚«Š·‚¦‚ë
-        handleToDraw = imageTap->GetHandle();
+        handleToDraw = imageHellTap->GetHandle();
     }
 
     //64*3 x 64 ‚ð•`‰æ‚·‚é‚©‚ç1/2‚Å‚â‚é•K—v‚ª‚ ‚é

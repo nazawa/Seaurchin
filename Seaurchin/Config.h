@@ -4,7 +4,7 @@
 
 
 #define SU_APP_NAME "Seaurchin"
-#define SU_APP_VERSION "0.60"
+#define SU_APP_VERSION "0.70"
 
 #define SU_SETTING_FILE "config.json"
 #define SU_CACHE_MUSIC_FILE "musics.mp"

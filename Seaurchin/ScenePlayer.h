@@ -76,7 +76,7 @@ protected:
     double actualNoteScaleY = actualNoteScaleX * scaleNoteY;
 
     SSound *soundTap, *soundExTap, *soundFlick, *soundAir, *soundAirAction, *soundHoldLoop, *soundSlideLoop;
-    SImage *imageTap, *imageExTap, *imageFlick;
+    SImage *imageTap, *imageExTap, *imageFlick, *imageHellTap;
     SImage *imageAirUp, *imageAirDown;
     SImage *imageHold, *imageHoldStrut;
     SImage *imageSlide, *imageSlideStrut;
