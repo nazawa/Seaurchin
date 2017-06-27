@@ -64,19 +64,23 @@ void AutoPlayerProcessor::Update(vector<shared_ptr<SusDrawableNoteData>> &notes)
 {
     bool SlideCheck = false;
     bool HoldCheck = false;
+    bool AACheck = false;
     for (auto& note : notes) {
         ProcessScore(note);
         SlideCheck = isInSlide || SlideCheck;
         HoldCheck = isInHold || HoldCheck;
+        AACheck = isInAA || AACheck;
     }
 
     if (!wasInSlide && SlideCheck) Player->PlaySoundSlide();
     if (wasInSlide && !SlideCheck) Player->StopSoundSlide();
     if (!wasInHold && HoldCheck) Player->PlaySoundHold();
     if (wasInHold && !HoldCheck) Player->StopSoundHold();
+    Player->AirActionShown = AACheck;
 
     wasInHold = HoldCheck;
     wasInSlide = SlideCheck;
+    wasInAA = AACheck;
 }
 
 void AutoPlayerProcessor::MovePosition(double relative)
@@ -189,9 +193,11 @@ void AutoPlayerProcessor::ProcessScore(shared_ptr<SusDrawableNoteData> note)
             return;
         }
     } else if (note->Type.test(SusNoteType::AirAction)) {
+        isInAA = true;
         for (auto &extra : note->ExtraData) {
             double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
+            if (extra->Type.test(SusNoteType::End)) isInAA = false;
             if (extra->Type.test(SusNoteType::Control)) continue;
             if (extra->Type.test(SusNoteType::Tap)) continue;
             if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;

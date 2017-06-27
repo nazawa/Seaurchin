@@ -8,15 +8,15 @@ static const uint16_t RectVertexIndices[] = { 0, 1, 3, 3, 1, 2 };
 static VERTEX3D GroundVertices[] = {
     { VGet(SU_LANE_X_MIN, SU_LANE_Y_GROUND, SU_LANE_Z_MAX), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.0f, 0.0f, 0.0f, 0.0f },
     { VGet(SU_LANE_X_MAX, SU_LANE_Y_GROUND, SU_LANE_Z_MAX), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0f, 0.0f, 0.0f, 0.0f },
-    { VGet(SU_LANE_X_MAX, SU_LANE_Y_GROUND, SU_LANE_Z_MIN), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0f, 1.0f, 0.0f, 0.0f },
-    { VGet(SU_LANE_X_MIN, SU_LANE_Y_GROUND, SU_LANE_Z_MIN), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.0f, 1.0f, 0.0f, 0.0f }
+    { VGet(SU_LANE_X_MAX, SU_LANE_Y_GROUND, SU_LANE_Z_MIN_EXT), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0f, 1.0f, 0.0f, 0.0f },
+    { VGet(SU_LANE_X_MIN, SU_LANE_Y_GROUND, SU_LANE_Z_MIN_EXT), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.0f, 1.0f, 0.0f, 0.0f }
 };
 
 static VERTEX3D AirVertices[] = {
     { VGet(SU_LANE_X_MIN, SU_LANE_Y_AIR, SU_LANE_Z_MAX), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.0f, 0.0f, 0.0f, 0.0f },
     { VGet(SU_LANE_X_MAX, SU_LANE_Y_AIR, SU_LANE_Z_MAX), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0f, 0.0f, 0.0f, 0.0f },
-    { VGet(SU_LANE_X_MAX, SU_LANE_Y_AIR, SU_LANE_Z_MIN), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0f, 1.0f, 0.0f, 0.0f },
-    { VGet(SU_LANE_X_MIN, SU_LANE_Y_AIR, SU_LANE_Z_MIN), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.0f, 1.0f, 0.0f, 0.0f }
+    { VGet(SU_LANE_X_MAX, SU_LANE_Y_AIR, SU_LANE_Z_MIN_EXT), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0f, 1.0f, 0.0f, 0.0f },
+    { VGet(SU_LANE_X_MIN, SU_LANE_Y_AIR, SU_LANE_Z_MIN_EXT), VGet(0, 1, 0), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.0f, 1.0f, 0.0f, 0.0f }
 };
 
 void RegisterPlayerScene(ExecutionManager * manager)
@@ -77,14 +77,17 @@ void ScenePlayer::Initialize()
         processor = new PlayableProcessor(this);
     }
     // 2^xêßå¿Ç™Ç†ÇÈÇÃÇ≈Ç±Ç±Ç≈åvéZ
+    int exty = laneBufferX * SU_LANE_ASPECT_EXT;
     double bufferY = 2;
-    while (laneBufferY > bufferY) bufferY *= 2;
-    float bufferV = laneBufferY / bufferY;
+    while (exty > bufferY) bufferY *= 2;
+    float bufferV = exty / bufferY;
     for (int i = 2; i < 4; i++) GroundVertices[i].v = bufferV;
     for (int i = 2; i < 4; i++) AirVertices[i].v = bufferV;
     hGroundBuffer = MakeScreen(laneBufferX, bufferY, TRUE);
     hAirBuffer = MakeScreen(laneBufferX, bufferY, TRUE);
 
+    imageLaneGround = dynamic_cast<SImage*>(resources["LaneGround"]);
+    imageLaneJudgeLine = dynamic_cast<SImage*>(resources["LaneJudgeLine"]);
     imageTap = dynamic_cast<SImage*>(resources["Tap"]);
     imageExTap = dynamic_cast<SImage*>(resources["ExTap"]);
     imageFlick = dynamic_cast<SImage*>(resources["Flick"]);
@@ -269,7 +272,15 @@ void ScenePlayer::Draw()
     BEGIN_DRAW_TRANSACTION(hGroundBuffer);
     ClearDrawScreen();
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-    DrawGraph(0, 0, resources["LaneGround"]->GetHandle(), TRUE);
+    DrawGraph(0, 0, imageLaneGround->GetHandle(), TRUE);
+    SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
+    DrawRectRotaGraph3F(
+        0, laneBufferY,
+        0, 0,
+        imageLaneJudgeLine->get_Width(), imageLaneJudgeLine->get_Height(),
+        0, imageLaneJudgeLine->get_Height() / 2,
+        1, 1, 0,
+        imageLaneJudgeLine->GetHandle(), TRUE, FALSE);
     processor->Draw();
     textCombo->Draw();
 
@@ -293,11 +304,26 @@ void ScenePlayer::Draw()
     ClearDrawScreen();
     for (auto& note : seenData) if (note->Type.test(SusNoteType::AirAction)) airactionStarts.push_back(DrawAirActionNotes(note));
     FINISH_DRAW_TRANSACTION;
+    
     Prepare3DDrawCall();
     DrawPolygonIndexed3D(AirVertices, 4, RectVertexIndices, 2, hAirBuffer, TRUE);
     for (auto& position : airactionStarts) {
         double x = (1.0 - get<0>(position)) * SU_LANE_X_MIN + get<0>(position) * SU_LANE_X_MAX;
         DrawLine3D(VGet(x, SU_LANE_Y_AIR, get<1>(position)), VGet(x, SU_LANE_Y_GROUND, get<1>(position)), airActionLineColor);
+    }
+
+    if (AirActionShown) {
+        SetDrawBlendMode(DX_BLENDMODE_ADD, 192);
+        DrawTriangle3D(
+            VGet(SU_LANE_X_MIN_EXT, SU_LANE_Y_AIR - 5, SU_LANE_Z_MIN - 5),
+            VGet(SU_LANE_X_MIN_EXT, SU_LANE_Y_AIR + 5, SU_LANE_Z_MIN + 5),
+            VGet(SU_LANE_X_MAX_EXT, SU_LANE_Y_AIR + 5, SU_LANE_Z_MIN + 5),
+            airActionJudgeColor, TRUE);
+        DrawTriangle3D(
+            VGet(SU_LANE_X_MIN_EXT, SU_LANE_Y_AIR - 5, SU_LANE_Z_MIN - 5),
+            VGet(SU_LANE_X_MAX_EXT, SU_LANE_Y_AIR + 5, SU_LANE_Z_MIN + 5),
+            VGet(SU_LANE_X_MAX_EXT, SU_LANE_Y_AIR - 5, SU_LANE_Z_MIN - 5),
+            airActionJudgeColor, TRUE);
     }
     for (auto& note : seenData) if (note->Type.test(SusNoteType::Air)) DrawAirNotes(note);
 }
@@ -446,10 +472,7 @@ void ScenePlayer::DrawShortNotes(shared_ptr<SusDrawableNoteData> note)
     }
 
     //64*3 x 64 Çï`âÊÇ∑ÇÈÇ©ÇÁ1/2Ç≈Ç‚ÇÈïKóvÇ™Ç†ÇÈ
-    for (int i = 0; i < length * 2; i++) {
-        int type = i ? (i == length * 2 - 1 ? 2 : 1) : 0;
-        DrawRectRotaGraph3F((slane * 2 + i) * widthPerLane / 2, laneBufferY * relpos, noteImageBlockX * type, (0), noteImageBlockX, noteImageBlockY, 0, noteImageBlockY / 2, actualNoteScaleX, actualNoteScaleY, 0, handleToDraw, TRUE, FALSE);
-    }
+    DrawTap(slane, length, relpos, handleToDraw);
 }
 
 void ScenePlayer::DrawAirNotes(shared_ptr<SusDrawableNoteData> note)
@@ -522,30 +545,12 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
     );
 
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-    for (int i = 0; i < length * 2; i++) {
-        int type = i ? (i == length * 2 - 1 ? 2 : 1) : 0;
-        DrawRectRotaGraph3F(
-            (slane * 2 + i) * widthPerLane / 2, laneBufferY * relpos,
-            noteImageBlockX * type, (0),
-            noteImageBlockX, noteImageBlockY,
-            0, noteImageBlockY / 2,
-            actualNoteScaleX, actualNoteScaleY,
-            0, imageHold->GetHandle(), TRUE, FALSE);
-    }
+    DrawTap(slane, length, relpos, imageHold->GetHandle());
 
     for (auto &ex : note->ExtraData) {
         if (ex->Type.test(SusNoteType::ExTap)) continue;
         double relendpos = 1.0 - (ex->StartTime - CurrentTime) / SeenDuration;
-        for (int i = 0; i < length * 2; i++) {
-            int type = i ? (i == length * 2 - 1 ? 2 : 1) : 0;
-            DrawRectRotaGraph3F(
-                (slane * 2 + i) * widthPerLane / 2, laneBufferY * relendpos,
-                noteImageBlockX * type, (0),
-                noteImageBlockX, noteImageBlockY,
-                0, noteImageBlockY / 2,
-                actualNoteScaleX, actualNoteScaleY,
-                0, imageHold->GetHandle(), TRUE, FALSE);
-        }
+        DrawTap(slane, length, relendpos, imageHold->GetHandle());
     }
 }
 
@@ -555,16 +560,8 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
     auto lastStepRelativeY = 1.0 - (lastStep->StartTime - CurrentTime) / SeenDuration;
     double segmentLength = 128.0;   // Bufferè„Ç≈ÇÃç≈è¨ÇÃí∑Ç≥
 
-    for (int i = 0; i < lastStep->Length * 2; i++) {
-        int type = i ? (i == lastStep->Length * 2 - 1 ? 2 : 1) : 0;
-        DrawRectRotaGraph3F(
-            (lastStep->StartLane * 2 + i) * widthPerLane / 2, laneBufferY * lastStepRelativeY,
-            noteImageBlockX * type, (0),
-            noteImageBlockX, noteImageBlockY,
-            0, noteImageBlockY / 2,
-            actualNoteScaleX, actualNoteScaleY,
-            0, imageSlide->GetHandle(), TRUE, FALSE);
-    }
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+    DrawTap(lastStep->StartLane, lastStep->Length, lastStepRelativeY, imageSlide->GetHandle());
 
     for (auto &slideElement : note->ExtraData) {
         if (slideElement->Type.test(SusNoteType::Control)) continue;
@@ -582,7 +579,7 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
             double currentSegmentLength = (1.0 - currentTimeInBlock) * lastStep->Length + currentTimeInBlock * slideElement->Length;
             double currentSegmentRelativeY = 1.0 - (lastStep->StartTime + get<0>(segmentPosition) - CurrentTime) / SeenDuration;
 
-            if (currentSegmentRelativeY < 1.0) {
+            if (currentSegmentRelativeY < cullingLimit) {
                 SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
                 DrawRectModiGraphF(
                     get<1>(lastSegmentPosition) * laneBufferX - lastSegmentLength / 2 * widthPerLane, laneBufferY * lastSegmentRelativeY,
@@ -603,18 +600,11 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
             lastSegmentRelativeY = currentSegmentRelativeY;
             lastTimeInBlock = currentTimeInBlock;
         }
+
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-        for (int i = 0; i < slideElement->Length * 2; i++) {
-            if (slideElement->Type.test(SusNoteType::Tap)) continue;    //Invisible Step
-            int type = i ? (i == slideElement->Length * 2 - 1 ? 2 : 1) : 0;
-            DrawRectRotaGraph3F(
-                (slideElement->StartLane * 2 + i) * widthPerLane / 2, laneBufferY * currentStepRelativeY,
-                noteImageBlockX * type, (0),
-                noteImageBlockX, noteImageBlockY,
-                0, noteImageBlockY / 2,
-                actualNoteScaleX, actualNoteScaleY,
-                0, imageSlide->GetHandle(), TRUE, FALSE);
-        }
+        if (!slideElement->Type.test(SusNoteType::Tap)) 
+            DrawTap(slideElement->StartLane, slideElement->Length, currentStepRelativeY, imageSlide->GetHandle());
+
         lastStep = slideElement;
         lastStepRelativeY = currentStepRelativeY;
     }
@@ -643,7 +633,7 @@ tuple<double, double> ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNote
             double currentSegmentLength = (1.0 - currentTimeInBlock) * lastStep->Length + currentTimeInBlock * slideElement->Length;
             double currentSegmentRelativeY = 1.0 - (lastStep->StartTime + get<0>(segmentPosition) - CurrentTime) / SeenDuration;
             
-            if (currentSegmentRelativeY < 1.0) {
+            if (currentSegmentRelativeY < cullingLimit) {
                 SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
                 DrawLineAA(
                     get<1>(lastSegmentPosition) * laneBufferX, laneBufferY * lastSegmentRelativeY,
@@ -657,27 +647,33 @@ tuple<double, double> ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNote
             lastTimeInBlock = currentTimeInBlock;
         }
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-        for (int i = 0; i < slideElement->Length * 2; i++) {
-            if (slideElement->Type.test(SusNoteType::Tap)) continue;    //Invisible Step
-            int type = i ? (i == slideElement->Length * 2 - 1 ? 2 : 1) : 0;
-            DrawRectRotaGraph3F(
-                (slideElement->StartLane * 2 + i) * widthPerLane / 2, laneBufferY * currentStepRelativeY,
-                noteImageBlockX * type, (0),
-                noteImageBlockX, noteImageBlockY,
-                0, noteImageBlockY / 2,
-                actualNoteScaleX, actualNoteScaleY,
-                0, imageAirAction->GetHandle(), TRUE, FALSE);
-        }
+        if (!slideElement->Type.test(SusNoteType::Tap))
+            DrawTap(slideElement->StartLane, slideElement->Length, currentStepRelativeY, imageAirAction->GetHandle());
+
         lastStep = slideElement;
         lastStepRelativeY = currentStepRelativeY;
     }
     return make_tuple((note->StartLane + note->Length / 2.0) / 16.0, SU_LANE_Z_MAX * (note->StartTime - CurrentTime) / SeenDuration);
 }
 
+void ScenePlayer::DrawTap(int lane, int length, double relpos, int handle)
+{
+    for (int i = 0; i < length * 2; i++) {
+        int type = i ? (i == length * 2 - 1 ? 2 : 1) : 0;
+        DrawRectRotaGraph3F(
+            (lane * 2 + i) * widthPerLane / 2, laneBufferY * relpos,
+            noteImageBlockX * type, (0),
+            noteImageBlockX, noteImageBlockY,
+            0, noteImageBlockY / 2,
+            actualNoteScaleX, actualNoteScaleY, 0,
+            handle, TRUE, FALSE);
+    }
+}
+
 void ScenePlayer::DrawMeasureLines()
 {
     int division = 8;
-    for (int i = 1; i < division; i++) DrawLineAA(laneBufferX / division * i, 0, laneBufferX / division * i, laneBufferY, GetColor(255, 255, 255), 3);
+    for (int i = 1; i < division; i++) DrawLineAA(laneBufferX / division * i, 0, laneBufferX / division * i, laneBufferY * cullingLimit, GetColor(255, 255, 255), 3);
 
     auto rbeg = analyzer->GetRelativeTime(CurrentTime);
     auto rend = analyzer->GetRelativeTime(CurrentTime + SeenDuration);

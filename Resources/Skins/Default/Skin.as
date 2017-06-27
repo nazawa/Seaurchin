@@ -14,6 +14,7 @@ void InitializeSkin(Skin@ skin) {
   skin.LoadImage("*Note-SlideStrut", "Note-SlideStrut.png");
   skin.LoadImage("*Note-AirAction", "Note-AirAction.png");
   skin.LoadImage("*Lane-Ground", "Lane-Ground.png");
+  skin.LoadImage("*Lane-JudgeLine", "Lane-JudgeLine.png");
   skin.LoadImage("*Lane-HoldLight", "Lane-HoldLight.png");
   
   skin.LoadImage("White", "White.png");               //つなぎ

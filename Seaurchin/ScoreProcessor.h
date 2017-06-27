@@ -67,7 +67,7 @@ protected:
     ScenePlayer *Player;
     PlayStatus Status;
     std::vector<std::shared_ptr<SusDrawableNoteData>> &data = DefaultDataValue;
-    bool isInHold = false, isInSlide = false, wasInHold = false, wasInSlide = false;
+    bool isInHold = false, isInSlide = false, isInAA = false, wasInHold = false, wasInSlide = false, wasInAA = false;
 
     void ProcessScore(std::shared_ptr<SusDrawableNoteData> notes);
     void IncrementCombo();

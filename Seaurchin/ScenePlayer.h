@@ -14,13 +14,16 @@
 
 #define SU_LANE_X_MIN -400.0
 #define SU_LANE_X_MAX 400.0
+#define SU_LANE_X_MIN_EXT -1600.0
+#define SU_LANE_X_MAX_EXT 1600.0
+#define SU_LANE_Z_MIN_EXT -300.0
 #define SU_LANE_Z_MIN 0.0
 #define SU_LANE_Z_MAX 3000.0
 #define SU_LANE_Y_GROUND 0.0
 #define SU_LANE_Y_AIR 240.0
 #define SU_LANE_Y_AIRINDICATE 160.0
 #define SU_LANE_ASPECT ((SU_LANE_Z_MAX - SU_LANE_Z_MIN) / (SU_LANE_X_MAX - SU_LANE_X_MIN))
-
+#define SU_LANE_ASPECT_EXT ((SU_LANE_Z_MAX - SU_LANE_Z_MIN_EXT) / (SU_LANE_X_MAX - SU_LANE_X_MIN))
 
 // SceneÇ∆Ç¢Ç§ñºëOÇ±ÇªÇ¬Ç¢ÇƒÇÈÇØÇ«ãììÆÇÕï ï®
 // SceneManagerÇ…í«â¡Ç≥ÇÍÇ»Ç¢
@@ -69,6 +72,7 @@ protected:
     double laneBufferX = 1024;
     double laneBufferY = laneBufferX * SU_LANE_ASPECT;
     double widthPerLane = laneBufferX / 16;
+    double cullingLimit = SU_LANE_ASPECT_EXT / SU_LANE_ASPECT;
     double noteImageBlockX = 64;
     double noteImageBlockY = 64;
     double scaleNoteY = 2.0;
@@ -76,6 +80,7 @@ protected:
     double actualNoteScaleY = actualNoteScaleX * scaleNoteY;
 
     SSound *soundTap, *soundExTap, *soundFlick, *soundAir, *soundAirAction, *soundHoldLoop, *soundSlideLoop;
+    SImage *imageLaneGround, *imageLaneJudgeLine;
     SImage *imageTap, *imageExTap, *imageFlick, *imageHellTap;
     SImage *imageAirUp, *imageAirDown;
     SImage *imageHold, *imageHoldStrut;
@@ -86,6 +91,7 @@ protected:
     STextSprite *textCombo;
     unsigned int slideLineColor = GetColor(0, 200, 255);
     unsigned int airActionLineColor = GetColor(0, 255, 32);
+    unsigned int airActionJudgeColor = GetColor(128, 255, 160);
 
     //SlideÇÃèdÇ›Ç™é·ä±à·Ç§ÇÁÇµÇ¢ÇØÇ«ÇªÇÃÇ÷ÇÒãñÇµÇƒÇÀ
     PlayStatus Status;
@@ -103,7 +109,7 @@ protected:
     double NextMetronomeTime = 0.0;
     double SoundBufferingLatency = 0.030;   //TODO: ä¬ã´Ç…é·ä±äÒÇËìYÇ§
     PlayingState State = PlayingState::ScoreNotLoaded;
-    int seenObjects = 0;
+    bool AirActionShown = false;
 
     void AddSprite(SSprite *sprite);
     void LoadWorker();
@@ -116,6 +122,7 @@ protected:
     void DrawHoldNotes(std::shared_ptr<SusDrawableNoteData> note);
     void DrawSlideNotes(std::shared_ptr<SusDrawableNoteData> note);
     std::tuple<double, double> DrawAirActionNotes(std::shared_ptr<SusDrawableNoteData> note);
+    void DrawTap(int lane, int length, double relpos, int handle);
     void DrawMeasureLines();
     void Prepare3DDrawCall();
 

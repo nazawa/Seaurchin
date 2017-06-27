@@ -37,6 +37,7 @@ class Play : CoroutineScene {
   
   void SetPlayerResource() {
     player.SetResource("LaneGround", skin.GetImage("*Lane-Ground"));
+    player.SetResource("LaneJudgeLine", skin.GetImage("*Lane-JudgeLine"));
     player.SetResource("LaneHoldLight", skin.GetImage("*Lane-HoldLight"));
     player.SetResource("FontCombo", font64);
     player.SetResource("Tap", skin.GetImage("*Note-Tap"));
