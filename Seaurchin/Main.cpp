@@ -33,6 +33,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 void PreInitialize(HINSTANCE hInstance)
 {
     setting = shared_ptr<Setting>(new Setting(hInstance));
+    setting->Load(SU_SETTING_FILE);
 
     InitializeDebugFeature();
     ChangeWindowMode(TRUE);
@@ -60,7 +61,6 @@ void Initialize()
     //D3DÝ’è
     SetDrawScreen(DX_SCREEN_BACK);
 
-    setting->Load(SU_SETTING_FILE);
     manager = unique_ptr<ExecutionManager>(new ExecutionManager(setting));
     manager->Initialize();
 }
