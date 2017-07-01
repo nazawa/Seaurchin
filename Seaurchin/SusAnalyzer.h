@@ -33,32 +33,51 @@ enum SusNoteType : uint16_t {
 struct SusRelativeNoteTime {
     uint32_t Measure;
     uint32_t Tick;
+
+    bool operator<(const SusRelativeNoteTime& b) const
+    {
+        return Measure < b.Measure || Tick < b.Tick;
+    }
+    bool operator>(const SusRelativeNoteTime& b) const
+    {
+        return Measure > b.Measure || Tick > b.Tick;
+    }
+    bool operator==(const SusRelativeNoteTime& b) const
+    {
+        return Measure == b.Measure && Tick == b.Tick;
+    }
+    bool operator!=(const SusRelativeNoteTime& b) const
+    {
+        return Measure != b.Measure || Tick != b.Tick;
+    }
 };
 
-struct SusRawNoteData {
-    std::bitset<20> Type;
-    union {
-        uint16_t DefinitionNumber;
-        struct {
-            uint8_t StartLane;
-            uint8_t Length;
-        } NotePosition;
+
+struct SusHispeedData {
+    enum Visibility {
+        Keep = -1,
+        Invisible,
+        Visible,
     };
-    uint8_t Extra;
+    const static double KeepSpeed;
+
+    char VisibilityState = Visibility::Visible;
+    double Speed = 1.0;
+
 };
 
-struct SusDrawableNoteData {
-    std::bitset<20> Type;
-    std::bitset<8> OnTheFlyData;
-    uint8_t StartLane;
-    uint8_t Length;
+class SusHispeedTimeline final {
+private:
+    std::vector<std::pair<SusRelativeNoteTime, SusHispeedData>> keys;
+    std::function<double(uint32_t, uint32_t)> RelToAbs;
 
-    //描画"始める"時刻
-    double StartTime;
-    //描画が"続く"時刻
-    double Duration;
-    //スライド・AA用制御データ
-    std::vector<std::shared_ptr<SusDrawableNoteData>> ExtraData;
+public:
+    SusHispeedTimeline(std::function<double(uint32_t, uint32_t)> func);
+    void AddKeysByString(const std::string &def);
+    void AddKeyByData(uint32_t meas, uint32_t tick, double hs);
+    void AddKeyByData(uint32_t meas, uint32_t tick, bool vis);
+    void Finialize();
+    std::tuple<bool, double> GetDrawStateAt(double objTime, double viewTime);
 };
 
 struct SusMetaData {
@@ -74,6 +93,40 @@ struct SusMetaData {
     uint32_t DifficultyType;
 };
 
+
+struct SusRawNoteData {
+    std::bitset<20> Type;
+    std::shared_ptr<SusHispeedTimeline> Timeline;
+    union {
+        uint16_t DefinitionNumber;
+        struct {
+            uint8_t StartLane;
+            uint8_t Length;
+        } NotePosition;
+    };
+    uint8_t Extra;
+};
+
+struct SusDrawableNoteData {
+    std::bitset<20> Type;
+    std::bitset<8> OnTheFlyData;
+    std::shared_ptr<SusHispeedTimeline> Timeline;
+    uint8_t StartLane;
+    uint8_t Length;
+
+    //実描画位置
+    double ModifiedPosition;
+    //描画"始める"時刻
+    double StartTime;
+    //描画が"続く"時刻
+    double Duration;
+    //スライド・AA用制御データ
+    std::vector<std::shared_ptr<SusDrawableNoteData>> ExtraData;
+
+    std::tuple<bool, double> GetStateAt(double time);
+};
+
+
 //BMS派生フォーマットことSUS(SeaUrchinScore)の解析
 class SusAnalyzer final {
 private:
@@ -82,6 +135,7 @@ private:
 
     double DefaultBeats = 4.0;
     double DefaultBpm = 120.0;
+    uint32_t DefaultHispeedNumber = std::numeric_limits<uint32_t>::max();
     uint32_t TicksPerBeat;
     double LongInjectionPerBeat;
     std::function<void(uint32_t, std::string, std::string)> ErrorCallback = nullptr;
@@ -89,8 +143,10 @@ private:
     std::vector<std::tuple<SusRelativeNoteTime, SusRawNoteData>> BpmChanges;
     std::unordered_map<uint32_t, double> BpmDefinitions;
 	std::unordered_map<uint32_t, float> BeatsDefinitions;
+    std::unordered_map<uint32_t, std::shared_ptr<SusHispeedTimeline>> HispeedDefinitions;
+    std::shared_ptr<SusHispeedTimeline> HispeedToApply;
 
-    void ProcessCommand(const boost::xpressive::smatch &result);
+    void ProcessCommand(const boost::xpressive::smatch &result, bool onlyMeta);
     void ProcessData(const boost::xpressive::smatch &result);
 
 public:

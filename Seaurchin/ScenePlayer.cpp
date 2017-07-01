@@ -80,7 +80,7 @@ void ScenePlayer::Initialize()
 
     auto setting = manager->GetSettingInstanceSafe();
     SeenDuration = setting->ReadValue<double>("Play", "SeenDuration", 0.8);
-    SoundBufferingLatency = setting->ReadValue<double>("Sound", "bufferLatency", 0.03);
+    SoundBufferingLatency = setting->ReadValue<double>("Sound", "BufferLatency", 0.03);
 
     LoadResources();
 }
@@ -221,6 +221,21 @@ void ScenePlayer::CalculateCurves(std::shared_ptr<SusDrawableNoteData> note)
 
 void ScenePlayer::CalculateNotes(double time, double duration, double preced)
 {
+    judgeData.clear();
+    copy_if(data.begin(), data.end(), back_inserter(judgeData), [&](shared_ptr<SusDrawableNoteData> n) {
+        double ptime = time - preced;
+        if (n->Type.to_ulong() & SU_NOTE_LONG_MASK) {
+            // ロング
+            return (ptime <= n->StartTime && n->StartTime <= time + preced)
+                || (ptime <= n->StartTime + n->Duration && n->StartTime + n->Duration <= time + preced)
+                || (n->StartTime <= ptime && time + preced <= n->StartTime + n->Duration);
+        } else {
+            // ショート
+            return (ptime <= n->StartTime && n->StartTime <= time + preced);
+        }
+    });
+
+    seenData.clear();
     copy_if(data.begin(), data.end(), back_inserter(seenData), [&](shared_ptr<SusDrawableNoteData> n) {
         double ptime = time - preced;
         if (n->Type.to_ulong() & SU_NOTE_LONG_MASK) {
@@ -230,7 +245,11 @@ void ScenePlayer::CalculateNotes(double time, double duration, double preced)
                 || (n->StartTime <= ptime && time + duration <= n->StartTime + n->Duration);
         } else {
             // ショート
-            return (ptime <= n->StartTime && n->StartTime <= time + duration);
+            if (time > n->StartTime) return false;
+            auto st = n->GetStateAt(time);
+            n->ModifiedPosition = get<1>(st);
+            if (n->ModifiedPosition < -preced || n->ModifiedPosition > duration) return false;
+            return get<0>(st);
         }
     });
 }
@@ -254,11 +273,10 @@ void ScenePlayer::Tick(double delta)
 
     if (State >= PlayingState::ReadyCounting) CurrentTime += delta;
     CurrentSoundTime = CurrentTime + SoundBufferingLatency;
-    seenData.clear();
     if (State >= PlayingState::ReadyCounting) CalculateNotes(CurrentTime, SeenDuration, PreloadingTime);
 
     int pCombo = Status.Combo;
-    processor->Update(seenData);
+    processor->Update(judgeData);
     Status = *processor->GetPlayStatus();
     if (Status.Combo > pCombo) {
         textCombo->AbortMove(true);
@@ -465,7 +483,7 @@ void ScenePlayer::UpdateSlideEffect()
 void ScenePlayer::DrawShortNotes(shared_ptr<SusDrawableNoteData> note)
 {
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-    double relpos = 1.0 - (note->StartTime - CurrentTime) / SeenDuration;
+    double relpos = 1.0 - note->ModifiedPosition / SeenDuration;
     auto length = note->Length;
     auto slane = note->StartLane;
     int handleToDraw = 0;

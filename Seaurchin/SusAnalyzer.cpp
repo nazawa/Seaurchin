@@ -8,7 +8,7 @@ namespace fsys = boost::filesystem;
 namespace xp = boost::xpressive;
 static constexpr auto hashstr = &crc_ccitt::checksum;
 
-xp::sregex SusAnalyzer::RegexSusCommand = "#" >> (xp::s1 = +xp::alnum) >> +xp::space >> (xp::s2 = +(~xp::_n));
+xp::sregex SusAnalyzer::RegexSusCommand = "#" >> (xp::s1 = +xp::alnum) >> !(+xp::space >> (xp::s2 = +(~xp::_n)));
 xp::sregex SusAnalyzer::RegexSusData = "#" >> (xp::s1 = xp::repeat<3, 3>(xp::alnum)) >> (xp::s2 = xp::repeat<2, 3>(xp::alnum)) >> ":" >> *xp::space >> (xp::s3 = +(~xp::_n));
 
 static xp::sregex AllNumeric = xp::bos >> +(xp::digit) >> xp::eos;
@@ -102,6 +102,10 @@ void SusAnalyzer::Reset()
 
     BpmDefinitions[0] = 120.0;
     BeatsDefinitions[0] = 4.0;
+    auto defhs = make_shared<SusHispeedTimeline>([&](uint32_t m, uint32_t t) { return GetAbsoluteTime(m, t); });
+    defhs->AddKeysByString("0'0:1.0:v");
+    HispeedDefinitions[DefaultHispeedNumber] = defhs;
+    HispeedToApply = defhs;
 }
 
 //一応UTF-8として処理することにしますがどうせ変わらないだろうなぁ
@@ -124,16 +128,20 @@ void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
         if (!rawline.length()) continue;
         if (rawline[0] != '#') continue;
         if (xp::regex_match(rawline, match, RegexSusCommand)) {
-            ProcessCommand(match);
+            ProcessCommand(match, analyzeOnlyMetaData);
         } else if (xp::regex_match(rawline, match, RegexSusData)) {
             if (!analyzeOnlyMetaData) ProcessData(match);
         } else {
             if (ErrorCallback) ErrorCallback(0, "Error", "SUS有効行ですが解析できませんでした。");
         }
     }
-    //sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
-    //    return get<1>(a).Type.to_ulong() > get<1>(b).Type.to_ulong();
-    //});
+    file.close();
+
+    for (auto &hs : HispeedDefinitions) hs.second->Finialize();
+
+    sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
+        return get<1>(a).Type.to_ulong() > get<1>(b).Type.to_ulong();
+    });
     sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
         return get<0>(a).Tick < get<0>(b).Tick;
     });
@@ -143,11 +151,9 @@ void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
     copy_if(Notes.begin(), Notes.end(), back_inserter(BpmChanges), [](tuple<SusRelativeNoteTime, SusRawNoteData> n) {
         return get<1>(n).Type.test(SusNoteType::Undefined);
     });
-
-    file.close();
 }
 
-void SusAnalyzer::ProcessCommand(const xp::smatch &result)
+void SusAnalyzer::ProcessCommand(const xp::smatch &result, bool onlyMeta)
 {
     auto name = result[1].str();
     transform(name.cbegin(), name.cend(), name.begin(), toupper);
@@ -191,6 +197,14 @@ void SusAnalyzer::ProcessCommand(const xp::smatch &result)
         case hashstr("JACKET"):
             SharedMetaData.UJacketFileName = ConvertRawString(result[2]);
             break;
+
+            //此処から先はデータ内で使う用
+        case hashstr("HISPEED"):
+            if (!onlyMeta) HispeedToApply = HispeedDefinitions[ConvertHexatridecimal(result[2])];
+            break;
+        case hashstr("NOSPEED"):
+            if (!onlyMeta) HispeedToApply = HispeedDefinitions[DefaultHispeedNumber];
+            break;
         default:
             if (ErrorCallback) ErrorCallback(0, "Error", "SUSコマンドが無効です。");
             break;
@@ -224,6 +238,18 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
         if (meas == "BPM") {
             auto number = ConvertHexatridecimal(lane);
             BpmDefinitions[number] = ConvertFloat(pattern);
+        } else if (meas == "TIL") {
+            auto number = ConvertHexatridecimal(lane);
+            auto it = HispeedDefinitions.find(number);
+            if (it == HispeedDefinitions.end()) {
+                auto hs = make_shared<SusHispeedTimeline>([&](uint32_t m, uint32_t t) { return GetAbsoluteTime(m, t); });
+                hs->AddKeysByString(ConvertRawString(pattern));
+                HispeedDefinitions[number] = hs;
+            } else {
+                it->second->AddKeysByString(ConvertRawString(pattern));
+            }
+        } else {
+            if (ErrorCallback) ErrorCallback(0, "Error", "不正なデータコマンドです");
         }
     } else if (lane[0] == '0') {
         switch (lane[1]) {
@@ -255,6 +281,7 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
             SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
             noteData.NotePosition.StartLane = ConvertHexatridecimal(lane.substr(1, 1));
             noteData.NotePosition.Length = ConvertHexatridecimal(note.substr(1, 1));
+            noteData.Timeline = HispeedToApply;
 
             switch (note[0]) {
                 case '1':
@@ -285,6 +312,7 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
             SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
             noteData.NotePosition.StartLane = ConvertHexatridecimal(lane.substr(1, 1));
             noteData.NotePosition.Length = ConvertHexatridecimal(note.substr(1, 1));
+            noteData.Timeline = HispeedToApply;
 
             switch (note[0]) {
                 case '1':
@@ -579,6 +607,7 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             noteData->Duration = 0;
             noteData->StartLane = info.NotePosition.StartLane;
             noteData->Length = info.NotePosition.Length;
+            noteData->Timeline = info.Timeline;
             data.push_back(noteData);
 
         } else {
@@ -586,4 +615,147 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
         }
         auto test = GetRelativeTime(GetAbsoluteTime(2, 200));
     }
+}
+
+// SusHispeedTimeline ------------------------------------------------------------------
+
+const double SusHispeedData::KeepSpeed = numeric_limits<double>::quiet_NaN();
+
+SusHispeedTimeline::SusHispeedTimeline(std::function<double(uint32_t, uint32_t)> func) : RelToAbs(func)
+{
+    keys.push_back(make_pair(SusRelativeNoteTime { 0, 0 }, SusHispeedData { SusHispeedData::Visibility::Visible, 1.0 }));
+}
+
+void SusHispeedTimeline::AddKeysByString(const string & def)
+{
+    //int'int:double:v/i
+    string str = def;
+    vector<string> ks;
+
+    ba::erase_all(str, " ");
+    ba::split(ks, str, b::is_any_of(","));
+    for (const auto &k : ks) {
+        vector<string> params;
+        ba::split(params, k, b::is_any_of(":"));
+        if (params.size() < 2) return;
+
+        vector<string> timing;
+        ba::split(timing, params[0], b::is_any_of("'"));
+        SusRelativeNoteTime time = { ConvertInteger(timing[0]), ConvertInteger(timing[1]) };
+        SusHispeedData data = { SusHispeedData::Visibility::Keep, SusHispeedData::KeepSpeed };
+        for (int i = 1; i < params.size(); i++) {
+            if (params[i] == "v" || params[i] == "visible") {
+                data.VisibilityState = SusHispeedData::Visibility::Visible;
+            } else if (params[i] == "i" || params[i] == "invisible") {
+                data.VisibilityState = SusHispeedData::Visibility::Invisible;
+            } else {
+                data.Speed = ConvertFloat(params[i]);
+            }
+        }
+        bool found = false;
+        for (auto &p : keys) {
+            if (p.first == time) {
+                p.second = data;
+                found = true;
+                break;
+            }
+        }
+        if (!found) keys.push_back(make_pair(time, data));
+    }
+}
+
+void SusHispeedTimeline::AddKeyByData(uint32_t meas, uint32_t tick, double hs)
+{
+    SusRelativeNoteTime time = { meas, tick };
+    for (auto &p : keys) {
+        if (p.first != time) continue;
+        p.second.Speed = hs;
+        return;
+    }
+    SusHispeedData data = { SusHispeedData::Visibility::Keep, hs };
+    keys.push_back(make_pair(time, data));
+}
+
+void SusHispeedTimeline::AddKeyByData(uint32_t meas, uint32_t tick, bool vis)
+{
+    SusRelativeNoteTime time = { meas, tick };
+    auto vv = vis ? SusHispeedData::Visibility::Visible : SusHispeedData::Visibility::Invisible;
+    for (auto &p : keys) {
+        if (p.first != time) continue;
+        p.second.VisibilityState = vv;
+        return;
+    }
+    SusHispeedData data = { vv, SusHispeedData::KeepSpeed };
+    keys.push_back(make_pair(time, data));
+}
+
+void SusHispeedTimeline::Finialize()
+{
+    stable_sort(keys.begin(), keys.end(), [](const pair<SusRelativeNoteTime, SusHispeedData> &a, const pair<SusRelativeNoteTime, SusHispeedData> &b) {
+        return a.first.Tick < b.first.Tick;
+    });
+    stable_sort(keys.begin(), keys.end(), [](const pair<SusRelativeNoteTime, SusHispeedData> &a, const pair<SusRelativeNoteTime, SusHispeedData> &b) {
+        return a.first.Measure < b.first.Measure;
+    });
+    double hs = 1.0;
+    bool vis = true;
+    for (auto &key : keys) {
+        if (!isnan(key.second.Speed)) {
+            hs = key.second.Speed;
+        } else {
+            key.second.Speed = hs;
+        }
+        if (key.second.VisibilityState != SusHispeedData::Visibility::Keep) {
+            vis = key.second.VisibilityState;
+        } else {
+            key.second.VisibilityState = vis;
+        }
+    }
+}
+
+//double返り値はこの先何秒の位置かを表す
+tuple<bool, double> SusHispeedTimeline::GetDrawStateAt(double objTime, double viewTime)
+{
+    SusHispeedData lastData = keys[0].second;
+    double lastAt = 0.0;
+    double overallSum = 0;
+    double nowSum = 0;
+    //overAllの計算
+    int skip = 0;
+    for (auto &k : keys) {
+        if (!skip) {
+            skip = 1;
+            continue;
+        }
+        double t = RelToAbs(k.first.Measure, k.first.Tick);
+        if (t >= objTime) break;
+        overallSum += (t - lastAt) * lastData.Speed;
+        lastData = k.second;
+        lastAt = t;
+    }
+    overallSum += (objTime - lastAt) * lastData.Speed;
+    
+    lastAt = 0.0;
+    lastData = keys[0].second;
+    //nowの計算
+    for (auto &k : keys) {
+        if (skip) {
+            skip = 0;
+            continue;
+        }
+        double t = RelToAbs(k.first.Measure, k.first.Tick);
+        if (t >= viewTime) break;
+        nowSum += (t - lastAt) * lastData.Speed;
+        lastData = k.second;
+        lastAt = t;
+    }
+    nowSum += (viewTime - lastAt) * lastData.Speed;
+
+    return make_tuple(lastData.VisibilityState, (overallSum - nowSum));
+}
+
+tuple<bool, double> SusDrawableNoteData::GetStateAt(double time)
+{
+    auto result = Timeline->GetDrawStateAt(StartTime, time);
+    return result;
 }
