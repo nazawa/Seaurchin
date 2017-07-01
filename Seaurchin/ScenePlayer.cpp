@@ -774,7 +774,7 @@ void ScenePlayer::MovePositionBySecond(double sec)
 {
     //é¿ç€Ç…ìÆÇ¢ÇΩéûä‘Ç≈åvéZÇπÇÊ
     if (State < PlayingState::BothOngoing) return;
-    double gap = analyzer->SharedMetaData.WaveOffset + SoundBufferingLatency;
+    double gap = analyzer->SharedMetaData.WaveOffset - SoundBufferingLatency;
     double oldBgmPos = bgmStream->GetPlayingPosition();
     double oldTime = CurrentTime;
     int oldMeas = get<0>(analyzer->GetRelativeTime(CurrentTime));
@@ -789,7 +789,7 @@ void ScenePlayer::MovePositionBySecond(double sec)
 void ScenePlayer::MovePositionByMeasure(int meas)
 {
     if (State < PlayingState::BothOngoing) return;
-    double gap = analyzer->SharedMetaData.WaveOffset + SoundBufferingLatency;
+    double gap = analyzer->SharedMetaData.WaveOffset - SoundBufferingLatency;
     double oldBgmPos = bgmStream->GetPlayingPosition();
     double oldTime = CurrentTime;
     int oldMeas = get<0>(analyzer->GetRelativeTime(CurrentTime));
