@@ -22,7 +22,12 @@ public:
     T ReadValue(std::string group, std::string key, T defValue)
     {
         boost::optional<T> v = SettingTree.get_optional<T>(group + "." + key);
-        return v ? v.get() : (WriteValue(group, key, defValue), defValue);
+        if (v) {
+            return v.get();
+        } else {
+            WriteValue(group, key, defValue);
+            return defValue;
+        }
     }
 
     template<typename T>

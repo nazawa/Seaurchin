@@ -9,7 +9,7 @@ namespace xp = boost::xpressive;
 static constexpr auto hashstr = &crc_ccitt::checksum;
 
 xp::sregex SusAnalyzer::RegexSusCommand = "#" >> (xp::s1 = +xp::alnum) >> +xp::space >> (xp::s2 = +(~xp::_n));
-xp::sregex SusAnalyzer::RegexSusData = "#" >> (xp::s1 = xp::repeat<3, 3>(xp::alnum)) >> (xp::s2 = xp::repeat<2, 3>(xp::alnum)) >> ":" >> *xp::space >> (xp::s3 = +(xp::alnum | xp::space | "."));
+xp::sregex SusAnalyzer::RegexSusData = "#" >> (xp::s1 = xp::repeat<3, 3>(xp::alnum)) >> (xp::s2 = xp::repeat<2, 3>(xp::alnum)) >> ":" >> *xp::space >> (xp::s3 = +(~xp::_n));
 
 static xp::sregex AllNumeric = xp::bos >> +(xp::digit) >> xp::eos;
 
@@ -114,6 +114,7 @@ void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
     uint32_t line = 0;
 
     Reset();
+
 
     file.open(fileName, ios::in);
     char bom[3];

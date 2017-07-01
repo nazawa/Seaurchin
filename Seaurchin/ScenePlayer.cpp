@@ -1,6 +1,7 @@
 #include "ScenePlayer.h"
 #include "ScriptSprite.h"
 #include "ExecutionManager.h"
+#include "Setting.h"
 
 using namespace std;
 
@@ -76,6 +77,30 @@ void ScenePlayer::Initialize()
     } else {
         processor = new PlayableProcessor(this);
     }
+
+    auto setting = manager->GetSettingInstanceSafe();
+    SeenDuration = setting->ReadValue<double>("Play", "SeenDuration", 0.8);
+    SoundBufferingLatency = setting->ReadValue<double>("Sound", "bufferLatency", 0.03);
+
+    LoadResources();
+}
+
+void ScenePlayer::Finalize()
+{
+    soundManager->StopGlobal(soundHoldLoop->GetSample());
+    soundManager->StopGlobal(soundSlideLoop->GetSample());
+    for (auto& res : resources) res.second->Release();
+    soundManager->StopGlobal(bgmStream);
+    delete processor;
+    delete bgmStream;
+
+    fontCombo->Release();
+    DeleteGraph(hGroundBuffer);
+    DeleteGraph(hAirBuffer);
+}
+
+void ScenePlayer::LoadResources()
+{
     // 2^xêßå¿Ç™Ç†ÇÈÇÃÇ≈Ç±Ç±Ç≈åvéZ
     int exty = laneBufferX * SU_LANE_ASPECT_EXT;
     double bufferY = 2;
@@ -121,21 +146,6 @@ void ScenePlayer::Initialize()
     soundHoldLoop->SetLoop(true);
     soundSlideLoop->SetLoop(true);
 }
-
-void ScenePlayer::Finalize()
-{
-    soundManager->StopGlobal(soundHoldLoop->GetSample());
-    soundManager->StopGlobal(soundSlideLoop->GetSample());
-    for (auto& res : resources) res.second->Release();
-    soundManager->StopGlobal(bgmStream);
-    delete processor;
-    delete bgmStream;
-
-    fontCombo->Release();
-    DeleteGraph(hGroundBuffer);
-    DeleteGraph(hAirBuffer);
-}
-
 
 void ScenePlayer::AddSprite(SSprite *sprite)
 {
@@ -524,6 +534,7 @@ void ScenePlayer::DrawAirNotes(shared_ptr<SusDrawableNoteData> note)
         }
     };
     Prepare3DDrawCall();
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
     DrawPolygonIndexed3D(vertices, 4, RectVertexIndices, 2, handle, TRUE);
 }
 
@@ -761,22 +772,33 @@ void ScenePlayer::GetPlayStatus(PlayStatus *status)
 
 void ScenePlayer::MovePositionBySecond(double sec)
 {
-    if (State != 0) return;
-    double newTime = CurrentTime + sec;
-    auto pos = BASS_ChannelSeconds2Bytes(bgmStream->GetSoundHandle(), newTime);
-    BASS_ChannelSetPosition(bgmStream->GetSoundHandle(), pos, BASS_POS_BYTE);
-    processor->MovePosition(sec);
+    //é¿ç€Ç…ìÆÇ¢ÇΩéûä‘Ç≈åvéZÇπÇÊ
+    if (State < PlayingState::BothOngoing) return;
+    double gap = analyzer->SharedMetaData.WaveOffset + SoundBufferingLatency;
+    double oldBgmPos = bgmStream->GetPlayingPosition();
+    double oldTime = CurrentTime;
+    int oldMeas = get<0>(analyzer->GetRelativeTime(CurrentTime));
+    double newTime = oldTime + sec;
+    double newBgmPos = oldBgmPos + (newTime - oldTime);
+    newBgmPos = max(0.0, newBgmPos);
+    bgmStream->SetPlayingPosition(newBgmPos);
+    CurrentTime = newBgmPos + gap;
+    processor->MovePosition(CurrentTime - oldTime);
 }
 
 void ScenePlayer::MovePositionByMeasure(int meas)
 {
-    if (State != 0) return;
-    auto cp = analyzer->GetRelativeTime(CurrentTime);
-    double newTime = analyzer->GetAbsoluteTime(get<0>(cp) + meas, 0);
-    double rel = newTime - CurrentTime;
-    auto pos = BASS_ChannelSeconds2Bytes(bgmStream->GetSoundHandle(), newTime);
-    BASS_ChannelSetPosition(bgmStream->GetSoundHandle(), pos, BASS_POS_BYTE);
-    processor->MovePosition(rel);
+    if (State < PlayingState::BothOngoing) return;
+    double gap = analyzer->SharedMetaData.WaveOffset + SoundBufferingLatency;
+    double oldBgmPos = bgmStream->GetPlayingPosition();
+    double oldTime = CurrentTime;
+    int oldMeas = get<0>(analyzer->GetRelativeTime(CurrentTime));
+    double newTime = analyzer->GetAbsoluteTime(max(0, oldMeas + meas), 0);
+    double newBgmPos = oldBgmPos + (newTime - oldTime);
+    newBgmPos = max(0.0, newBgmPos);
+    bgmStream->SetPlayingPosition(newBgmPos);
+    CurrentTime = newBgmPos + gap;
+    processor->MovePosition(CurrentTime - oldTime);
 }
 
 void ScenePlayer::AdjustCamera(double cy, double cz, double ctz)

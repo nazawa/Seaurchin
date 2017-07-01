@@ -38,7 +38,8 @@ void PreInitialize(HINSTANCE hInstance)
     ChangeWindowMode(TRUE);
     SetMainWindowText(SU_APP_NAME " " SU_APP_VERSION);
     SetAlwaysRunFlag(TRUE);
-    SetWaitVSyncFlag(FALSE);
+    auto vs = setting->ReadValue<bool>("Graphic", "WaitVSync", false);
+    SetWaitVSyncFlag(vs ? TRUE : FALSE);
     SetWindowIconID(IDI_ICON1);
     SetUseFPUPreserveFlag(TRUE);
     SetGraphMode(SU_RES_WIDTH, SU_RES_HEIGHT, 32);

@@ -45,6 +45,7 @@ public:
 
     inline std::shared_ptr<MusicsManager> GetMusicsManager() { return Musics; }
     inline std::shared_ptr<ControlState> GetControlStateSafe() { return SharedControlState; }
+    inline std::shared_ptr<Setting> GetSettingInstanceSafe() { return SharedSetting; }
     inline ControlState* GetControlStateUnsafe() { return SharedControlState.get(); }
     inline AngelScript* GetScriptInterfaceUnsafe() { return ScriptInterface.get(); }
     inline SoundManager* GetSoundManagerUnsafe() { return Sound.get(); }

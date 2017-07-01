@@ -112,6 +112,7 @@ protected:
     bool AirActionShown = false;
 
     void AddSprite(SSprite *sprite);
+    void LoadResources();
     void LoadWorker();
     void RemoveSlideEffect();
     void UpdateSlideEffect();

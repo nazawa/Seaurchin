@@ -51,6 +51,7 @@ public:
 
     static SoundStream *CreateFromFile(const std::string &fileNameA);
     double GetPlayingPosition();
+    void SetPlayingPosition(double pos);
 };
 
 class SoundMixerStream {

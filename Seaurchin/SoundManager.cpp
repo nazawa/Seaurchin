@@ -97,6 +97,12 @@ double SoundStream::GetPlayingPosition()
     return BASS_ChannelBytes2Seconds(hStream, pos);
 }
 
+void SoundStream::SetPlayingPosition(double pos)
+{
+    auto bp = BASS_ChannelSeconds2Bytes(hStream, pos);
+    BASS_ChannelSetPosition(hStream, bp , BASS_POS_BYTE);
+}
+
 // SoundMixerStream ------------------------
 SoundMixerStream::SoundMixerStream(int ch, int freq)
 {
