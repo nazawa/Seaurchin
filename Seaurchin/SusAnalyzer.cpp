@@ -136,21 +136,22 @@ void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
         }
     }
     file.close();
+    if (!analyzeOnlyMetaData) {
+        sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
+            return get<1>(a).Type.to_ulong() > get<1>(b).Type.to_ulong();
+        });
+        sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
+            return get<0>(a).Tick < get<0>(b).Tick;
+        });
+        stable_sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
+            return get<0>(a).Measure < get<0>(b).Measure;
+        });
+        copy_if(Notes.begin(), Notes.end(), back_inserter(BpmChanges), [](tuple<SusRelativeNoteTime, SusRawNoteData> n) {
+            return get<1>(n).Type.test(SusNoteType::Undefined);
+        });
 
-    for (auto &hs : HispeedDefinitions) hs.second->Finialize();
-
-    sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
-        return get<1>(a).Type.to_ulong() > get<1>(b).Type.to_ulong();
-    });
-    sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
-        return get<0>(a).Tick < get<0>(b).Tick;
-    });
-    stable_sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
-        return get<0>(a).Measure < get<0>(b).Measure;
-    });
-    copy_if(Notes.begin(), Notes.end(), back_inserter(BpmChanges), [](tuple<SusRelativeNoteTime, SusRawNoteData> n) {
-        return get<1>(n).Type.test(SusNoteType::Undefined);
-    });
+        for (auto &hs : HispeedDefinitions) hs.second->Finialize();
+    }
 }
 
 void SusAnalyzer::ProcessCommand(const xp::smatch &result, bool onlyMeta)
@@ -608,6 +609,7 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             noteData->StartLane = info.NotePosition.StartLane;
             noteData->Length = info.NotePosition.Length;
             noteData->Timeline = info.Timeline;
+            noteData->StartTimeEx = get<1>(noteData->Timeline->GetRawDrawStateAt(noteData->StartTime));
             data.push_back(noteData);
 
         } else {
@@ -711,51 +713,38 @@ void SusHispeedTimeline::Finialize()
             key.second.VisibilityState = vis;
         }
     }
+
+    auto it = keys.begin();
+    double sum = 0;
+    double lastAt = 0;
+    bool lastVisible = true;
+    double lastSpeed = 1.0;
+    for (auto &rd : keys) {
+        double t = RelToAbs(rd.first.Measure, rd.first.Tick);
+        sum += (t - lastAt) * lastSpeed;
+        Data.push_back(make_tuple(t, sum, rd.second));
+        lastAt = t;
+        lastSpeed = rd.second.Speed;
+    }
+    keys.clear();
 }
 
-//double返り値はこの先何秒の位置かを表す
-tuple<bool, double> SusHispeedTimeline::GetDrawStateAt(double objTime, double viewTime)
+tuple<bool, double> SusHispeedTimeline::GetRawDrawStateAt(double time)
 {
-    SusHispeedData lastData = keys[0].second;
-    double lastAt = 0.0;
-    double overallSum = 0;
-    double nowSum = 0;
-    //overAllの計算
-    int skip = 0;
-    for (auto &k : keys) {
-        if (!skip) {
-            skip = 1;
-            continue;
-        }
-        double t = RelToAbs(k.first.Measure, k.first.Tick);
-        if (t >= objTime) break;
-        overallSum += (t - lastAt) * lastData.Speed;
-        lastData = k.second;
-        lastAt = t;
+    auto lastData = Data[0];
+    int check = 0;
+    for (auto &d : Data) {
+        if (!check++) continue;
+        double keyTime = get<0>(d);
+        if (keyTime >= time) break;
+        lastData = d;
     }
-    overallSum += (objTime - lastAt) * lastData.Speed;
-    
-    lastAt = 0.0;
-    lastData = keys[0].second;
-    //nowの計算
-    for (auto &k : keys) {
-        if (skip) {
-            skip = 0;
-            continue;
-        }
-        double t = RelToAbs(k.first.Measure, k.first.Tick);
-        if (t >= viewTime) break;
-        nowSum += (t - lastAt) * lastData.Speed;
-        lastData = k.second;
-        lastAt = t;
-    }
-    nowSum += (viewTime - lastAt) * lastData.Speed;
-
-    return make_tuple(lastData.VisibilityState, (overallSum - nowSum));
+    double lastDifference = time - get<0>(lastData);
+    return make_tuple(get<2>(lastData).VisibilityState, get<1>(lastData) + lastDifference * get<2>(lastData).Speed);
 }
 
 tuple<bool, double> SusDrawableNoteData::GetStateAt(double time)
 {
-    auto result = Timeline->GetDrawStateAt(StartTime, time);
-    return result;
+    auto result = Timeline->GetRawDrawStateAt(time);
+    return make_tuple(get<0>(result), StartTimeEx - get<1>(result));
 }

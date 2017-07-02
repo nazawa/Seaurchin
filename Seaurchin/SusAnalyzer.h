@@ -69,6 +69,7 @@ struct SusHispeedData {
 class SusHispeedTimeline final {
 private:
     std::vector<std::pair<SusRelativeNoteTime, SusHispeedData>> keys;
+    std::vector<std::tuple<double, double, SusHispeedData>> Data;
     std::function<double(uint32_t, uint32_t)> RelToAbs;
 
 public:
@@ -77,7 +78,7 @@ public:
     void AddKeyByData(uint32_t meas, uint32_t tick, double hs);
     void AddKeyByData(uint32_t meas, uint32_t tick, bool vis);
     void Finialize();
-    std::tuple<bool, double> GetDrawStateAt(double objTime, double viewTime);
+    std::tuple<bool, double> GetRawDrawStateAt(double time);
 };
 
 struct SusMetaData {
@@ -116,6 +117,8 @@ struct SusDrawableNoteData {
 
     //À•`‰æˆÊ’u
     double ModifiedPosition;
+    double StartTimeEx;
+    double DurationEx;
     //•`‰æ"n‚ß‚é"
     double StartTime;
     //•`‰æ‚ª"‘±‚­"
