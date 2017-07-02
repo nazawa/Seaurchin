@@ -100,6 +100,7 @@ protected:
     std::vector<std::shared_ptr<SusDrawableNoteData>> data;
     std::vector<std::shared_ptr<SusDrawableNoteData>> seenData, judgeData;
     std::unordered_map<std::shared_ptr<SusDrawableNoteData>, SSprite*> SlideEffects;
+    // ŠÔ ‰¡ˆÊ’u ExŠÔ
     std::unordered_map<std::shared_ptr<SusDrawableNoteData>, std::vector<std::tuple<double, double>>> curveData;
     double CurrentTime = 0;
     double CurrentSoundTime = 0;

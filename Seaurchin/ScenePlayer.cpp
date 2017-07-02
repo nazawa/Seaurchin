@@ -240,14 +240,27 @@ void ScenePlayer::CalculateNotes(double time, double duration, double preced)
         double ptime = time - preced;
         if (n->Type.to_ulong() & SU_NOTE_LONG_MASK) {
             // ロング
-            return (ptime <= n->StartTime && n->StartTime <= time + duration)
-                || (ptime <= n->StartTime + n->Duration && n->StartTime + n->Duration <= time + duration)
-                || (n->StartTime <= ptime && time + duration <= n->StartTime + n->Duration);
+            if (time > n->StartTime + n->Duration) return false;
+            auto st = n->GetStateAt(time);
+            // 先頭が見えてるならもちろん見える
+            if (n->ModifiedPosition >= -preced && n->ModifiedPosition <= duration) return get<0>(st);
+            // 先頭含めて全部-precedより手前なら見えない
+            if (all_of(n->ExtraData.begin(), n->ExtraData.end(), [preced, duration](shared_ptr<SusDrawableNoteData> en) {
+                if (isnan(en->ModifiedPosition)) return true;
+                if (en->ModifiedPosition < -preced) return true;
+                return false;
+            }) && n->ModifiedPosition < -preced) return false;
+            //先頭含めて全部durationより後なら見えない
+            if (all_of(n->ExtraData.begin(), n->ExtraData.end(), [preced, duration](shared_ptr<SusDrawableNoteData> en) {
+                if (isnan(en->ModifiedPosition)) return true;
+                if (en->ModifiedPosition > duration) return true;
+                return false;
+            }) && n->ModifiedPosition > duration) return false;
+            return true;
         } else {
             // ショート
             if (time > n->StartTime) return false;
             auto st = n->GetStateAt(time);
-            n->ModifiedPosition = get<1>(st);
             if (n->ModifiedPosition < -preced || n->ModifiedPosition > duration) return false;
             return get<0>(st);
         }
@@ -332,7 +345,7 @@ void ScenePlayer::Draw()
     ClearDrawScreen();
     for (auto& note : seenData) if (note->Type.test(SusNoteType::AirAction)) airactionStarts.push_back(DrawAirActionNotes(note));
     FINISH_DRAW_TRANSACTION;
-    
+
     Prepare3DDrawCall();
     DrawPolygonIndexed3D(AirVertices, 4, RectVertexIndices, 2, hAirBuffer, TRUE);
     for (auto& position : airactionStarts) {
@@ -505,7 +518,7 @@ void ScenePlayer::DrawShortNotes(shared_ptr<SusDrawableNoteData> note)
 
 void ScenePlayer::DrawAirNotes(shared_ptr<SusDrawableNoteData> note)
 {
-    double relpos = 1.0 - (note->StartTime - CurrentTime) / SeenDuration;
+    double relpos = 1.0 - note->ModifiedPosition / SeenDuration;
     double z = (1.0 - relpos) * SU_LANE_Z_MAX + relpos * SU_LANE_Z_MIN;
     if (relpos >= 1.0 || relpos < 0) return;
 
@@ -560,10 +573,10 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
 {
     auto length = note->Length;
     auto slane = note->StartLane;
-    double relpos = 1.0 - (note->StartTime - CurrentTime) / SeenDuration;
+    double relpos = 1.0 - note->ModifiedPosition / SeenDuration;
     //中身だけ先に描画
     auto endpoint = note->ExtraData.back();
-    double reltailpos = 1.0 - (endpoint->StartTime - CurrentTime) / SeenDuration;
+    double reltailpos = 1.0 - endpoint->ModifiedPosition / SeenDuration;
     SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
     DrawModiGraphF(
         slane * widthPerLane, laneBufferY * relpos,
@@ -578,7 +591,7 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
 
     for (auto &ex : note->ExtraData) {
         if (ex->Type.test(SusNoteType::ExTap)) continue;
-        double relendpos = 1.0 - (ex->StartTime - CurrentTime) / SeenDuration;
+        double relendpos = 1.0 - ex->ModifiedPosition / SeenDuration;
         DrawTap(slane, length, relendpos, imageHold->GetHandle());
     }
 }
@@ -586,7 +599,7 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
 void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
 {
     auto lastStep = note;
-    auto lastStepRelativeY = 1.0 - (lastStep->StartTime - CurrentTime) / SeenDuration;
+    auto lastStepRelativeY = 1.0 - lastStep->ModifiedPosition / SeenDuration;
     double segmentLength = 128.0;   // Buffer上での最小の長さ
 
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
@@ -595,20 +608,22 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
     for (auto &slideElement : note->ExtraData) {
         if (slideElement->Type.test(SusNoteType::Control)) continue;
         if (slideElement->Type.test(SusNoteType::ExTap)) continue;
-        double currentStepRelativeY = 1.0 - (slideElement->StartTime - CurrentTime) / SeenDuration;
+        double currentStepRelativeY = 1.0 - slideElement->ModifiedPosition / SeenDuration;
         auto &segmentPositions = curveData[slideElement];
 
         auto lastSegmentPosition = segmentPositions[0];
         double lastSegmentLength = lastStep->Length;
         double lastTimeInBlock = get<0>(lastSegmentPosition) / (slideElement->StartTime - lastStep->StartTime);
-        auto lastSegmentRelativeY = 1.0 - (lastStep->StartTime - CurrentTime) / SeenDuration;
+        auto lastSegmentRelativeY = 1.0 - lastStep->ModifiedPosition / SeenDuration;
+        double currentExPosition = get<1>(lastStep->Timeline->GetRawDrawStateAt(CurrentTime));
         for (auto &segmentPosition : segmentPositions) {
             if (lastSegmentPosition == segmentPosition) continue;
             double currentTimeInBlock = get<0>(segmentPosition) / (slideElement->StartTime - lastStep->StartTime);
             double currentSegmentLength = (1.0 - currentTimeInBlock) * lastStep->Length + currentTimeInBlock * slideElement->Length;
-            double currentSegmentRelativeY = 1.0 - (lastStep->StartTime + get<0>(segmentPosition) - CurrentTime) / SeenDuration;
+            double segmentExPosition = (1.0 - currentTimeInBlock) * lastStep->ModifiedPosition + currentTimeInBlock * slideElement->ModifiedPosition;
+            double currentSegmentRelativeY = 1.0 - segmentExPosition / SeenDuration;
 
-            if (currentSegmentRelativeY < cullingLimit) {
+            if (currentSegmentRelativeY < cullingLimit && lastSegmentRelativeY < cullingLimit) {
                 SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
                 DrawRectModiGraphF(
                     get<1>(lastSegmentPosition) * laneBufferX - lastSegmentLength / 2 * widthPerLane, laneBufferY * lastSegmentRelativeY,
@@ -631,7 +646,7 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
         }
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-        if (!slideElement->Type.test(SusNoteType::Tap)) 
+        if (!slideElement->Type.test(SusNoteType::Tap))
             DrawTap(slideElement->StartLane, slideElement->Length, currentStepRelativeY, imageSlide->GetHandle());
 
         lastStep = slideElement;
@@ -642,27 +657,28 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
 tuple<double, double> ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNoteData> note)
 {
     auto lastStep = note;
-    auto lastStepRelativeY = 1.0 - (lastStep->StartTime - CurrentTime) / SeenDuration;
+    auto lastStepRelativeY = 1.0 - lastStep->ModifiedPosition / SeenDuration;
     double segmentLength = 128.0;   // Buffer上での最小の長さ
 
 
     for (auto &slideElement : note->ExtraData) {
         if (slideElement->Type.test(SusNoteType::Control)) continue;
         if (slideElement->Type.test(SusNoteType::ExTap)) continue;
-        double currentStepRelativeY = 1.0 - (slideElement->StartTime - CurrentTime) / SeenDuration;
+        double currentStepRelativeY = 1.0 - slideElement->ModifiedPosition / SeenDuration;
         auto &segmentPositions = curveData[slideElement];
 
         auto lastSegmentPosition = segmentPositions[0];
         double lastSegmentLength = lastStep->Length;
         double lastTimeInBlock = get<0>(lastSegmentPosition) / (slideElement->StartTime - lastStep->StartTime);
-        auto lastSegmentRelativeY = 1.0 - (lastStep->StartTime - CurrentTime) / SeenDuration;
+        auto lastSegmentRelativeY = 1.0 - lastStep->ModifiedPosition / SeenDuration;
+        double currentExPosition = get<1>(lastStep->Timeline->GetRawDrawStateAt(CurrentTime));
         for (auto &segmentPosition : segmentPositions) {
             if (lastSegmentPosition == segmentPosition) continue;
             double currentTimeInBlock = get<0>(segmentPosition) / (slideElement->StartTime - lastStep->StartTime);
             double currentSegmentLength = (1.0 - currentTimeInBlock) * lastStep->Length + currentTimeInBlock * slideElement->Length;
-            double currentSegmentRelativeY = 1.0 - (lastStep->StartTime + get<0>(segmentPosition) - CurrentTime) / SeenDuration;
-            
-            if (currentSegmentRelativeY < cullingLimit) {
+            double segmentExPosition = (1.0 - currentTimeInBlock) * lastStep->ModifiedPosition + currentTimeInBlock * slideElement->ModifiedPosition;
+            double currentSegmentRelativeY = 1.0 - segmentExPosition / SeenDuration;
+            if (currentSegmentRelativeY < cullingLimit && lastSegmentRelativeY < cullingLimit) {
                 SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
                 DrawLineAA(
                     get<1>(lastSegmentPosition) * laneBufferX, laneBufferY * lastSegmentRelativeY,

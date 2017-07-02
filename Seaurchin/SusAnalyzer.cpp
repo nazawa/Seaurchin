@@ -360,6 +360,7 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
             noteData.NotePosition.StartLane = ConvertHexatridecimal(lane.substr(1, 1));
             noteData.NotePosition.Length = ConvertHexatridecimal(note.substr(1, 1));
             noteData.Extra = ConvertHexatridecimal(lane.substr(2, 1));
+            noteData.Timeline = HispeedToApply;
 
             switch (lane[0]) {
                 case '2':
@@ -515,6 +516,8 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             noteData->StartTime = GetAbsoluteTime(time.Measure, time.Tick);
             noteData->StartLane = info.NotePosition.StartLane;
             noteData->Length = info.NotePosition.Length;
+            noteData->Timeline = info.Timeline;
+            noteData->StartTimeEx = get<1>(noteData->Timeline->GetRawDrawStateAt(noteData->StartTime));
 
             int ltype = 0;
             switch ((bits >> 6) & 7) {
@@ -549,6 +552,8 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
                         nextNote->StartLane = curNo.NotePosition.StartLane;
                         nextNote->Length = curNo.NotePosition.Length;
                         nextNote->Type = curNo.Type;
+                        nextNote->Timeline = curNo.Timeline;
+                        nextNote->StartTimeEx = get<1>(nextNote->Timeline->GetRawDrawStateAt(nextNote->StartTime));
                         auto injc = (double)(GetRelativeTicks(curPos.Measure, curPos.Tick) - GetRelativeTicks(time.Measure, time.Tick)) / TicksPerBeat * LongInjectionPerBeat;
                         // 1 のときはピッタシ終わってるので無視
                         for (int i = 1; i < injc; i++) {
@@ -573,6 +578,8 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
                         nextNote->StartLane = curNo.NotePosition.StartLane;
                         nextNote->Length = curNo.NotePosition.Length;
                         nextNote->Type = curNo.Type;
+                        nextNote->Timeline = curNo.Timeline;
+                        nextNote->StartTimeEx = get<1>(nextNote->Timeline->GetRawDrawStateAt(nextNote->StartTime));
                         auto lsrt = get<0>(lastStep);
                         auto injc = (double)(GetRelativeTicks(curPos.Measure, curPos.Tick) - GetRelativeTicks(lsrt.Measure, lsrt.Tick)) / TicksPerBeat * LongInjectionPerBeat;
                         for (int i = 1; i < injc; i++) {
@@ -746,5 +753,14 @@ tuple<bool, double> SusHispeedTimeline::GetRawDrawStateAt(double time)
 tuple<bool, double> SusDrawableNoteData::GetStateAt(double time)
 {
     auto result = Timeline->GetRawDrawStateAt(time);
+    ModifiedPosition = StartTimeEx - get<1>(result);
+    for (auto &ex : ExtraData) {
+        if (!ex->Timeline) {
+            ex->ModifiedPosition = numeric_limits<double>::quiet_NaN();
+            continue;
+        }
+        auto eres = ex->Timeline->GetRawDrawStateAt(time);
+        ex->ModifiedPosition = ex->StartTimeEx - get<1>(eres);
+    }
     return make_tuple(get<0>(result), StartTimeEx - get<1>(result));
 }
