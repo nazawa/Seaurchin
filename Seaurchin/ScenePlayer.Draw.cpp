@@ -395,6 +395,17 @@ void ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNoteData> note)
     auto lastStepRelativeY = 1.0 - lastStep->ModifiedPosition / SeenDuration;
     double segmentLength = 128.0;   // Bufferã‚Å‚ÌÅ¬‚Ì’·‚³
 
+    double aasz = (1.0 - lastStepRelativeY) * SU_LANE_Z_MAX + lastStepRelativeY * SU_LANE_Z_MIN;
+    double cry = ((double)lastStep->StartLane + lastStep->Length / 2.0) / 16.0;
+    double center = (1.0 - cry) * SU_LANE_X_MIN + cry * SU_LANE_X_MAX;
+    VERTEX3D vertices[] = {
+        { VGet(center - 10, SU_LANE_Y_GROUND, aasz), VGet(0, 0, -1), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.9375f, 1.0f, 1.0f, 0.0f },
+        { VGet(center - 10, SU_LANE_Y_AIR, aasz), VGet(0, 0, -1), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.9375f, 0.0f, 0.0f, 0.0f },
+        { VGet(center + 10, SU_LANE_Y_AIR, aasz), VGet(0, 0, -1), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0000f, 0.0f, 0.0f, 0.0f },
+        { VGet(center + 10, SU_LANE_Y_GROUND, aasz), VGet(0, 0, -1), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 1.0000f, 1.0f, 0.0f, 0.0f },
+    };
+    DrawPolygonIndexed3D(vertices, 4, RectVertexIndices, 2, imageAirAction->GetHandle(), TRUE);
+
     for (auto &slideElement : note->ExtraData) {
         if (slideElement->Type.test(SusNoteType::Control)) continue;
         if (slideElement->Type.test(SusNoteType::ExTap)) continue;
