@@ -3,8 +3,7 @@
 #define SU_SETTING_GENERAL "General"
 #define SU_SETTING_SKIN "Skin"
 
-class Setting final
-{
+class Setting final {
 private:
     static std::string RootDirectory;
     std::string file;
@@ -19,7 +18,7 @@ public:
     static const std::string GetRootDirectory();
 
     template<typename T>
-    T ReadValue(std::string group, std::string key, T defValue)
+    T ReadValue(const std::string &group, const std::string &key, T defValue)
     {
         boost::optional<T> v = SettingTree.get_optional<T>(group + "." + key);
         if (v) {
@@ -31,7 +30,7 @@ public:
     }
 
     template<typename T>
-    void WriteValue(std::string group, std::string key, T value)
+    void WriteValue(const std::string &group, const std::string &key, T value)
     {
         SettingTree.put<T>(group + "." + key, value);
     }
@@ -52,7 +51,7 @@ protected:
     SettingType Type;
 
 public:
-    SettingItem(std::shared_ptr<Setting> setting, std::string group, std::string key);
+    SettingItem(std::shared_ptr<Setting> setting, const std::string &group, const std::string &key);
 
     SettingType GetType() { return Type; }
     virtual std::string GetItemString() = 0;
@@ -74,7 +73,7 @@ protected:
     static std::function<std::string(NumberSettingItem*)> DefaultFormatter;
 
 public:
-    NumberSettingItem(std::shared_ptr<Setting> setting, std::string group, std::string key);
+    NumberSettingItem(std::shared_ptr<Setting> setting, const std::string &group, const std::string &key);
 
     std::string GetItemString() override;
     void MoveNext() override;
@@ -84,4 +83,35 @@ public:
     void SetStep(double step);
     void SetRange(double min, double max);
     void SetFloatDigits(int digits);
+    double GetValue() { return Value; }
+};
+
+class BooleanSettingItem : public SettingItem {
+protected:
+    bool Value = false;
+    std::string FalseText = "False";
+    std::string TrueText = "True";
+
+public:
+    BooleanSettingItem(std::shared_ptr<Setting> setting, const std::string &group, const std::string &key);
+
+    std::string GetItemString() override;
+    void MoveNext() override;
+    void MovePrevious() override;
+    void SaveValue() override;
+    void RetrieveValue() override;
+    void SetText(const std::string &t, const std::string &f);
+    bool GetValue() { return Value; }
+};
+
+class SettingItemManager final {
+private:
+    std::shared_ptr<Setting> ReferredSetting;
+    std::unordered_map<std::string, shared_ptr<SettingItem>> Items;
+
+public:
+    SettingItemManager(std::shared_ptr<Setting> setting);
+
+    void AddSettingByString(const std::string &proc);
+    std::shared_ptr<SettingItem> GetSettingItem(const std::string &group, const std::string &key);
 };

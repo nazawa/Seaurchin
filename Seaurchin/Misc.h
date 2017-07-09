@@ -59,3 +59,8 @@ std::string ConvertShiftJisToUTF8(std::string sjisstr);
 std::wstring ConvertUTF8ToUnicode(std::string utf8str);
 void ScriptSceneWarnOutOf(std::string type, asIScriptContext *ctx);
 double ToDouble(const char *str);
+int32_t ConvertInteger(const std::string &input);
+uint32_t ConvertHexatridecimal(const std::string &input);
+double ConvertFloat(const std::string &input);
+bool ConvertBoolean(const std::string &input);
+double lerp(double x, double a, double b);

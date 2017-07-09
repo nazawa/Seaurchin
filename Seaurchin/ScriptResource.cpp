@@ -295,6 +295,38 @@ SSound * SSound::CreateSoundFromFile(SoundManager *smanager, const std::string &
     return result;
 }
 
+// SSettingItem --------------------------------------------
+
+SSettingItem::SSettingItem(shared_ptr<SettingItem> s) : setting(s)
+{
+    
+}
+
+SSettingItem::~SSettingItem()
+{
+    setting->SaveValue();
+}
+
+void SSettingItem::Save()
+{
+    setting->SaveValue();
+}
+
+void SSettingItem::MoveNext()
+{
+    setting->MoveNext();
+}
+
+void SSettingItem::MovePrevious()
+{
+    setting->MovePrevious();
+}
+
+std::string SSettingItem::GetItemText()
+{
+    return setting->GetItemString();
+}
+
 
 void RegisterScriptResource(ExecutionManager *exm)
 {
@@ -341,5 +373,12 @@ void RegisterScriptResource(ExecutionManager *exm)
     engine->RegisterObjectType(SU_IF_ANIMEIMAGE, 0, asOBJ_REF);
     engine->RegisterObjectBehaviour(SU_IF_ANIMEIMAGE, asBEHAVE_ADDREF, "void f()", asMETHOD(SAnimatedImage, AddRef), asCALL_THISCALL);
     engine->RegisterObjectBehaviour(SU_IF_ANIMEIMAGE, asBEHAVE_RELEASE, "void f()", asMETHOD(SAnimatedImage, Release), asCALL_THISCALL);
-}
 
+    engine->RegisterObjectType(SU_IF_SETTING_ITEM, 0, asOBJ_REF);
+    engine->RegisterObjectBehaviour(SU_IF_SETTING_ITEM, asBEHAVE_ADDREF, "void f()", asMETHOD(SSettingItem, AddRef), asCALL_THISCALL);
+    engine->RegisterObjectBehaviour(SU_IF_SETTING_ITEM, asBEHAVE_RELEASE, "void f()", asMETHOD(SSettingItem, Release), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SETTING_ITEM, "void Save()", asMETHOD(SSettingItem, Save), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SETTING_ITEM, "void MoveNext()", asMETHOD(SSettingItem, MoveNext), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SETTING_ITEM, "void MovePrevious()", asMETHOD(SSettingItem, MovePrevious), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SETTING_ITEM, "string GetItemText()", asMETHOD(SSettingItem, GetItemText), asCALL_THISCALL);
+}

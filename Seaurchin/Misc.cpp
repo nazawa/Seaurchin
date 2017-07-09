@@ -61,3 +61,34 @@ double ToDouble(const char *str)
     if (*(--it) == '.') while (((unsigned char)(ch = *(++it) - '0')) <= 9) result += (base *= 0.1) * ch;
     return sign * result;
 }
+
+int32_t ConvertInteger(const string &input)
+{
+    return atoi(input.c_str());
+}
+
+uint32_t ConvertHexatridecimal(const string &input)
+{
+    return stoul(input, 0, 36);
+}
+
+double ConvertFloat(const string &input)
+{
+    return ToDouble(input.c_str());
+}
+
+bool ConvertBoolean(const string &input)
+{
+    return
+        input == "1"
+        || input == "true"
+        || input == "True"
+        || input == "y"
+        || input == "yes"
+        || input == "Yes";
+}
+
+double lerp(double x, double a, double b)
+{
+    return (1.0 - x) * a + x * b;
+}

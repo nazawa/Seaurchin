@@ -13,18 +13,6 @@ xp::sregex SusAnalyzer::RegexSusData = "#" >> (xp::s1 = xp::repeat<3, 3>(xp::aln
 
 static xp::sregex AllNumeric = xp::bos >> +(xp::digit) >> xp::eos;
 
-static auto ConvertInteger = [](const string &input) -> int32_t {
-    return atoi(input.c_str());
-};
-
-static auto ConvertHexatridecimal = [](const string &input) -> uint32_t {
-    return stoul(input, 0, 36);
-};
-
-static auto ConvertFloat = [](const string &input) -> double {
-    return ToDouble(input.c_str());
-};
-
 static auto ConvertRawString = [](const string &input) -> string {
     // TIL: ASCII文字範囲ではUTF-8と本来のASCIIを間違うことはない
     if (ba::starts_with(input, "\"")) {

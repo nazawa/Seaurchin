@@ -5,6 +5,7 @@
 #include "EffectData.h"
 #include "SoundManager.h"
 #include "Misc.h"
+#include "Setting.h"
 
 #define SU_IF_IMAGE "Image"
 #define SU_IF_FONT "Font"
@@ -14,6 +15,7 @@
 #define SU_IF_EFXDATA "EffectData"
 #define SU_IF_9IMAGE "NinePatchImage"
 #define SU_IF_ANIMEIMAGE "AnimatedImage"
+#define SU_IF_SETTING_ITEM "SettingItem"
 
 //interface é©ìÆâï˙ëŒè€
 class ISResouceAutoRelease {
@@ -155,6 +157,20 @@ public:
     void Stop(SSound *sound);
 
     static SSoundMixer *CreateMixer(SoundManager *manager);
+};
+
+class SSettingItem : public SResource {
+protected:
+    std::shared_ptr<SettingItem> setting;
+
+public:
+    SSettingItem(std::shared_ptr<SettingItem> s);
+    ~SSettingItem() override;
+
+    void Save();
+    void MoveNext();
+    void MovePrevious();
+    std::string GetItemText();
 };
 
 class ExecutionManager;

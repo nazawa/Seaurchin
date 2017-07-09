@@ -2,6 +2,7 @@
 #include "ScriptSprite.h"
 #include "ExecutionManager.h"
 #include "Setting.h"
+#include "Misc.h"
 
 using namespace std;
 
@@ -114,7 +115,6 @@ void ScenePlayer::LoadWorker()
 void ScenePlayer::CalculateCurves(std::shared_ptr<SusDrawableNoteData> note)
 {
     auto lastStep = note;
-    //auto lastStepRelativeY = 1.0 - (lastStep->StartTime - currentTime) / seenDuration;
     double segmentsPerSecond = 20;   // Bufferè„Ç≈ÇÃç≈è¨ÇÃí∑Ç≥
     vector<tuple<double, double>> controlPoints;    // lastStepÇ©ÇÁÇÃéûä‘, XíÜâõà íu(0~1)
     vector<tuple<double, double>> bezierBuffer;
@@ -137,8 +137,8 @@ void ScenePlayer::CalculateCurves(std::shared_ptr<SusDrawableNoteData> note)
             copy(controlPoints.begin(), controlPoints.end(), back_inserter(bezierBuffer));
             for (int k = controlPoints.size() - 1; k >= 0; k--) {
                 for (int l = 0; l < k; l++) {
-                    auto derivedTime = (1.0 - relativeTimeInBlock) * get<0>(bezierBuffer[l]) + relativeTimeInBlock * get<0>(bezierBuffer[l + 1]);
-                    auto derivedPosition = (1.0 - relativeTimeInBlock) * get<1>(bezierBuffer[l]) + relativeTimeInBlock * get<1>(bezierBuffer[l + 1]);
+                    auto derivedTime = lerp(relativeTimeInBlock, get<0>(bezierBuffer[l]), get<0>(bezierBuffer[l + 1]));
+                    auto derivedPosition = lerp(relativeTimeInBlock, get<1>(bezierBuffer[l]), get<1>(bezierBuffer[l + 1]));
                     bezierBuffer[l] = make_tuple(derivedTime, derivedPosition);
                 }
             }
