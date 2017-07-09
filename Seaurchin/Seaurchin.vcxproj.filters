@@ -156,6 +156,9 @@
     <ClCompile Include="..\..\..\Wacom_Feel_SDK\src\cpp\WacomMultiTouch.cpp">
       <Filter>コントローラー\依存</Filter>
     </ClCompile>
+    <ClCompile Include="ScenePlayer.Draw.cpp">
+      <Filter>プレーヤー</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">

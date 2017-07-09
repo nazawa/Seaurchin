@@ -56,7 +56,7 @@ class ScenePlayer : public SSprite {
 protected:
     int reference = 0;
     int hGroundBuffer;
-    int hAirBuffer;
+    int hBlank;
     ExecutionManager *manager;
     SoundManager *soundManager;
     std::unique_ptr<SusAnalyzer> analyzer;
@@ -123,7 +123,7 @@ protected:
     void DrawAirNotes(std::shared_ptr<SusDrawableNoteData> note);
     void DrawHoldNotes(std::shared_ptr<SusDrawableNoteData> note);
     void DrawSlideNotes(std::shared_ptr<SusDrawableNoteData> note);
-    std::tuple<double, double> DrawAirActionNotes(std::shared_ptr<SusDrawableNoteData> note);
+    void DrawAirActionNotes(std::shared_ptr<SusDrawableNoteData> note);
     void DrawTap(int lane, int length, double relpos, int handle);
     void DrawMeasureLines();
     void Prepare3DDrawCall();

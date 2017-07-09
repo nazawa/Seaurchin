@@ -44,8 +44,6 @@ void PreInitialize(HINSTANCE hInstance)
     SetWindowIconID(IDI_ICON1);
     SetUseFPUPreserveFlag(TRUE);
     SetGraphMode(SU_RES_WIDTH, SU_RES_HEIGHT, 32);
-	SetUseZBuffer3D(TRUE);
-	SetWriteZBuffer3D(TRUE);
     SetFullSceneAntiAliasingMode(2, 2);
 }
 
@@ -59,6 +57,8 @@ void Initialize()
     dxlibWndProc = (WNDPROC)GetWindowLong(hDxlibWnd, GWL_WNDPROC);
     SetWindowLong(hDxlibWnd, GWL_WNDPROC, (LONG)CustomWindowProc);
     //D3Dê›íË
+    SetUseZBuffer3D(TRUE);
+    SetWriteZBuffer3D(TRUE);
     SetDrawScreen(DX_SCREEN_BACK);
 
     manager = unique_ptr<ExecutionManager>(new ExecutionManager(setting));

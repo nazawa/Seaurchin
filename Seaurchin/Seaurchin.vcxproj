@@ -200,6 +200,7 @@
     <ClCompile Include="SceneDebug.cpp" />
     <ClCompile Include="SceneDeveloperMode.cpp" />
     <ClCompile Include="ScenePlayer.cpp" />
+    <ClCompile Include="ScenePlayer.Draw.cpp" />
     <ClCompile Include="ScoreProcessor.cpp" />
     <ClCompile Include="ScriptResource.cpp" />
     <ClCompile Include="ScriptScene.cpp" />

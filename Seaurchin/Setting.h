@@ -36,3 +36,52 @@ public:
         SettingTree.put<T>(group + "." + key, value);
     }
 };
+
+enum SettingType {
+    IntegerSetting,
+    FloatSetting,
+    StringSetting,
+    BooleanSetting,
+};
+
+class SettingItem {
+protected:
+    std::shared_ptr<Setting> SettingInstance;
+    std::string SettingGroup;
+    std::string SettingKey;
+    SettingType Type;
+
+public:
+    SettingItem(std::shared_ptr<Setting> setting, std::string group, std::string key);
+
+    SettingType GetType() { return Type; }
+    virtual std::string GetItemString() = 0;
+    virtual void MoveNext() = 0;
+    virtual void MovePrevious() = 0;
+    virtual void SaveValue() = 0;
+    virtual void RetrieveValue() = 0;
+};
+
+class NumberSettingItem : public SettingItem {
+protected:
+    double Value = 0;
+    double Step = 1;
+    int FloatDigits = 0;
+    double MinValue = 0;
+    double MaxValue = 100;
+    std::function<std::string(NumberSettingItem*)> Formatter;
+
+    static std::function<std::string(NumberSettingItem*)> DefaultFormatter;
+
+public:
+    NumberSettingItem(std::shared_ptr<Setting> setting, std::string group, std::string key);
+
+    std::string GetItemString() override;
+    void MoveNext() override;
+    void MovePrevious() override;
+    void SaveValue() override;
+    void RetrieveValue() override;
+    void SetStep(double step);
+    void SetRange(double min, double max);
+    void SetFloatDigits(int digits);
+};
