@@ -48,12 +48,15 @@ protected:
     std::shared_ptr<Setting> SettingInstance;
     std::string SettingGroup;
     std::string SettingKey;
+    std::string Description;
     SettingType Type;
 
 public:
     SettingItem(std::shared_ptr<Setting> setting, const std::string &group, const std::string &key);
 
     SettingType GetType() { return Type; }
+    void SetDescription(const std::string &desc) { Description = desc; }
+    std::string GetDescription() { return Description; }
     virtual std::string GetItemString() = 0;
     virtual void MoveNext() = 0;
     virtual void MovePrevious() = 0;
@@ -107,11 +110,13 @@ public:
 class SettingItemManager final {
 private:
     std::shared_ptr<Setting> ReferredSetting;
-    std::unordered_map<std::string, shared_ptr<SettingItem>> Items;
+    std::unordered_map<std::string, std::shared_ptr<SettingItem>> Items;
 
 public:
     SettingItemManager(std::shared_ptr<Setting> setting);
 
     void AddSettingByString(const std::string &proc);
     std::shared_ptr<SettingItem> GetSettingItem(const std::string &group, const std::string &key);
+    void RetrieveAllValues();
+    void SaveAllValues();
 };

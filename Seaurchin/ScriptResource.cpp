@@ -327,6 +327,11 @@ std::string SSettingItem::GetItemText()
     return setting->GetItemString();
 }
 
+std::string SSettingItem::GetDescription()
+{
+    return setting->GetDescription;
+}
+
 
 void RegisterScriptResource(ExecutionManager *exm)
 {
@@ -381,4 +386,5 @@ void RegisterScriptResource(ExecutionManager *exm)
     engine->RegisterObjectMethod(SU_IF_SETTING_ITEM, "void MoveNext()", asMETHOD(SSettingItem, MoveNext), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SETTING_ITEM, "void MovePrevious()", asMETHOD(SSettingItem, MovePrevious), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_SETTING_ITEM, "string GetItemText()", asMETHOD(SSettingItem, GetItemText), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_SETTING_ITEM, "string GetDescription()", asMETHOD(SSettingItem, GetDescription), asCALL_THISCALL);
 }

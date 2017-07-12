@@ -15,6 +15,7 @@
 class ExecutionManager final {
 private:
     std::shared_ptr<Setting> SharedSetting;
+    std::unique_ptr<SettingItemManager> SettingManager;
     std::shared_ptr<AngelScript> ScriptInterface;
     std::vector<std::shared_ptr<Scene>> Scenes;
     std::vector<std::shared_ptr<Scene>> ScenesPending;
@@ -59,6 +60,7 @@ public:
     MusicSelectionCursor *CreateCursor();
     ScenePlayer *CreatePlayer();
     SSoundMixer *GetDefaultMixer(const std::string &name);
+    SSettingItem *GetSettingItem(const std::string &group, const std::string &key);
 
     template<typename T>
     void SetData(const std::string &name, const T& data);

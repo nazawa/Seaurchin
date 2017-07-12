@@ -106,7 +106,7 @@ void NumberSettingItem::SetFloatDigits(int digits)
 {
     if (digits < 0) return;
     FloatDigits = digits;
-    Type == digits > 0 ? SettingType::FloatSetting : SettingType::IntegerSetting;
+    Type = digits > 0 ? SettingType::FloatSetting : SettingType::IntegerSetting;
 }
 
 BooleanSettingItem::BooleanSettingItem(shared_ptr<Setting> setting, const string &group, const string &key) : SettingItem(setting, group, key)
@@ -152,32 +152,36 @@ SettingItemManager::SettingItemManager(std::shared_ptr<Setting> setting) : Refer
 
 void SettingItemManager::AddSettingByString(const string &proc)
 {
-    //B:<Group>:<Key>:YesText:NoText:Default
-    //FI:<>:<>:Min:Max:Step:Default
+    //B:<Group>:<Key>:Description:YesText:NoText:Default
+    //FI:<Group>:<Key>:Description:Min:Max:Step:Default
     auto str = proc;
     vector<string> params;
     ba::erase_all(str, " ");
     ba::split(params, str, boost::is_any_of(":"));
+    if (params.size() < 4) return;
     if (params[0] == "B") {
-        ReferredSetting->ReadValue(params[1], params[2], ConvertBoolean(params[5]));
+        ReferredSetting->ReadValue(params[1], params[2], ConvertBoolean(params[6]));
         auto si = make_shared<BooleanSettingItem>(ReferredSetting, params[1], params[2]);
-        si->SetText(params[3], params[4]);
+        si->SetDescription(params[3]);
+        si->SetText(params[4], params[5]);
         si->RetrieveValue();
         Items[params[1] + "." + params[2]] = si;
     } else if (params[0] == "I") {
-        ReferredSetting->ReadValue(params[1], params[2], ConvertInteger(params[6]));
+        ReferredSetting->ReadValue(params[1], params[2], ConvertInteger(params[7]));
         auto si = make_shared<NumberSettingItem>(ReferredSetting, params[1], params[2]);
+        si->SetDescription(params[3]);
         si->SetFloatDigits(0);
-        si->SetRange(ConvertInteger(params[3]), ConvertInteger(params[4]));
-        si->SetStep(ConvertInteger(params[5]));
+        si->SetRange(ConvertInteger(params[4]), ConvertInteger(params[5]));
+        si->SetStep(ConvertInteger(params[6]));
         si->RetrieveValue();
         Items[params[1] + "." + params[2]] = si;
     } else if (params[0] == "F") {
-        ReferredSetting->ReadValue(params[1], params[2], ConvertInteger(params[6]));
+        ReferredSetting->ReadValue(params[1], params[2], ConvertFloat(params[7]));
         auto si = make_shared<NumberSettingItem>(ReferredSetting, params[1], params[2]);
+        si->SetDescription(params[3]);
         si->SetFloatDigits(5);
-        si->SetRange(ConvertInteger(params[3]), ConvertInteger(params[4]));
-        si->SetStep(ConvertInteger(params[5]));
+        si->SetRange(ConvertFloat(params[4]), ConvertFloat(params[5]));
+        si->SetStep(ConvertFloat(params[6]));
         si->RetrieveValue();
         Items[params[1] + "." + params[2]] = si;
     }
@@ -186,5 +190,15 @@ void SettingItemManager::AddSettingByString(const string &proc)
 std::shared_ptr<SettingItem> SettingItemManager::GetSettingItem(const string &group, const string &key)
 {
     return Items[group + "." + key];
+}
+
+void SettingItemManager::RetrieveAllValues()
+{
+    for (auto &si : Items) si.second->RetrieveValue();
+}
+
+void SettingItemManager::SaveAllValues()
+{
+    for (auto &si : Items) si.second->SaveValue();
 }
 

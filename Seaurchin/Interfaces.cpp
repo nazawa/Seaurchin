@@ -7,6 +7,10 @@
 #include "ScriptFunction.h"
 #include "ScriptSprite.h"
 
+using namespace std;
+
+
+
 void InterfacesRegisterSceneFunction(ExecutionManager *exm)
 {
 	auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
@@ -20,10 +24,8 @@ void InterfacesRegisterGlobalFunction(ExecutionManager *exm)
 	auto engine = exm->GetScriptInterfaceUnsafe()->GetEngine();
 
     engine->RegisterGlobalFunction("void WriteDebugConsole(const string &in)", asFUNCTION(WriteDebugConsoleU), asCALL_CDECL);
-    //engine->RegisterGlobalFunction(SU_IF_VFONT " CreateVirtualFont(const string & in, int)", asFUNCTION(CreateVirtualFont), asCALL_CDECL);
 	engine->RegisterGlobalFunction(SU_IF_FONT "@ LoadSystemFont(const string & in)", asFUNCTION(LoadSystemFont), asCALL_CDECL);
     engine->RegisterGlobalFunction(SU_IF_IMAGE "@ LoadSystemImage(const string &in)", asFUNCTION(LoadSystemImage), asCALL_CDECL);
-	//engine->RegisterGlobalFunction(SU_IF_SOUND "@ LoadSystemSound(const string &in)", asFUNCTION(LoadSystemSound), asCALL_CDECL_OBJFIRST, exm->GetSoundManager());
     engine->RegisterGlobalFunction("void CreateImageFont(const string &in, const string &in, int)", asFUNCTION(CreateImageFont), asCALL_CDECL);
 }
 
@@ -141,4 +143,12 @@ void InterfacesRegisterEnum(ExecutionManager *exm)
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_7", KEY_INPUT_7);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_8", KEY_INPUT_8);
     engine->RegisterEnumValue(SU_IF_KEY, "INPUT_9", KEY_INPUT_9);
+}
+
+// ‚»‚Ì‘¼“K“–‚ÈŠÖ”
+
+void InterfacesExitApplication()
+{
+    auto hWnd = GetMainWindowHandle();
+    PostMessage(hWnd, WM_CLOSE, 0, 0);
 }

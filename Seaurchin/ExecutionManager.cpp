@@ -19,6 +19,7 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     random_device seed;
 
     SharedSetting = setting;
+    SettingManager = make_unique<SettingItemManager>(SharedSetting);
     ScriptInterface = make_shared<AngelScript>();
     Sound = make_shared<SoundManager>();
     Random = make_shared<mt19937>(seed());
@@ -44,8 +45,18 @@ void ExecutionManager::Initialize()
     MixerSE = SSoundMixer::CreateMixer(Sound.get());
     MixerBGM->AddRef();
     MixerSE->AddRef();
-    
+
     SharedControlState->Initialize();
+
+    std::ifstream slfile;
+    string procline;
+    path slpath = SharedSetting->GetRootDirectory() / SU_DATA_DIR / SU_SCRIPT_DIR / "SettingList.txt";
+    slfile.open(slpath.string(), ios::in);
+    while (getline(slfile, procline))
+        if (procline[0] != '#') SettingManager->AddSettingByString(procline);
+    slfile.close();
+    SettingManager->RetrieveAllValues();
+
     /*
     hImc = ImmGetContext(GetMainWindowHandle());
     if (!ImmGetOpenStatus(hImc)) ImmSetOpenStatus(hImc, TRUE);
@@ -56,6 +67,7 @@ void ExecutionManager::Initialize()
 
 void ExecutionManager::Shutdown()
 {
+    SettingManager->SaveAllValues();
     SharedControlState->Terminate();
     MixerBGM->Release();
     MixerSE->Release();
@@ -66,19 +78,22 @@ void ExecutionManager::RegisterGlobalManagementFunction()
     auto engine = ScriptInterface->GetEngine();
     MusicSelectionCursor::RegisterScriptInterface(engine);
 
-    engine->RegisterGlobalFunction("bool Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), bool), asCALL_THISCALL_ASGLOBAL, this);
-    engine->RegisterGlobalFunction("void ReloadMusic()", asMETHOD(ExecutionManager, ReloadMusic), asCALL_THISCALL_ASGLOBAL, this);
-    engine->RegisterGlobalFunction(SU_IF_SOUNDMIXER "@ GetDefaultMixer(const string &in)", asMETHOD(ExecutionManager, GetDefaultMixer), asCALL_THISCALL_ASGLOBAL, this);
-
+    engine->RegisterGlobalFunction("void ExitApplication()", asFUNCTION(InterfacesExitApplication), asCALL_CDECL);
     engine->RegisterGlobalFunction("void Fire(const string &in)", asMETHOD(ExecutionManager, Fire), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterGlobalFunction(SU_IF_SETTING_ITEM "@ GetSettingItem(const string &in, const string &in)", asMETHOD(ExecutionManager, GetSettingItem), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("bool ExistsData(const string &in)", asMETHOD(ExecutionManager, ExistsData), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterGlobalFunction("void SetData(const string &in, const bool &in)", asMETHOD(ExecutionManager, SetData<bool>), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("void SetData(const string &in, const int &in)", asMETHOD(ExecutionManager, SetData<int>), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("void SetData(const string &in, const double &in)", asMETHOD(ExecutionManager, SetData<double>), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("void SetData(const string &in, const string &in)", asMETHOD(ExecutionManager, SetData<string>), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterGlobalFunction("bool GetBoolData(const string &in)", asMETHOD(ExecutionManager, GetData<bool>), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("int GetIntData(const string &in)", asMETHOD(ExecutionManager, GetData<int>), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("double GetDoubleData(const string &in)", asMETHOD(ExecutionManager, GetData<double>), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("string GetStringData(const string &in)", asMETHOD(ExecutionManager, GetData<string>), asCALL_THISCALL_ASGLOBAL, this);
 
+    engine->RegisterGlobalFunction("bool Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), bool), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterGlobalFunction("void ReloadMusic()", asMETHOD(ExecutionManager, ReloadMusic), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterGlobalFunction(SU_IF_SOUNDMIXER "@ GetDefaultMixer(const string &in)", asMETHOD(ExecutionManager, GetDefaultMixer), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterObjectBehaviour(SU_IF_MSCURSOR, asBEHAVE_FACTORY, SU_IF_MSCURSOR "@ f()", asMETHOD(ExecutionManager, CreateCursor), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterObjectBehaviour(SU_IF_SCENE_PLAYER, asBEHAVE_FACTORY, SU_IF_SCENE_PLAYER "@ f()", asMETHOD(ExecutionManager, CreatePlayer), asCALL_THISCALL_ASGLOBAL, this);
 }
@@ -298,6 +313,21 @@ SSoundMixer *ExecutionManager::GetDefaultMixer(const string & name)
     }
     return nullptr;
 }
+
+SSettingItem *ExecutionManager::GetSettingItem(const string &group, const string &key)
+{
+    auto si = SettingManager->GetSettingItem(group, key);
+    auto result = new SSettingItem(si);
+    result->AddRef();
+    return result;
+}
+
+/*
+SSettingItem * ExecutionManager::GetSkinSettingItem(const std::string & key)
+{
+    return nullptr;
+}
+*/
 
 std::tuple<bool, LRESULT> ExecutionManager::CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

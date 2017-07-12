@@ -171,6 +171,7 @@ public:
     void MoveNext();
     void MovePrevious();
     std::string GetItemText();
+    std::string GetDescription();
 };
 
 class ExecutionManager;
