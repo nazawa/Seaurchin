@@ -94,12 +94,12 @@ public:
     static void RegisterType(asIScriptEngine *engine);
 };
 
-enum STextAlign {
-    VTop = 0,
+enum class STextAlign {
+    Top = 0,
     Center = 1,
-    VBottom = 2,
-    HLeft = 0,
-    HRight = 2
+    Bottom = 2,
+    Left = 0,
+    Right = 2
 };
 
 //文字列をスプライトとして扱います
@@ -107,8 +107,8 @@ class STextSprite : public SSprite
 {
 protected:
     SRenderTarget *Target = nullptr;
-    STextAlign HorizontalAlignment = STextAlign::HLeft;
-    STextAlign VerticalAlignment = STextAlign::VTop;
+    STextAlign HorizontalAlignment = STextAlign::Left;
+    STextAlign VerticalAlignment = STextAlign::Top;
 
     void Refresh();
 public:

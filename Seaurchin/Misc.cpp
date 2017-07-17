@@ -79,13 +79,15 @@ double ConvertFloat(const string &input)
 
 bool ConvertBoolean(const string &input)
 {
+    auto test = input;
+    transform(test.cbegin(), test.cend(), test.begin(), tolower);
     return
         input == "1"
         || input == "true"
-        || input == "True"
         || input == "y"
         || input == "yes"
-        || input == "Yes";
+        || input == "enable"
+        || input == "enabled";
 }
 
 double lerp(double x, double a, double b)

@@ -3,7 +3,7 @@
 #define SU_NOTE_LONG_MASK  0b00000000000111000000
 #define SU_NOTE_SHORT_MASK 0b00000000000000111110
 
-enum SusNoteType : uint16_t {
+enum class SusNoteType : uint16_t {
 	Undefined = 0,  // BPMノーツなど
     Tap,            // Invisible Stepに使う
     ExTap,          // 中割り コンボだけ加算
@@ -54,14 +54,14 @@ struct SusRelativeNoteTime {
 
 
 struct SusHispeedData {
-    enum Visibility {
+    enum class Visibility {
         Keep = -1,
         Invisible,
         Visible,
     };
     const static double KeepSpeed;
 
-    char VisibilityState = Visibility::Visible;
+    Visibility VisibilityState = Visibility::Visible;
     double Speed = 1.0;
 
 };
@@ -74,11 +74,15 @@ private:
 
 public:
     SusHispeedTimeline(std::function<double(uint32_t, uint32_t)> func);
-    void AddKeysByString(const std::string &def);
+    void AddKeysByString(const std::string &def, std::function<std::shared_ptr<SusHispeedTimeline>(uint32_t)> resolver);
     void AddKeyByData(uint32_t meas, uint32_t tick, double hs);
     void AddKeyByData(uint32_t meas, uint32_t tick, bool vis);
     void Finialize();
     std::tuple<bool, double> GetRawDrawStateAt(double time);
+};
+
+enum class SusMetaDataFlags : uint16_t {
+    DisableMetronome
 };
 
 struct SusMetaData {
@@ -92,6 +96,7 @@ struct SusMetaData {
     double WaveOffset;
     uint32_t Level;
     uint32_t DifficultyType;
+    std::bitset<8> ExtraFlags;
 };
 
 
@@ -150,6 +155,7 @@ private:
     std::shared_ptr<SusHispeedTimeline> HispeedToApply;
 
     void ProcessCommand(const boost::xpressive::smatch &result, bool onlyMeta);
+    void ProcessRequest(const std::string &cmd);
     void ProcessData(const boost::xpressive::smatch &result);
 
 public:

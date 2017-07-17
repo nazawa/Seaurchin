@@ -125,17 +125,17 @@ void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
     }
     file.close();
     if (!analyzeOnlyMetaData) {
-        sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
+        stable_sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
             return get<1>(a).Type.to_ulong() > get<1>(b).Type.to_ulong();
         });
-        sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
+        stable_sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
             return get<0>(a).Tick < get<0>(b).Tick;
         });
         stable_sort(Notes.begin(), Notes.end(), [](tuple<SusRelativeNoteTime, SusRawNoteData> a, tuple<SusRelativeNoteTime, SusRawNoteData> b) {
             return get<0>(a).Measure < get<0>(b).Measure;
         });
         copy_if(Notes.begin(), Notes.end(), back_inserter(BpmChanges), [](tuple<SusRelativeNoteTime, SusRawNoteData> n) {
-            return get<1>(n).Type.test(SusNoteType::Undefined);
+            return get<1>(n).Type.test((size_t)SusNoteType::Undefined);
         });
 
         for (auto &hs : HispeedDefinitions) hs.second->Finialize();
@@ -186,6 +186,9 @@ void SusAnalyzer::ProcessCommand(const xp::smatch &result, bool onlyMeta)
         case hashstr("JACKET"):
             SharedMetaData.UJacketFileName = ConvertRawString(result[2]);
             break;
+        case hashstr("REQUEST"):
+            ProcessRequest(ConvertRawString(result[2]));
+            break;
 
             //此処から先はデータ内で使う用
         case hashstr("HISPEED"):
@@ -201,6 +204,25 @@ void SusAnalyzer::ProcessCommand(const xp::smatch &result, bool onlyMeta)
 
 }
 
+void SusAnalyzer::ProcessRequest(const string &cmd)
+{
+    auto str = cmd;
+    b::trim_if(str, ba::is_any_of(" "));
+    vector<string> params;
+    ba::split(params, str, ba::is_any_of(" "), b::token_compress_on);
+
+    if (params.size() < 1) return;
+    switch (hashstr(params[0].c_str())) {
+        case hashstr("mertonome"):
+            if (!ConvertBoolean(params[1])) {
+                SharedMetaData.ExtraFlags.set((size_t)SusMetaDataFlags::DisableMetronome);
+            }
+            break;
+        case hashstr("ticks_per_beat"):
+            TicksPerBeat = ConvertInteger(params[1]);
+            break;
+    }
+}
 
 void SusAnalyzer::ProcessData(const xp::smatch &result)
 {
@@ -252,7 +274,7 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
                     auto note = pattern.substr(i * 2, 2);
                     SusRawNoteData noteData;
                     SusRelativeNoteTime time = { ConvertInteger(meas), step * i };
-                    noteData.Type.set(SusNoteType::Undefined);
+                    noteData.Type.set((size_t)SusNoteType::Undefined);
                     noteData.DefinitionNumber = ConvertHexatridecimal(note);
                     Notes.push_back(make_tuple(time, noteData));
                 }
@@ -274,17 +296,17 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
 
             switch (note[0]) {
                 case '1':
-                    noteData.Type.set(SusNoteType::Tap);
+                    noteData.Type.set((size_t)SusNoteType::Tap);
                     break;
                 case '2':
-                    noteData.Type.set(SusNoteType::ExTap);
+                    noteData.Type.set((size_t)SusNoteType::ExTap);
                     break;
                 case '3':
-                    noteData.Type.set(SusNoteType::Flick);
+                    noteData.Type.set((size_t)SusNoteType::Flick);
                     break;
                 case '4':
                     // 本来はHell
-                    noteData.Type.set(SusNoteType::HellTap);
+                    noteData.Type.set((size_t)SusNoteType::HellTap);
                     break;
                 default:
                     if (note[1] == '0') continue;
@@ -305,32 +327,32 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
 
             switch (note[0]) {
                 case '1':
-                    noteData.Type.set(SusNoteType::Air);
-                    noteData.Type.set(SusNoteType::Up);
+                    noteData.Type.set((size_t)SusNoteType::Air);
+                    noteData.Type.set((size_t)SusNoteType::Up);
                     break;
                 case '2':
-                    noteData.Type.set(SusNoteType::Air);
-                    noteData.Type.set(SusNoteType::Down);
+                    noteData.Type.set((size_t)SusNoteType::Air);
+                    noteData.Type.set((size_t)SusNoteType::Down);
                     break;
                 case '3':
-                    noteData.Type.set(SusNoteType::Air);
-                    noteData.Type.set(SusNoteType::Up);
-                    noteData.Type.set(SusNoteType::Left);
+                    noteData.Type.set((size_t)SusNoteType::Air);
+                    noteData.Type.set((size_t)SusNoteType::Up);
+                    noteData.Type.set((size_t)SusNoteType::Left);
                     break;
                 case '4':
-                    noteData.Type.set(SusNoteType::Air);
-                    noteData.Type.set(SusNoteType::Up);
-                    noteData.Type.set(SusNoteType::Right);
+                    noteData.Type.set((size_t)SusNoteType::Air);
+                    noteData.Type.set((size_t)SusNoteType::Up);
+                    noteData.Type.set((size_t)SusNoteType::Right);
                     break;
                 case '5':
-                    noteData.Type.set(SusNoteType::Air);
-                    noteData.Type.set(SusNoteType::Down);
-                    noteData.Type.set(SusNoteType::Right);
+                    noteData.Type.set((size_t)SusNoteType::Air);
+                    noteData.Type.set((size_t)SusNoteType::Down);
+                    noteData.Type.set((size_t)SusNoteType::Right);
                     break;
                 case '6':
-                    noteData.Type.set(SusNoteType::Air);
-                    noteData.Type.set(SusNoteType::Down);
-                    noteData.Type.set(SusNoteType::Left);
+                    noteData.Type.set((size_t)SusNoteType::Air);
+                    noteData.Type.set((size_t)SusNoteType::Down);
+                    noteData.Type.set((size_t)SusNoteType::Left);
                     break;
                 default:
                     if (note[1] == '0') continue;
@@ -352,13 +374,13 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
 
             switch (lane[0]) {
                 case '2':
-                    noteData.Type.set(SusNoteType::Hold);
+                    noteData.Type.set((size_t)SusNoteType::Hold);
                     break;
                 case '3':
-                    noteData.Type.set(SusNoteType::Slide);
+                    noteData.Type.set((size_t)SusNoteType::Slide);
                     break;
                 case '4':
-                    noteData.Type.set(SusNoteType::AirAction);
+                    noteData.Type.set((size_t)SusNoteType::AirAction);
                     break;
                 default:
                     if (ErrorCallback) ErrorCallback(0, "Error", "ロングレーンの指定が不正です。");
@@ -366,20 +388,20 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
             }
             switch (note[0]) {
                 case '1':
-                    noteData.Type.set(SusNoteType::Start);
+                    noteData.Type.set((size_t)SusNoteType::Start);
                     break;
                 case '2':
-                    noteData.Type.set(SusNoteType::End);
+                    noteData.Type.set((size_t)SusNoteType::End);
                     break;
                 case '3':
-                    noteData.Type.set(SusNoteType::Step);
+                    noteData.Type.set((size_t)SusNoteType::Step);
                     break;
                 case '4':
-                    noteData.Type.set(SusNoteType::Control);
+                    noteData.Type.set((size_t)SusNoteType::Control);
                     break;
                 case '5':
-                    noteData.Type.set(SusNoteType::Tap);
-                    noteData.Type.set(SusNoteType::Step);
+                    noteData.Type.set((size_t)SusNoteType::Tap);
+                    noteData.Type.set((size_t)SusNoteType::Step);
                     break;
                 default:
                     if (note[1] == '0') continue;
@@ -449,7 +471,6 @@ double SusAnalyzer::GetAbsoluteTime(uint32_t meas, uint32_t tick)
 
 tuple<uint32_t, uint32_t> SusAnalyzer::GetRelativeTime(double time)
 {
-    // TODO: いつ使うかわからんが実装したい
     double restTime = time;
     uint32_t meas = 0, tick = 0;
     double secPerBeat = (60.0 / 120.0);
@@ -492,10 +513,10 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
     for (auto& note : Notes) {
         auto time = get<0>(note);
         auto info = get<1>(note);
-        if (info.Type[SusNoteType::Step]) continue;
-        if (info.Type[SusNoteType::Control]) continue;
-        if (info.Type[SusNoteType::End]) continue;
-        if (info.Type[SusNoteType::Undefined]) continue;
+        if (info.Type[(size_t)SusNoteType::Step]) continue;
+        if (info.Type[(size_t)SusNoteType::Control]) continue;
+        if (info.Type[(size_t)SusNoteType::End]) continue;
+        if (info.Type[(size_t)SusNoteType::Undefined]) continue;
 
         auto bits = info.Type.to_ulong();
         auto noteData = make_shared<SusDrawableNoteData>();
@@ -507,7 +528,7 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             noteData->Timeline = info.Timeline;
             noteData->StartTimeEx = get<1>(noteData->Timeline->GetRawDrawStateAt(noteData->StartTime));
 
-            int ltype = 0;
+            SusNoteType ltype;
             switch ((bits >> 6) & 7) {
                 case 1:
                     ltype = SusNoteType::Hold;
@@ -525,16 +546,16 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
             for (auto it : Notes) {
                 auto curPos = get<0>(it);
                 auto curNo = get<1>(it);
-                if (!curNo.Type.test(ltype) || curNo.Extra != info.Extra) continue;
+                if (!curNo.Type.test((size_t)ltype) || curNo.Extra != info.Extra) continue;
                 if (curPos.Measure < time.Measure) continue;
                 if (curPos.Measure == time.Measure && curPos.Tick < time.Tick) continue;
                 switch (ltype) {
                     case SusNoteType::Hold: {
-                        if (curNo.Type.test(SusNoteType::Control))
+                        if (curNo.Type.test((size_t)SusNoteType::Control))
                             if (ErrorCallback) ErrorCallback(0, "Error", "HoldでControlは指定できません。");
                         if (curNo.NotePosition.StartLane != info.NotePosition.StartLane || curNo.NotePosition.Length != info.NotePosition.Length)
                             if (ErrorCallback) ErrorCallback(0, "Error", "Holdの長さ/位置が始点と一致していません。");
-                        if (curNo.Type.test(SusNoteType::Start)) break;
+                        if (curNo.Type.test((size_t)SusNoteType::Start)) break;
                         auto nextNote = make_shared<SusDrawableNoteData>();
                         nextNote->StartTime = GetAbsoluteTime(curPos.Measure, curPos.Tick);
                         nextNote->StartLane = curNo.NotePosition.StartLane;
@@ -547,12 +568,12 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
                         for (int i = 1; i < injc; i++) {
                             double insertAt = time.Tick + (TicksPerBeat / LongInjectionPerBeat * i);
                             auto injection = make_shared<SusDrawableNoteData>();
-                            injection->Type.set(SusNoteType::ExTap);
+                            injection->Type.set((size_t)SusNoteType::ExTap);
                             injection->StartTime = GetAbsoluteTime(time.Measure, insertAt);
                             noteData->ExtraData.push_back(injection);
                         }
                         noteData->ExtraData.push_back(nextNote);
-                        if (curNo.Type.test(SusNoteType::End)) {
+                        if (curNo.Type.test((size_t)SusNoteType::End)) {
                             noteData->Duration = nextNote->StartTime - noteData->StartTime;
                             completed = true;
                         }
@@ -560,7 +581,7 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
                     }
                     case SusNoteType::Slide:
                     case SusNoteType::AirAction: {
-                        if (curNo.Type.test(SusNoteType::Start)) break;
+                        if (curNo.Type.test((size_t)SusNoteType::Start)) break;
                         auto nextNote = make_shared<SusDrawableNoteData>();
                         nextNote->StartTime = GetAbsoluteTime(curPos.Measure, curPos.Tick);
                         nextNote->StartLane = curNo.NotePosition.StartLane;
@@ -573,16 +594,16 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
                         for (int i = 1; i < injc; i++) {
                             double insertAt = lsrt.Tick + (TicksPerBeat / LongInjectionPerBeat * i);
                             auto injection = make_shared<SusDrawableNoteData>();
-                            injection->Type.set(SusNoteType::ExTap);
+                            injection->Type.set((size_t)SusNoteType::ExTap);
                             injection->StartTime = GetAbsoluteTime(lsrt.Measure, insertAt);
                             noteData->ExtraData.push_back(injection);
                         }
                         noteData->ExtraData.push_back(nextNote);
-                        if (curNo.Type.test(SusNoteType::End)) {
+                        if (curNo.Type.test((size_t)SusNoteType::End)) {
                             noteData->Duration = nextNote->StartTime - noteData->StartTime;
                             completed = true;
                         }
-                        if (!nextNote->Type.test(SusNoteType::Control))lastStep = it;
+                        if (!nextNote->Type.test((size_t)SusNoteType::Control))lastStep = it;
                         break;
                     }
                 }
@@ -623,7 +644,7 @@ SusHispeedTimeline::SusHispeedTimeline(std::function<double(uint32_t, uint32_t)>
     keys.push_back(make_pair(SusRelativeNoteTime { 0, 0 }, SusHispeedData { SusHispeedData::Visibility::Visible, 1.0 }));
 }
 
-void SusHispeedTimeline::AddKeysByString(const string & def)
+void SusHispeedTimeline::AddKeysByString(const string & def, function<shared_ptr<SusHispeedTimeline>(uint32_t)> resolver)
 {
     //int'int:double:v/i
     string str = def;
@@ -635,6 +656,14 @@ void SusHispeedTimeline::AddKeysByString(const string & def)
         vector<string> params;
         ba::split(params, k, b::is_any_of(":"));
         if (params.size() < 2) return;
+        if (params[0] == "inherit") {
+            //データ流用
+            auto from = ConvertHexatridecimal(params[1]);
+            auto parent = resolver(from);
+            if (!parent) continue;
+            for (auto &parentKey : parent->keys) keys.push_back(parentKey);
+            continue;
+        }
 
         vector<string> timing;
         ba::split(timing, params[0], b::is_any_of("'"));
@@ -703,9 +732,9 @@ void SusHispeedTimeline::Finialize()
             key.second.Speed = hs;
         }
         if (key.second.VisibilityState != SusHispeedData::Visibility::Keep) {
-            vis = key.second.VisibilityState;
+            vis = key.second.VisibilityState == SusHispeedData::Visibility::Visible;
         } else {
-            key.second.VisibilityState = vis;
+            key.second.VisibilityState = vis ? SusHispeedData::Visibility::Visible : SusHispeedData::Visibility::Invisible;
         }
     }
 
@@ -735,7 +764,7 @@ tuple<bool, double> SusHispeedTimeline::GetRawDrawStateAt(double time)
         lastData = d;
     }
     double lastDifference = time - get<0>(lastData);
-    return make_tuple(get<2>(lastData).VisibilityState, get<1>(lastData) + lastDifference * get<2>(lastData).Speed);
+    return make_tuple(get<2>(lastData).VisibilityState == SusHispeedData::Visibility::Visible, get<1>(lastData) + lastDifference * get<2>(lastData).Speed);
 }
 
 tuple<bool, double> SusDrawableNoteData::GetStateAt(double time)

@@ -47,12 +47,12 @@ void AutoPlayerProcessor::Reset()
     for (auto &note : data) {
         auto type = note->Type.to_ulong();
         if (type & SU_NOTE_LONG_MASK) {
-            if (!note->Type.test(SusNoteType::AirAction)) Status.AllNotes++;
+            if (!note->Type.test((size_t)SusNoteType::AirAction)) Status.AllNotes++;
             for (auto &ex : note->ExtraData)
                 if (
-                    ex->Type.test(SusNoteType::End)
-                    || ex->Type.test(SusNoteType::Step)
-                    || ex->Type.test(SusNoteType::ExTap))
+                    ex->Type.test((size_t)SusNoteType::End)
+                    || ex->Type.test((size_t)SusNoteType::Step)
+                    || ex->Type.test((size_t)SusNoteType::ExTap))
                     Status.AllNotes++;
         } else if (type & SU_NOTE_SHORT_MASK) {
             Status.AllNotes++;
@@ -97,23 +97,25 @@ void AutoPlayerProcessor::MovePosition(double relative)
     // ‘—‚è: ”ò‚Î‚µ‚½•”•ª‚ðFinished‚É
     // –ß‚µ: “ü‚Á‚Ä‚­‚é•”•ª‚ðUn-Finished‚É
     for (auto &note : data) {
-        if (note->Type.test(SusNoteType::Hold) || note->Type.test(SusNoteType::Slide) || note->Type.test(SusNoteType::AirAction)) {
-            if (note->StartTime <= newTime) note->OnTheFlyData.set(NoteAttribute::Finished);
+        if (note->Type.test((size_t)SusNoteType::Hold) 
+            || note->Type.test((size_t)SusNoteType::Slide) 
+            || note->Type.test((size_t)SusNoteType::AirAction)) {
+            if (note->StartTime <= newTime) note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             for (auto &extra : note->ExtraData) {
-                if (extra->Type.test(SusNoteType::Tap)) continue;
-                if (extra->Type.test(SusNoteType::ExTap)) continue;
-                if (extra->Type.test(SusNoteType::Control)) continue;
+                if (extra->Type.test((size_t)SusNoteType::Tap)) continue;
+                if (extra->Type.test((size_t)SusNoteType::ExTap)) continue;
+                if (extra->Type.test((size_t)SusNoteType::Control)) continue;
                 if (relative >= 0) {
-                    if (extra->StartTime <= newTime) note->OnTheFlyData.set(NoteAttribute::Finished);
+                    if (extra->StartTime <= newTime) note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
                 } else {
-                    if (extra->StartTime >= newTime) note->OnTheFlyData.reset(NoteAttribute::Finished);
+                    if (extra->StartTime >= newTime) note->OnTheFlyData.reset((size_t)NoteAttribute::Finished);
                 }
             }
         } else {
             if (relative >= 0) {
-                if (note->StartTime <= newTime) note->OnTheFlyData.set(NoteAttribute::Finished);
+                if (note->StartTime <= newTime) note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             } else {
-                if (note->StartTime >= newTime) note->OnTheFlyData.reset(NoteAttribute::Finished);
+                if (note->StartTime >= newTime) note->OnTheFlyData.reset((size_t)NoteAttribute::Finished);
             }
         }
     }
@@ -137,109 +139,109 @@ void AutoPlayerProcessor::IncrementCombo()
 void AutoPlayerProcessor::ProcessScore(shared_ptr<SusDrawableNoteData> note)
 {
     double relpos = (note->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
-    if (relpos >= 0 || (note->OnTheFlyData.test(NoteAttribute::Finished) && note->ExtraData.size() == 0)) return;
+    if (relpos >= 0 || (note->OnTheFlyData.test((size_t)NoteAttribute::Finished) && note->ExtraData.size() == 0)) return;
     auto state = note->Type.to_ulong();
 
-    if (note->Type.test(SusNoteType::Hold)) {
+    if (note->Type.test((size_t)SusNoteType::Hold)) {
         isInHold = true;
-        if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
+        if (!note->OnTheFlyData.test((size_t)NoteAttribute::Finished)) {
             Player->PlaySoundTap();
             Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
             IncrementCombo();
-            note->OnTheFlyData.set(NoteAttribute::Finished);
+            note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
         }
 
         for (auto &extra : note->ExtraData) {
             double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
-            if (extra->Type.test(SusNoteType::End)) isInHold = false;
-            if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
-            if (extra->Type.test(SusNoteType::ExTap)) {
+            if (extra->Type.test((size_t)SusNoteType::End)) isInHold = false;
+            if (extra->OnTheFlyData.test((size_t)NoteAttribute::Finished)) continue;
+            if (extra->Type.test((size_t)SusNoteType::ExTap)) {
                 IncrementCombo();
-                extra->OnTheFlyData.set(NoteAttribute::Finished);
+                extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
                 return;
             }
-            if (!extra->Type.test(SusNoteType::Tap)) Player->PlaySoundTap();
+            if (!extra->Type.test((size_t)SusNoteType::Tap)) Player->PlaySoundTap();
             Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
             IncrementCombo();
-            extra->OnTheFlyData.set(NoteAttribute::Finished);
+            extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             return;
         }
-    } else if (note->Type.test(SusNoteType::Slide)) {
+    } else if (note->Type.test((size_t)SusNoteType::Slide)) {
         isInSlide = true;
-        if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
+        if (!note->OnTheFlyData.test((size_t)NoteAttribute::Finished)) {
             Player->PlaySoundTap();
             Player->SpawnSlideLoopEffect(note);
 
             IncrementCombo();
-            note->OnTheFlyData.set(NoteAttribute::Finished);
+            note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             return;
         }
         for (auto &extra : note->ExtraData) {
             double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
-            if (extra->Type.test(SusNoteType::End)) isInSlide = false;
-            if (extra->Type.test(SusNoteType::Control)) continue;
-            if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
-            if (extra->Type.test(SusNoteType::ExTap)) {
+            if (extra->Type.test((size_t)SusNoteType::End)) isInSlide = false;
+            if (extra->Type.test((size_t)SusNoteType::Control)) continue;
+            if (extra->OnTheFlyData.test((size_t)NoteAttribute::Finished)) continue;
+            if (extra->Type.test((size_t)SusNoteType::ExTap)) {
                 IncrementCombo();
-                extra->OnTheFlyData.set(NoteAttribute::Finished);
+                extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
                 return;
             }
-            if (!extra->Type.test(SusNoteType::Tap)) Player->PlaySoundTap();
+            if (!extra->Type.test((size_t)SusNoteType::Tap)) Player->PlaySoundTap();
             Player->SpawnJudgeEffect(extra, JudgeType::SlideTap);
             IncrementCombo();
-            extra->OnTheFlyData.set(NoteAttribute::Finished);
+            extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             return;
         }
-    } else if (note->Type.test(SusNoteType::AirAction)) {
+    } else if (note->Type.test((size_t)SusNoteType::AirAction)) {
         isInAA = true;
         for (auto &extra : note->ExtraData) {
             double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
-            if (extra->Type.test(SusNoteType::End)) isInAA = false;
-            if (extra->Type.test(SusNoteType::Control)) continue;
-            if (extra->Type.test(SusNoteType::Tap)) continue;
-            if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
-            if (extra->Type.test(SusNoteType::ExTap)) {
+            if (extra->Type.test((size_t)SusNoteType::End)) isInAA = false;
+            if (extra->Type.test((size_t)SusNoteType::Control)) continue;
+            if (extra->Type.test((size_t)SusNoteType::Tap)) continue;
+            if (extra->OnTheFlyData.test((size_t)NoteAttribute::Finished)) continue;
+            if (extra->Type.test((size_t)SusNoteType::ExTap)) {
                 IncrementCombo();
-                extra->OnTheFlyData.set(NoteAttribute::Finished);
+                extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
                 return;
             }
             if (pos >= 0) continue;
             Player->PlaySoundAirAction();
             Player->SpawnJudgeEffect(extra, JudgeType::Action);
             IncrementCombo();
-            extra->OnTheFlyData.set(NoteAttribute::Finished);
+            extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
         }
-    } else if (note->Type.test(SusNoteType::Air)) {
+    } else if (note->Type.test((size_t)SusNoteType::Air)) {
         Player->PlaySoundAir();
         Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
         Player->SpawnJudgeEffect(note, JudgeType::ShortEx);
         IncrementCombo();
-        note->OnTheFlyData.set(NoteAttribute::Finished);
-    } else if (note->Type.test(SusNoteType::Tap)) {
+        note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
+    } else if (note->Type.test((size_t)SusNoteType::Tap)) {
         Player->PlaySoundTap();
         Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
         IncrementCombo();
-        note->OnTheFlyData.set(NoteAttribute::Finished);
-    } else if (note->Type.test(SusNoteType::ExTap)) {
+        note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
+    } else if (note->Type.test((size_t)SusNoteType::ExTap)) {
         Player->PlaySoundExTap();
         Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
         Player->SpawnJudgeEffect(note, JudgeType::ShortEx);
         IncrementCombo();
-        note->OnTheFlyData.set(NoteAttribute::Finished);
-    } else if (note->Type.test(SusNoteType::Flick)) {
+        note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
+    } else if (note->Type.test((size_t)SusNoteType::Flick)) {
         Player->PlaySoundFlick();
         Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
         IncrementCombo();
-        note->OnTheFlyData.set(NoteAttribute::Finished);
+        note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
     } else {
         //Hell
         Player->PlaySoundTap();
         Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
         IncrementCombo();
-        note->OnTheFlyData.set(NoteAttribute::Finished);
+        note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
     }
 }
 
@@ -256,100 +258,100 @@ void PlayableProcessor::IncrementCombo()
 void PlayableProcessor::ProcessScore(std::shared_ptr<SusDrawableNoteData> note)
 {
     double relpos = (note->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
-    if (note->OnTheFlyData.test(NoteAttribute::Finished) && note->ExtraData.size() == 0) return;
+    if (note->OnTheFlyData.test((size_t)NoteAttribute::Finished) && note->ExtraData.size() == 0) return;
     auto state = note->Type.to_ulong();
 
-    if (note->Type.test(SusNoteType::Hold)) {
+    if (note->Type.test((size_t)SusNoteType::Hold)) {
         if (relpos > 0) return;
         isInHold = true;
-        if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
+        if (!note->OnTheFlyData.test((size_t)NoteAttribute::Finished)) {
             Player->PlaySoundTap();
             Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
             IncrementCombo();
-            note->OnTheFlyData.set(NoteAttribute::Finished);
+            note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
         }
 
         for (auto &extra : note->ExtraData) {
             double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
-            if (extra->Type.test(SusNoteType::End)) isInHold = false;
-            if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
-            if (extra->Type.test(SusNoteType::ExTap)) {
+            if (extra->Type.test((size_t)SusNoteType::End)) isInHold = false;
+            if (extra->OnTheFlyData.test((size_t)NoteAttribute::Finished)) continue;
+            if (extra->Type.test((size_t)SusNoteType::ExTap)) {
                 IncrementCombo();
-                extra->OnTheFlyData.set(NoteAttribute::Finished);
+                extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
                 return;
             }
-            if (!extra->Type.test(SusNoteType::Tap)) Player->PlaySoundTap();
+            if (!extra->Type.test((size_t)SusNoteType::Tap)) Player->PlaySoundTap();
             Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
             IncrementCombo();
-            extra->OnTheFlyData.set(NoteAttribute::Finished);
+            extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             return;
         }
-    } else if (note->Type.test(SusNoteType::Slide)) {
+    } else if (note->Type.test((size_t)SusNoteType::Slide)) {
         if (relpos > 0) return;
         isInSlide = true;
-        if (!note->OnTheFlyData.test(NoteAttribute::Finished)) {
+        if (!note->OnTheFlyData.test((size_t)NoteAttribute::Finished)) {
             Player->PlaySoundTap();
             Player->SpawnSlideLoopEffect(note);
 
             IncrementCombo();
-            note->OnTheFlyData.set(NoteAttribute::Finished);
+            note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             return;
         }
         for (auto &extra : note->ExtraData) {
             double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
-            if (extra->Type.test(SusNoteType::End)) isInSlide = false;
-            if (extra->Type.test(SusNoteType::Control)) continue;
-            if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
-            if (extra->Type.test(SusNoteType::ExTap)) {
+            if (extra->Type.test((size_t)SusNoteType::End)) isInSlide = false;
+            if (extra->Type.test((size_t)SusNoteType::Control)) continue;
+            if (extra->OnTheFlyData.test((size_t)NoteAttribute::Finished)) continue;
+            if (extra->Type.test((size_t)SusNoteType::ExTap)) {
                 IncrementCombo();
-                extra->OnTheFlyData.set(NoteAttribute::Finished);
+                extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
                 return;
             }
-            if (!extra->Type.test(SusNoteType::Tap)) Player->PlaySoundTap();
+            if (!extra->Type.test((size_t)SusNoteType::Tap)) Player->PlaySoundTap();
             Player->SpawnJudgeEffect(extra, JudgeType::SlideTap);
             IncrementCombo();
-            extra->OnTheFlyData.set(NoteAttribute::Finished);
+            extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             return;
         }
-    } else if (note->Type.test(SusNoteType::AirAction)) {
+    } else if (note->Type.test((size_t)SusNoteType::AirAction)) {
         if (relpos > 0) return;
         for (auto &extra : note->ExtraData) {
             double pos = (extra->StartTime - Player->CurrentSoundTime) / Player->SeenDuration;
             if (pos >= 0) continue;
-            if (extra->Type.test(SusNoteType::Control)) continue;
-            if (extra->Type.test(SusNoteType::Tap)) continue;
-            if (extra->OnTheFlyData.test(NoteAttribute::Finished)) continue;
-            if (extra->Type.test(SusNoteType::ExTap)) {
+            if (extra->Type.test((size_t)SusNoteType::Control)) continue;
+            if (extra->Type.test((size_t)SusNoteType::Tap)) continue;
+            if (extra->OnTheFlyData.test((size_t)NoteAttribute::Finished)) continue;
+            if (extra->Type.test((size_t)SusNoteType::ExTap)) {
                 IncrementCombo();
-                extra->OnTheFlyData.set(NoteAttribute::Finished);
+                extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
                 return;
             }
             if (pos >= 0) continue;
             Player->PlaySoundAirAction();
             Player->SpawnJudgeEffect(extra, JudgeType::Action);
             IncrementCombo();
-            extra->OnTheFlyData.set(NoteAttribute::Finished);
+            extra->OnTheFlyData.set((size_t)NoteAttribute::Finished);
         }
-    } else if (note->Type.test(SusNoteType::Air)) {
+    } else if (note->Type.test((size_t)SusNoteType::Air)) {
         if (relpos > 0) return;
         Player->PlaySoundAir();
         Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
         Player->SpawnJudgeEffect(note, JudgeType::ShortEx);
         IncrementCombo();
-        note->OnTheFlyData.set(NoteAttribute::Finished);
-    } else if (note->Type.test(SusNoteType::Tap)) {
+        note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
+    } else if (note->Type.test((size_t)SusNoteType::Tap)) {
         if (!CheckJudgement(note)) return;
         Player->PlaySoundTap();
         Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
 
-    } else if (note->Type.test(SusNoteType::ExTap)) {
+    } else if (note->Type.test((size_t)SusNoteType::ExTap)) {
         if (!CheckJudgement(note)) return;
         Player->PlaySoundExTap();
         Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
         Player->SpawnJudgeEffect(note, JudgeType::ShortEx);
-    } else if (note->Type.test(SusNoteType::Flick)) {
+    } else if (note->Type.test((size_t)SusNoteType::Flick)) {
         if (!CheckJudgement(note)) return;
         Player->PlaySoundFlick();
         Player->SpawnJudgeEffect(note, JudgeType::ShortNormal);
@@ -365,15 +367,15 @@ bool PlayableProcessor::CheckHellJudgement(std::shared_ptr<SusDrawableNoteData> 
 {
     double jthA = 0.072, judgeAdjust = 0.020;
     double reltime = Player->CurrentTime - note->StartTime;
-    if (note->OnTheFlyData.test(NoteAttribute::Finished)) return false;
+    if (note->OnTheFlyData.test((size_t)NoteAttribute::Finished)) return false;
     if (reltime < -jthA) return false;
     if (reltime > jthA) {
-        note->OnTheFlyData.reset(NoteAttribute::HellChecking);
-        note->OnTheFlyData.set(NoteAttribute::Finished);
+        note->OnTheFlyData.reset((size_t)NoteAttribute::HellChecking);
+        note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
         return false;
     }
-    if (reltime >= 0 && !note->OnTheFlyData.test(NoteAttribute::HellChecking)) {
-        note->OnTheFlyData.set(NoteAttribute::HellChecking);
+    if (reltime >= 0 && !note->OnTheFlyData.test((size_t)NoteAttribute::HellChecking)) {
+        note->OnTheFlyData.set((size_t)NoteAttribute::HellChecking);
         Status.JusticeCritical++;
         Status.Combo++;
         Status.CurrentGauge += Status.GaugeDefaultMax / Status.AllNotes;
@@ -384,11 +386,11 @@ bool PlayableProcessor::CheckHellJudgement(std::shared_ptr<SusDrawableNoteData> 
         if (!CurrentState->GetTriggerState(ControllerSource::IntegratedSliders, i)) continue;
         reltime = fabs(reltime);
         if (reltime <= jthA) {
-            if (note->OnTheFlyData.test(NoteAttribute::HellChecking)) Status.JusticeCritical--;
+            if (note->OnTheFlyData.test((size_t)NoteAttribute::HellChecking)) Status.JusticeCritical--;
             Status.Miss++;
             Status.Combo = 0;
             Status.CurrentGauge -= Status.GaugeDefaultMax / Status.AllNotes * 2;
-            note->OnTheFlyData.set(NoteAttribute::Finished);
+            note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
         }
         return false;
     }
@@ -400,10 +402,10 @@ bool PlayableProcessor::CheckJudgement(std::shared_ptr<SusDrawableNoteData> note
 {
     double jthJC = 0.033, jthJ = 0.048, jthA = 0.072, judgeAdjust = 0.020;
     double reltime = Player->CurrentTime - note->StartTime + judgeAdjust;
-    if (note->OnTheFlyData.test(NoteAttribute::Finished)) return false;
+    if (note->OnTheFlyData.test((size_t)NoteAttribute::Finished)) return false;
     if (reltime < -jthA) return false;
     if (reltime > jthA) {
-        note->OnTheFlyData.set(NoteAttribute::Finished);
+        note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
         Status.Miss++;
         Status.Combo = 0;
         return false;
@@ -412,17 +414,17 @@ bool PlayableProcessor::CheckJudgement(std::shared_ptr<SusDrawableNoteData> note
         if (!CurrentState->GetTriggerState(ControllerSource::IntegratedSliders, i)) continue;
         reltime = fabs(reltime);
         if (reltime <= jthJC) {
-            note->OnTheFlyData.set(NoteAttribute::Finished);
+            note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             Status.JusticeCritical++;
             Status.Combo++;
             Status.CurrentGauge += Status.GaugeDefaultMax / Status.AllNotes;
         } else if (reltime <= jthJ) {
-            note->OnTheFlyData.set(NoteAttribute::Finished);
+            note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             Status.Justice++;
             Status.Combo++;
             Status.CurrentGauge += (Status.GaugeDefaultMax / Status.AllNotes) / 1.01;
         } else {
-            note->OnTheFlyData.set(NoteAttribute::Finished);
+            note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             Status.Attack++;
             Status.Combo++;
             Status.CurrentGauge += (Status.GaugeDefaultMax / Status.AllNotes) / 1.01 * 0.5;
@@ -446,12 +448,12 @@ void PlayableProcessor::Reset()
     for (auto &note : data) {
         auto type = note->Type.to_ulong();
         if (type & SU_NOTE_LONG_MASK) {
-            if (!note->Type.test(SusNoteType::AirAction)) Status.AllNotes++;
+            if (!note->Type.test((size_t)SusNoteType::AirAction)) Status.AllNotes++;
             for (auto &ex : note->ExtraData)
                 if (
-                    ex->Type.test(SusNoteType::End)
-                    || ex->Type.test(SusNoteType::Step)
-                    || ex->Type.test(SusNoteType::ExTap))
+                    ex->Type.test((size_t)SusNoteType::End)
+                    || ex->Type.test((size_t)SusNoteType::Step)
+                    || ex->Type.test((size_t)SusNoteType::ExTap))
                     Status.AllNotes++;
         } else if (type & SU_NOTE_SHORT_MASK) {
             Status.AllNotes++;
@@ -494,23 +496,25 @@ void PlayableProcessor::MovePosition(double relative)
     // ‘—‚è: ”ò‚Î‚µ‚½•”•ª‚ðFinished‚É
     // –ß‚µ: “ü‚Á‚Ä‚­‚é•”•ª‚ðUn-Finished‚É
     for (auto &note : data) {
-        if (note->Type.test(SusNoteType::Hold) || note->Type.test(SusNoteType::Slide) || note->Type.test(SusNoteType::AirAction)) {
-            if (note->StartTime <= newTime) note->OnTheFlyData.set(NoteAttribute::Finished);
+        if (note->Type.test((size_t)SusNoteType::Hold) 
+            || note->Type.test((size_t)SusNoteType::Slide)
+            || note->Type.test((size_t)SusNoteType::AirAction)) {
+            if (note->StartTime <= newTime) note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             for (auto &extra : note->ExtraData) {
-                if (extra->Type.test(SusNoteType::Tap)) continue;
-                if (extra->Type.test(SusNoteType::ExTap)) continue;
-                if (extra->Type.test(SusNoteType::Control)) continue;
+                if (extra->Type.test((size_t)SusNoteType::Tap)) continue;
+                if (extra->Type.test((size_t)SusNoteType::ExTap)) continue;
+                if (extra->Type.test((size_t)SusNoteType::Control)) continue;
                 if (relative >= 0) {
-                    if (extra->StartTime <= newTime) note->OnTheFlyData.set(NoteAttribute::Finished);
+                    if (extra->StartTime <= newTime) note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
                 } else {
-                    if (extra->StartTime >= newTime) note->OnTheFlyData.reset(NoteAttribute::Finished);
+                    if (extra->StartTime >= newTime) note->OnTheFlyData.reset((size_t)NoteAttribute::Finished);
                 }
             }
         } else {
             if (relative >= 0) {
-                if (note->StartTime <= newTime) note->OnTheFlyData.set(NoteAttribute::Finished);
+                if (note->StartTime <= newTime) note->OnTheFlyData.set((size_t)NoteAttribute::Finished);
             } else {
-                if (note->StartTime >= newTime) note->OnTheFlyData.reset(NoteAttribute::Finished);
+                if (note->StartTime >= newTime) note->OnTheFlyData.reset((size_t)NoteAttribute::Finished);
             }
         }
     }

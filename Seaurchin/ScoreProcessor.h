@@ -20,7 +20,7 @@ public:
     uint32_t GetScore();
 };
 
-enum NoteAttribute {
+enum class NoteAttribute {
     Invisible = 0,
     Finished,
     HellChecking,

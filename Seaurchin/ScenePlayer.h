@@ -25,16 +25,14 @@
 #define SU_LANE_ASPECT ((SU_LANE_Z_MAX - SU_LANE_Z_MIN) / (SU_LANE_X_MAX - SU_LANE_X_MIN))
 #define SU_LANE_ASPECT_EXT ((SU_LANE_Z_MAX - SU_LANE_Z_MIN_EXT) / (SU_LANE_X_MAX - SU_LANE_X_MIN))
 
-// Scene‚Æ‚¢‚¤–¼‘O‚±‚»‚Â‚¢‚Ä‚é‚¯‚Ç‹““®‚Í•Ê•¨
-// SceneManager‚É’Ç‰Á‚³‚ê‚È‚¢
-enum JudgeType {
+enum class JudgeType {
     ShortNormal = 0,
     ShortEx,
     SlideTap,
     Action,
 };
 
-enum PlayingState {
+enum class PlayingState {
     
     ScoreNotLoaded,     //‰½‚àn‚Ü‚Á‚Ä‚¢‚È‚¢
     BgmNotLoaded,       //•ˆ–Ê‚¾‚¯“Ç‚İ‚ñ‚¾

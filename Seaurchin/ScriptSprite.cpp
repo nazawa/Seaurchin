@@ -254,11 +254,11 @@ void SSprite::RegisterType(asIScriptEngine * engine)
 
     //ShapeType
     engine->RegisterEnum(SU_IF_TEXTALIGN);
-    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Top", STextAlign::VTop);
-    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Bottom", STextAlign::VBottom);
-    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Left", STextAlign::HLeft);
-    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Right", STextAlign::HRight);
-    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Center", STextAlign::Center);
+    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Top", (int)STextAlign::Top);
+    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Bottom", (int)STextAlign::Bottom);
+    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Left", (int)STextAlign::Left);
+    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Right", (int)STextAlign::Right);
+    engine->RegisterEnumValue(SU_IF_TEXTALIGN, "Center", (int)STextAlign::Center);
 
     RegisterSpriteBasic<SSprite>(engine, SU_IF_SPRITE);
     engine->RegisterObjectBehaviour(SU_IF_SPRITE, asBEHAVE_FACTORY, SU_IF_SPRITE "@ f()", asFUNCTIONPR(SSprite::Factory, (), SSprite*), asCALL_CDECL);
@@ -363,8 +363,8 @@ void STextSprite::Draw()
     if (!Target) return;
     SetDrawBright(Color.R, Color.G, Color.B);
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.A);
-    double tox = Target->get_Width() / 2 * HorizontalAlignment;
-    double toy = Target->get_Height() / 2 * VerticalAlignment;
+    double tox = Target->get_Width() / 2 * (int)HorizontalAlignment;
+    double toy = Target->get_Height() / 2 * (int)VerticalAlignment;
     DrawRotaGraph3F(
         Transform.X, Transform.Y,
         Transform.OriginX + tox, Transform.OriginY + toy,

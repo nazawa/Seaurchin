@@ -329,7 +329,7 @@ std::string SSettingItem::GetItemText()
 
 std::string SSettingItem::GetDescription()
 {
-    return setting->GetDescription;
+    return setting->GetDescription();
 }
 
 

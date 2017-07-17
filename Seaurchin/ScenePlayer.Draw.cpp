@@ -96,12 +96,12 @@ void ScenePlayer::Draw()
     DrawMeasureLines();
     for (auto& note : seenData) {
         auto &type = note->Type;
-        if (type.test(SusNoteType::Hold)) DrawHoldNotes(note);
-        if (type.test(SusNoteType::Slide)) DrawSlideNotes(note);
-        if (type.test(SusNoteType::Tap)) DrawShortNotes(note);
-        if (type.test(SusNoteType::ExTap)) DrawShortNotes(note);
-        if (type.test(SusNoteType::Flick)) DrawShortNotes(note);
-        if (type.test(SusNoteType::HellTap)) DrawShortNotes(note);
+        if (type.test((size_t)SusNoteType::Hold)) DrawHoldNotes(note);
+        if (type.test((size_t)SusNoteType::Slide)) DrawSlideNotes(note);
+        if (type.test((size_t)SusNoteType::Tap)) DrawShortNotes(note);
+        if (type.test((size_t)SusNoteType::ExTap)) DrawShortNotes(note);
+        if (type.test((size_t)SusNoteType::Flick)) DrawShortNotes(note);
+        if (type.test((size_t)SusNoteType::HellTap)) DrawShortNotes(note);
     }
     FINISH_DRAW_TRANSACTION;
     Prepare3DDrawCall();
@@ -111,8 +111,8 @@ void ScenePlayer::Draw()
     //3DŒnƒm[ƒc
     Prepare3DDrawCall();
     for (auto& note : seenData) {
-        if (note->Type.test(SusNoteType::AirAction)) DrawAirActionNotes(note);
-        if (note->Type.test(SusNoteType::Air)) DrawAirNotes(note);
+        if (note->Type.test((size_t)SusNoteType::AirAction)) DrawAirActionNotes(note);
+        if (note->Type.test((size_t)SusNoteType::Air)) DrawAirNotes(note);
     }
 
     if (AirActionShown) {
@@ -219,8 +219,8 @@ void ScenePlayer::UpdateSlideEffect()
         auto last = note;
 
         for (auto &slideElement : note->ExtraData) {
-            if (slideElement->Type.test(SusNoteType::Control)) continue;
-            if (slideElement->Type.test(SusNoteType::ExTap)) continue;
+            if (slideElement->Type.test((size_t)SusNoteType::Control)) continue;
+            if (slideElement->Type.test((size_t)SusNoteType::ExTap)) continue;
             if (CurrentTime >= slideElement->StartTime) {
                 last = slideElement;
                 continue;
@@ -264,13 +264,13 @@ void ScenePlayer::DrawShortNotes(shared_ptr<SusDrawableNoteData> note)
     auto slane = note->StartLane;
     int handleToDraw = 0;
 
-    if (note->Type.test(SusNoteType::Tap)) {
+    if (note->Type.test((size_t)SusNoteType::Tap)) {
         handleToDraw = imageTap->GetHandle();
-    } else if (note->Type.test(SusNoteType::ExTap)) {
+    } else if (note->Type.test((size_t)SusNoteType::ExTap)) {
         handleToDraw = imageExTap->GetHandle();
-    } else if (note->Type.test(SusNoteType::Flick)) {
+    } else if (note->Type.test((size_t)SusNoteType::Flick)) {
         handleToDraw = imageFlick->GetHandle();
-    } else if (note->Type.test(SusNoteType::HellTap)) {
+    } else if (note->Type.test((size_t)SusNoteType::HellTap)) {
         handleToDraw = imageHellTap->GetHandle();
     }
 
@@ -288,9 +288,9 @@ void ScenePlayer::DrawAirNotes(shared_ptr<SusDrawableNoteData> note)
     auto slane = note->StartLane;
     auto left = lerp(slane / 16.0, SU_LANE_X_MIN, SU_LANE_X_MAX);
     auto right = lerp((slane + length) / 16.0, SU_LANE_X_MIN, SU_LANE_X_MAX);
-    auto xadjust = note->Type.test(SusNoteType::Left) ? -80.0 : (note->Type.test(SusNoteType::Right) ? 80.0 : 0);
-    auto role = note->Type.test(SusNoteType::Up) ? fmod(CurrentTime* 2.0, 0.5) : 0.5 - fmod(CurrentTime* 2.0, 0.5);
-    auto handle = note->Type.test(SusNoteType::Up) ? imageAirUp->GetHandle() : imageAirDown->GetHandle();
+    auto xadjust = note->Type.test((size_t)SusNoteType::Left) ? -80.0 : (note->Type.test((size_t)SusNoteType::Right) ? 80.0 : 0);
+    auto role = note->Type.test((size_t)SusNoteType::Up) ? fmod(CurrentTime* 2.0, 0.5) : 0.5 - fmod(CurrentTime* 2.0, 0.5);
+    auto handle = note->Type.test((size_t)SusNoteType::Up) ? imageAirUp->GetHandle() : imageAirDown->GetHandle();
 
     VERTEX3D vertices[] = {
         { VGet(left + xadjust, SU_LANE_Y_AIRINDICATE, z), VGet(0, 0, -1), GetColorU8(255, 255, 255, 255), GetColorU8(0, 0, 0, 0), 0.0f, role, 0.0f, 0.0f },
@@ -325,7 +325,7 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
     DrawTap(slane, length, relpos, imageHold->GetHandle());
 
     for (auto &ex : note->ExtraData) {
-        if (ex->Type.test(SusNoteType::ExTap)) continue;
+        if (ex->Type.test((size_t)SusNoteType::ExTap)) continue;
         double relendpos = 1.0 - ex->ModifiedPosition / SeenDuration;
         DrawTap(slane, length, relendpos, imageHold->GetHandle());
     }
@@ -341,8 +341,8 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
     DrawTap(lastStep->StartLane, lastStep->Length, lastStepRelativeY, imageSlide->GetHandle());
 
     for (auto &slideElement : note->ExtraData) {
-        if (slideElement->Type.test(SusNoteType::Control)) continue;
-        if (slideElement->Type.test(SusNoteType::ExTap)) continue;
+        if (slideElement->Type.test((size_t)SusNoteType::Control)) continue;
+        if (slideElement->Type.test((size_t)SusNoteType::ExTap)) continue;
         double currentStepRelativeY = 1.0 - slideElement->ModifiedPosition / SeenDuration;
         auto &segmentPositions = curveData[slideElement];
 
@@ -381,7 +381,7 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
         }
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-        if (!slideElement->Type.test(SusNoteType::Tap))
+        if (!slideElement->Type.test((size_t)SusNoteType::Tap))
             DrawTap(slideElement->StartLane, slideElement->Length, currentStepRelativeY, imageSlide->GetHandle());
 
         lastStep = slideElement;
@@ -407,8 +407,8 @@ void ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNoteData> note)
     DrawPolygonIndexed3D(vertices, 4, RectVertexIndices, 2, imageAirAction->GetHandle(), TRUE);
 
     for (auto &slideElement : note->ExtraData) {
-        if (slideElement->Type.test(SusNoteType::Control)) continue;
-        if (slideElement->Type.test(SusNoteType::ExTap)) continue;
+        if (slideElement->Type.test((size_t)SusNoteType::Control)) continue;
+        if (slideElement->Type.test((size_t)SusNoteType::ExTap)) continue;
         double currentStepRelativeY = 1.0 - slideElement->ModifiedPosition / SeenDuration;
         auto &segmentPositions = curveData[slideElement];
 
@@ -461,7 +461,7 @@ void ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNoteData> note)
             lastTimeInBlock = currentTimeInBlock;
         }
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-        if (!slideElement->Type.test(SusNoteType::Tap)) {
+        if (!slideElement->Type.test((size_t)SusNoteType::Tap)) {
             double atLeft = (slideElement->StartLane) / 16.0;
             double atRight = (slideElement->StartLane + slideElement->Length) / 16.0;
             double left = lerp(atLeft, SU_LANE_X_MIN, SU_LANE_X_MAX) + 5;
