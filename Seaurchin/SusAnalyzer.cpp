@@ -66,6 +66,7 @@ SusAnalyzer::SusAnalyzer(uint32_t tpb)
 {
     TicksPerBeat = tpb;
     LongInjectionPerBeat = 2;
+    TimelineResolver = [=](uint32_t number) { return HispeedDefinitions[number]; };
 }
 
 SusAnalyzer::~SusAnalyzer()
@@ -91,7 +92,7 @@ void SusAnalyzer::Reset()
     BpmDefinitions[0] = 120.0;
     BeatsDefinitions[0] = 4.0;
     auto defhs = make_shared<SusHispeedTimeline>([&](uint32_t m, uint32_t t) { return GetAbsoluteTime(m, t); });
-    defhs->AddKeysByString("0'0:1.0:v");
+    defhs->AddKeysByString("0'0:1.0:v", TimelineResolver);
     HispeedDefinitions[DefaultHispeedNumber] = defhs;
     HispeedToApply = defhs;
 }
@@ -254,10 +255,10 @@ void SusAnalyzer::ProcessData(const xp::smatch &result)
             auto it = HispeedDefinitions.find(number);
             if (it == HispeedDefinitions.end()) {
                 auto hs = make_shared<SusHispeedTimeline>([&](uint32_t m, uint32_t t) { return GetAbsoluteTime(m, t); });
-                hs->AddKeysByString(ConvertRawString(pattern));
+                hs->AddKeysByString(ConvertRawString(pattern), TimelineResolver);
                 HispeedDefinitions[number] = hs;
             } else {
-                it->second->AddKeysByString(ConvertRawString(pattern));
+                it->second->AddKeysByString(ConvertRawString(pattern), TimelineResolver);
             }
         } else {
             if (ErrorCallback) ErrorCallback(0, "Error", "不正なデータコマンドです");

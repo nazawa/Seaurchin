@@ -54,7 +54,9 @@ SettingItem::SettingItem(shared_ptr<Setting> setting, const string &group, const
 
 function<string(NumberSettingItem*)> NumberSettingItem::DefaultFormatter = [](NumberSettingItem *item) {
 
-    return "";
+    ostringstream ss;
+    ss << setprecision(item->GetFloatDigits()) << item->GetValue();
+    return ss.str();
 };
 
 NumberSettingItem::NumberSettingItem(shared_ptr<Setting> setting, const string &group, const string &key) : SettingItem(setting, group, key)

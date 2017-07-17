@@ -146,6 +146,7 @@ private:
     uint32_t DefaultHispeedNumber = std::numeric_limits<uint32_t>::max();
     uint32_t TicksPerBeat;
     double LongInjectionPerBeat;
+    std::function<std::shared_ptr<SusHispeedTimeline>(uint32_t)> TimelineResolver = nullptr;
     std::function<void(uint32_t, std::string, std::string)> ErrorCallback = nullptr;
     std::vector<std::tuple<SusRelativeNoteTime, SusRawNoteData>> Notes;
     std::vector<std::tuple<SusRelativeNoteTime, SusRawNoteData>> BpmChanges;

@@ -11,8 +11,11 @@ class Title : CoroutineScene {
   }
   
   void Run() {
-    RunCoroutine(Coroutine(Intro), "Title:Intro");
-    YieldTime(4.0);
+    if (!ExistsData("LogoShown")) {
+      SetData("LogoShown", true);
+      RunCoroutine(Coroutine(Intro), "Title:Intro");
+      YieldTime(4.0);
+    }
     RunCoroutine(Coroutine(TitleRipple), "Title:Ripple");
     RunCoroutine(Coroutine(KeyInput), "Title:KeyInput");
     while(true) YieldTime(30);
@@ -153,7 +156,18 @@ class Title : CoroutineScene {
         spCursor.AddMove("move_to(time:0.1, x:480, y:" + (400 + 64 * mcur) + ")");
       }
       if (IsKeyTriggered(Key::INPUT_RETURN)) {
-        if (Execute("Select.as")) Disappear();
+        switch(mcur) {
+          case 0:
+            if (Execute("Select.as")) Disappear();
+            break;
+          case 1:
+            if (Execute("Setting.as")) Disappear();
+            break;
+          case 2:
+            ExitApplication();
+            break;
+        }
+        
       }
       YieldFrame(1);
     }

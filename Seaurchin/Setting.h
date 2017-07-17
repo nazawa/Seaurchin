@@ -86,6 +86,7 @@ public:
     void SetStep(double step);
     void SetRange(double min, double max);
     void SetFloatDigits(int digits);
+    int GetFloatDigits() { return FloatDigits; }
     double GetValue() { return Value; }
 };
 
