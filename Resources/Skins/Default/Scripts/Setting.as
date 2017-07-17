@@ -26,7 +26,7 @@ class SettingScene : CoroutineScene {
     },
     {
       GetSettingItem("Play", "EnableAutoPlay"),
-      GetSettingItem("Play", "SeenDuration")
+      GetSettingItem("Play", "Hispeed")
     }
   };
   
