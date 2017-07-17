@@ -1,5 +1,12 @@
-#必須
-S:General.Skin,Default
-
-
-
+#Bool  B:<Group>:<Key>:Description:YesText:NoText:Default
+#Int   I:<Group>:<Key>:Description:Min:Max:Step:Default
+#Float F:<Group>:<Key>:Description:Min:Max:Step:Default
+B:Graphic:WaitVSync:垂直同期:待機する:待機しない:false
+B:Play:EnableAutoPlay:オートプレイ:有効:無効:true
+F:Play:Hispeed:ハイスピード(1.0～30.0 0.2刻み):1.0:30.0:0.2:6
+F:Sound:BufferLatency:バッファ遅延(秒):-0.5:0.5:0.001:0.03
+F:Sound:VolumeTap:Tap音量:0:1:0.01:1
+F:Sound:VolumeExTap:ExTap音量:0:1:0.01:1
+F:Sound:VolumeFlick:Flick音量:0:1:0.01:1
+F:Sound:VolumeAir:Air音量:0:1:0.01:1
+F:Sound:VolumeAirAction:AirAction音量:0:1:0.01:1

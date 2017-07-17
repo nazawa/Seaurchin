@@ -93,7 +93,8 @@ struct SusMetaData {
     std::string UDesigner;
     std::string USongId;
     std::string UWaveFileName;
-    double WaveOffset;
+    double WaveOffset = 0;
+    double BaseBpm = 0;
     uint32_t Level;
     uint32_t DifficultyType;
     std::bitset<8> ExtraFlags;
@@ -161,6 +162,7 @@ private:
 
 public:
     SusMetaData SharedMetaData;
+    std::vector<std::tuple<double, double>> SharedBpmChanges;
 
     SusAnalyzer(uint32_t tpb);
     ~SusAnalyzer();

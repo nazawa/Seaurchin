@@ -103,6 +103,7 @@ protected:
     double CurrentTime = 0;
     double CurrentSoundTime = 0;
     double SeenDuration = 0.8;
+    double HispeedMultiplier = 6;
     double PreloadingTime = 0.2;
     double BackingTime = 0.0;
     double NextMetronomeTime = 0.0;

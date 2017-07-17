@@ -140,6 +140,13 @@ void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
         });
 
         for (auto &hs : HispeedDefinitions) hs.second->Finialize();
+        if (SharedMetaData.BaseBpm == 0) SharedMetaData.BaseBpm = GetBpmAt(0, 0);
+        for (const auto& bpm : BpmChanges) {
+            SusRelativeNoteTime t;
+            SusRawNoteData d;
+            tie(t, d) = bpm;
+            SharedBpmChanges.push_back(make_tuple(GetAbsoluteTime(t.Measure, t.Tick), BpmDefinitions[d.DefinitionNumber]));
+        }
     }
 }
 
@@ -189,6 +196,9 @@ void SusAnalyzer::ProcessCommand(const xp::smatch &result, bool onlyMeta)
             break;
         case hashstr("REQUEST"):
             ProcessRequest(ConvertRawString(result[2]));
+            break;
+        case hashstr("BASEBPM"):
+            SharedMetaData.BaseBpm = ConvertFloat(result[2]);
             break;
 
             //此処から先はデータ内で使う用

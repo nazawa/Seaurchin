@@ -65,7 +65,7 @@ void ScenePlayer::Initialize()
     }
 
     auto setting = manager->GetSettingInstanceSafe();
-    SeenDuration = setting->ReadValue<double>("Play", "SeenDuration", 0.8);
+    HispeedMultiplier = setting->ReadValue<double>("Play", "Hispeed", 6);
     SoundBufferingLatency = setting->ReadValue<double>("Sound", "BufferLatency", 0.03);
 
     LoadResources();
@@ -218,6 +218,22 @@ void ScenePlayer::Tick(double delta)
 
     if (State >= PlayingState::ReadyCounting) CurrentTime += delta;
     CurrentSoundTime = CurrentTime + SoundBufferingLatency;
+
+    // ----------------------
+    // (HSx1000)px / 4beats
+    double referenceBpm = 120.0;
+    // ----------------------
+
+    double cbpm = get<1>(analyzer->SharedBpmChanges[0]);
+    for (const auto &bc : analyzer->SharedBpmChanges) {
+        if (get<0>(bc) < CurrentTime) break;
+        cbpm = get<1>(bc);
+    }
+    double bpmMultiplier = (cbpm / analyzer->SharedMetaData.BaseBpm);
+    double sizeFor4Beats = bpmMultiplier *  HispeedMultiplier * 1000.0;
+    double seenRatio = (SU_LANE_Z_MAX - SU_LANE_Z_MIN) / sizeFor4Beats;
+    SeenDuration = 60.0 * 4.0 * seenRatio / referenceBpm;
+
     if (State >= PlayingState::ReadyCounting) CalculateNotes(CurrentTime, SeenDuration, PreloadingTime);
 
     int pCombo = Status.Combo;
