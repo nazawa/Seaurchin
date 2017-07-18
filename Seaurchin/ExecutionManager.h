@@ -57,7 +57,6 @@ public:
     void ExecuteSystemMenu();
     void ReloadMusic();
     void Fire(const std::string &message);
-    MusicSelectionCursor *CreateCursor();
     ScenePlayer *CreatePlayer();
     SSoundMixer *GetDefaultMixer(const std::string &name);
     SSettingItem *GetSettingItem(const std::string &group, const std::string &key);

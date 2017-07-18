@@ -57,6 +57,7 @@ ScenePlayer::~ScenePlayer()
 void ScenePlayer::Initialize()
 {
     analyzer = make_unique<SusAnalyzer>(192);
+    isLoadCompleted = false;
 
     if (manager->ExistsData("AutoPlay") ? manager->GetData<int>("AutoPlay") : 1) {
         processor = new AutoPlayerProcessor(this);
@@ -109,7 +110,10 @@ void ScenePlayer::LoadWorker()
     while (BackingTime > analyzer->SharedMetaData.WaveOffset) BackingTime -= 60.0 / analyzer->GetBpmAt(0, 0) * analyzer->GetBeatsAt(0);
     CurrentTime = BackingTime;
 
-    isLoadCompleted = true;
+    {
+        lock_guard<mutex> lock(asyncMutex);
+        isLoadCompleted = true;
+    }
 }
 
 void ScenePlayer::CalculateCurves(std::shared_ptr<SusDrawableNoteData> note)
@@ -219,22 +223,24 @@ void ScenePlayer::Tick(double delta)
     if (State >= PlayingState::ReadyCounting) CurrentTime += delta;
     CurrentSoundTime = CurrentTime + SoundBufferingLatency;
 
-    // ----------------------
-    // (HSx1000)px / 4beats
-    double referenceBpm = 120.0;
-    // ----------------------
+    if (State >= PlayingState::ReadyCounting) {
+        // ----------------------
+        // (HSx1000)px / 4beats
+        double referenceBpm = 120.0;
+        // ----------------------
 
-    double cbpm = get<1>(analyzer->SharedBpmChanges[0]);
-    for (const auto &bc : analyzer->SharedBpmChanges) {
-        if (get<0>(bc) < CurrentTime) break;
-        cbpm = get<1>(bc);
+        double cbpm = get<1>(analyzer->SharedBpmChanges[0]);
+        for (const auto &bc : analyzer->SharedBpmChanges) {
+            if (get<0>(bc) < CurrentTime) break;
+            cbpm = get<1>(bc);
+        }
+        double bpmMultiplier = (cbpm / analyzer->SharedMetaData.BaseBpm);
+        double sizeFor4Beats = bpmMultiplier *  HispeedMultiplier * 1000.0;
+        double seenRatio = (SU_LANE_Z_MAX - SU_LANE_Z_MIN) / sizeFor4Beats;
+        SeenDuration = 60.0 * 4.0 * seenRatio / referenceBpm;
+
+        CalculateNotes(CurrentTime, SeenDuration, PreloadingTime);
     }
-    double bpmMultiplier = (cbpm / analyzer->SharedMetaData.BaseBpm);
-    double sizeFor4Beats = bpmMultiplier *  HispeedMultiplier * 1000.0;
-    double seenRatio = (SU_LANE_Z_MAX - SU_LANE_Z_MIN) / sizeFor4Beats;
-    SeenDuration = 60.0 * 4.0 * seenRatio / referenceBpm;
-
-    if (State >= PlayingState::ReadyCounting) CalculateNotes(CurrentTime, SeenDuration, PreloadingTime);
 
     int pCombo = Status.Combo;
     processor->Update(judgeData);
@@ -286,13 +292,14 @@ void ScenePlayer::ProcessSound()
 
 void ScenePlayer::Load()
 {
-    //thread loadThread([&] { LoadWorker(); });
-    //loadThread.detach();
-    LoadWorker();
+    thread loadThread([&] { LoadWorker(); });
+    loadThread.detach();
+    //LoadWorker();
 }
 
 bool ScenePlayer::IsLoadCompleted()
 {
+    lock_guard<mutex> lock(asyncMutex);
     return isLoadCompleted;
 }
 

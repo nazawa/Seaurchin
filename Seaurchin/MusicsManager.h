@@ -4,6 +4,7 @@
 #include "Setting.h"
 
 #define SU_IF_MSCURSOR "MusicCursor"
+#define SU_IF_MSCSTATE "CursorState"
 
 struct MusicScoreInfo final {
     uint16_t Difficulty;
@@ -41,11 +42,23 @@ public:
 
 //musicにsはつかないって？知るかバカ
 class MusicSelectionCursor;
+enum class MusicSelectionState {
+    OutOfFunction = 0,
+    Category,
+    Music,
+    Variant,
+    Confirmed,
 
+    Error,
+    Success,
+};
+
+class ExecutionManager;
 class MusicsManager final {
     friend class MusicSelectionCursor;
 private:
     std::shared_ptr<Setting> SharedSetting;
+    ExecutionManager *Manager;
 
     bool Loading = false;
     std::mutex FlagMutex;
@@ -54,9 +67,7 @@ private:
     void CreateMusicCache();
 
 public:
-    MusicSelectionCursor *Applied;
-
-    MusicsManager(std::shared_ptr<Setting> setting);
+    MusicsManager(ExecutionManager *exm);
     ~MusicsManager();
 
     void Initialize();
@@ -64,8 +75,8 @@ public:
     bool IsReloading();
     std::string GetSelectedScorePath();
 
+    MusicSelectionCursor *CreateMusicSelectionCursor();
     const std::vector<std::shared_ptr<CategoryInfo>> &GetCategories() { return Categories; }
-    MusicSelectionCursor *CreateCursor();
 };
 
 class MusicSelectionCursor final {
@@ -77,7 +88,7 @@ private:
     int32_t CategoryIndex;
     int32_t MusicIndex;
     uint16_t VariantIndex;
-    uint16_t State;
+    MusicSelectionState State;
 
     std::shared_ptr<MusicMetaInfo> GetMusicAt(int32_t relative);
     std::shared_ptr<MusicScoreInfo> GetScoreVariantAt(int32_t relative);
@@ -96,13 +107,14 @@ public:
     int GetLevel(int32_t relativeIndex);
     std::string GetDesignerName(int32_t relativeIndex);
 
-    int Enter();
-    bool Exit();
-    bool Start();
-    int Next();
-    int Previous();
-    int NextVariant();
-    int PreviousVariant();
+    MusicSelectionState Enter();
+    MusicSelectionState Exit();
+    MusicSelectionState Start();
+    MusicSelectionState Next();
+    MusicSelectionState Previous();
+    MusicSelectionState NextVariant();
+    MusicSelectionState PreviousVariant();
+    MusicSelectionState GetState();
 
     static void RegisterScriptInterface(asIScriptEngine *engine);
 };

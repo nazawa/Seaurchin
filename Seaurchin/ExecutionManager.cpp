@@ -25,7 +25,7 @@ ExecutionManager::ExecutionManager(std::shared_ptr<Setting> setting)
     Random = make_shared<mt19937>(seed());
     SuEffect = unique_ptr<EffectBuilder>(new EffectBuilder(Random));
     SharedControlState = make_shared<ControlState>();
-    Musics = make_shared<MusicsManager>(SharedSetting);
+    Musics = make_shared<MusicsManager>(this);
 
 }
 
@@ -94,7 +94,7 @@ void ExecutionManager::RegisterGlobalManagementFunction()
     engine->RegisterGlobalFunction("bool Execute(const string &in)", asMETHODPR(ExecutionManager, ExecuteSkin, (const string&), bool), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction("void ReloadMusic()", asMETHOD(ExecutionManager, ReloadMusic), asCALL_THISCALL_ASGLOBAL, this);
     engine->RegisterGlobalFunction(SU_IF_SOUNDMIXER "@ GetDefaultMixer(const string &in)", asMETHOD(ExecutionManager, GetDefaultMixer), asCALL_THISCALL_ASGLOBAL, this);
-    engine->RegisterObjectBehaviour(SU_IF_MSCURSOR, asBEHAVE_FACTORY, SU_IF_MSCURSOR "@ f()", asMETHOD(ExecutionManager, CreateCursor), asCALL_THISCALL_ASGLOBAL, this);
+    engine->RegisterObjectBehaviour(SU_IF_MSCURSOR, asBEHAVE_FACTORY, SU_IF_MSCURSOR "@ f()", asMETHOD(MusicsManager, CreateMusicSelectionCursor), asCALL_THISCALL_ASGLOBAL, Musics.get());
     engine->RegisterObjectBehaviour(SU_IF_SCENE_PLAYER, asBEHAVE_FACTORY, SU_IF_SCENE_PLAYER "@ f()", asMETHOD(ExecutionManager, CreatePlayer), asCALL_THISCALL_ASGLOBAL, this);
 }
 
@@ -287,11 +287,6 @@ void ExecutionManager::ReloadMusic()
 void ExecutionManager::Fire(const string & message)
 {
     for (auto &scene : Scenes) scene->OnEvent(message);
-}
-
-MusicSelectionCursor * ExecutionManager::CreateCursor()
-{
-    return Musics->CreateCursor();
 }
 
 ScenePlayer *ExecutionManager::CreatePlayer()

@@ -57,6 +57,7 @@ protected:
     int hBlank;
     ExecutionManager *manager;
     SoundManager *soundManager;
+    std::mutex asyncMutex;
     std::unique_ptr<SusAnalyzer> analyzer;
     std::map<std::string, SResource*> resources;
     std::multiset<SSprite*, SSprite::Comparator> sprites;
