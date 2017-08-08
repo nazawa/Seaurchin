@@ -179,9 +179,21 @@ void SusAnalyzer::ProcessCommand(const xp::smatch &result, bool onlyMeta)
         case hashstr("PLAYLEVEL"):
             SharedMetaData.Level = ConvertInteger(result[2]);
             break;
-        case hashstr("DIFFICULTY"):
-            SharedMetaData.DifficultyType = ConvertInteger(result[2]);
+        case hashstr("DIFFICULTY"): {
+            if (xp::regex_match(result[2], AllNumeric)) {
+                //通常記法
+                SharedMetaData.DifficultyType = ConvertInteger(result[2]);
+            } else {
+                //WE記法
+                auto dd = ConvertRawString(result[2]);
+                vector<string> params;
+                ba::split(params, dd, ba::is_any_of(":"));
+                if (params.size() < 2) return;
+                SharedMetaData.DifficultyType = ConvertInteger(params[0]);
+                SharedMetaData.UExtraDifficulty = params[1];
+            }
             break;
+        }
         case hashstr("SONGID"):
             SharedMetaData.USongId = ConvertRawString(result[2]);
             break;

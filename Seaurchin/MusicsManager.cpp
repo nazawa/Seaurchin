@@ -85,6 +85,7 @@ void MusicsManager::CreateMusicCache()
                 score->WavePath = ConvertUTF8ToShiftJis(Analyzer->SharedMetaData.UWaveFileName);
                 score->Designer = Analyzer->SharedMetaData.UDesigner;
                 score->Difficulty = Analyzer->SharedMetaData.DifficultyType;
+                score->DifficultyName = Analyzer->SharedMetaData.UExtraDifficulty;
                 score->Level = Analyzer->SharedMetaData.Level;
                 (*music)->Scores.push_back(score);
             }
@@ -337,9 +338,9 @@ void MusicSelectionCursor::RegisterScriptInterface(asIScriptEngine *engine)
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetMusicName(int)", asMETHOD(MusicSelectionCursor, GetMusicName), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetArtistName(int)", asMETHOD(MusicSelectionCursor, GetArtistName), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetMusicJacketFileName(int)", asMETHOD(MusicSelectionCursor, GetMusicJacketFileName), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int GetDifficulty(int)", asMETHOD(MusicSelectionCursor, GetArtistName), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int GetLevel(int)", asMETHOD(MusicSelectionCursor, GetArtistName), asCALL_THISCALL);
-    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetDesignerName(int)", asMETHOD(MusicSelectionCursor, GetArtistName), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int GetDifficulty(int)", asMETHOD(MusicSelectionCursor, GetDifficulty), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "int GetLevel(int)", asMETHOD(MusicSelectionCursor, GetLevel), asCALL_THISCALL);
+    engine->RegisterObjectMethod(SU_IF_MSCURSOR, "string GetDesignerName(int)", asMETHOD(MusicSelectionCursor, GetDesignerName), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, SU_IF_MSCSTATE " Next()", asMETHOD(MusicSelectionCursor, Next), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, SU_IF_MSCSTATE " Previous()", asMETHOD(MusicSelectionCursor, Previous), asCALL_THISCALL);
     engine->RegisterObjectMethod(SU_IF_MSCURSOR, SU_IF_MSCSTATE " NextVariant()", asMETHOD(MusicSelectionCursor, NextVariant), asCALL_THISCALL);

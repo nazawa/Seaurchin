@@ -97,6 +97,7 @@ struct SusMetaData {
     double BaseBpm = 0;
     uint32_t Level;
     uint32_t DifficultyType;
+    std::string UExtraDifficulty = "";
     std::bitset<8> ExtraFlags;
 };
 
