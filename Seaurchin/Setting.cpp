@@ -8,14 +8,14 @@ using namespace boost::property_tree;
 using namespace boost::filesystem;
 namespace ba = boost::algorithm;
 
-std::string Setting::RootDirectory = "";
+std::wstring Setting::RootDirectory = L"";
 
 Setting::Setting(HMODULE hModule)
 {
     if (RootDirectory != "") return;
-    TCHAR directory[MAX_PATH];
-    GetModuleFileName(hModule, directory, MAX_PATH);
-    PathRemoveFileSpec(directory);
+    wchar_t directory[MAX_PATH];
+    GetModuleFileNameW(hModule, directory, MAX_PATH);
+    PathRemoveFileSpecW(directory);
     RootDirectory = directory;
 }
 
@@ -24,23 +24,27 @@ Setting::Setting()
 
 }
 
-void Setting::Load(string filename)
+void Setting::Load(const wstring &filename)
 {
     file = filename;
     if (!exists(RootDirectory / file)) Save();
-    read_json((RootDirectory / file).string(), SettingTree);
+    std::ifstream ifs((RootDirectory / file).wstring(), ios::in);
+    read_json(ifs, SettingTree);
     WriteDebugConsole("Setting File Loaded.\n");
+    ifs.close();
 }
 
-const std::string Setting::GetRootDirectory()
+const std::wstring Setting::GetRootDirectory()
 {
     return RootDirectory;
 }
 
 void Setting::Save() const
 {
-    write_json((RootDirectory / file).string(), SettingTree);
+    std::ofstream ofs((RootDirectory / file).wstring(), ios::out);
+    write_json(ofs, SettingTree);
     WriteDebugConsole("Setting File Saved.\n");
+    ofs.close();
 }
 
 // SettingItem -----------------------------------------------------------------

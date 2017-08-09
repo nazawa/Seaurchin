@@ -10,7 +10,7 @@ bool SkinHolder::IncludeScript(std::string include, std::string from, CScriptBui
     return false;
 }
 
-SkinHolder::SkinHolder(string name, shared_ptr<AngelScript> script, std::shared_ptr<SoundManager> sound)
+SkinHolder::SkinHolder(const wstring &name, shared_ptr<AngelScript> script, std::shared_ptr<SoundManager> sound)
 {
     ScriptInterface = script;
 	SoundInterface = sound;
@@ -68,12 +68,14 @@ void SkinHolder::Initialize()
     mod->Discard();
 }
 
-asIScriptObject* SkinHolder::ExecuteSkinScript(string file)
+asIScriptObject* SkinHolder::ExecuteSkinScript(const wstring &file)
 {
-    auto mod = ScriptInterface->GetExistModule(file);
+    //‚¨’ƒ‚ð‘÷‚¹
+    auto modulename = ConvertUnicodeToUTF8(file);
+    auto mod = ScriptInterface->GetExistModule(modulename);
     if (!mod)
     {
-        ScriptInterface->StartBuildModule(file.c_str(),
+        ScriptInterface->StartBuildModule(modulename.c_str(),
             [this](string inc, string from, CScriptBuilder *b)
         {
             if (!exists(SkinRoot / SU_SCRIPT_DIR / inc)) return false;
@@ -116,22 +118,22 @@ asIScriptObject* SkinHolder::ExecuteSkinScript(string file)
 
 void SkinHolder::LoadSkinImage(const string &key, const string &filename)
 {
-    Images[key] = SImage::CreateLoadedImageFromFile(ConvertShiftJisToUTF8((SkinRoot / SU_IMAGE_DIR / filename).string()), false);
+    Images[key] = SImage::CreateLoadedImageFromFile(ConvertUnicodeToUTF8((SkinRoot / SU_IMAGE_DIR / filename).wstring()), false);
 }
 
 void SkinHolder::LoadSkinFont(const string &key, const string &filename)
 {
-    Fonts[key] = SFont::CreateLoadedFontFromFile(ConvertShiftJisToUTF8((SkinRoot / SU_FONT_DIR / filename).string()));
+    Fonts[key] = SFont::CreateLoadedFontFromFile(ConvertUnicodeToUTF8((SkinRoot / SU_FONT_DIR / filename).wstring()));
 }
 
 void SkinHolder::LoadSkinSound(const std::string & key, const std::string & filename)
 {
-	Sounds[key] = SSound::CreateSoundFromFile(SoundInterface.get(), ConvertShiftJisToUTF8((SkinRoot / SU_SOUND_DIR / filename).string()), 8);
+	Sounds[key] = SSound::CreateSoundFromFile(SoundInterface.get(), ConvertUnicodeToUTF8((SkinRoot / SU_SOUND_DIR / filename).wstring()), 8);
 }
 
 void SkinHolder::LoadSkinAnime(const std::string & key, const std::string & filename, int x, int y, int w, int h, int c, double time)
 {
-    AnimatedImages[key] = SAnimatedImage::CreateLoadedImageFromFile(ConvertShiftJisToUTF8((SkinRoot / SU_IMAGE_DIR / filename).string()), x, y, w, h, c, time);
+    AnimatedImages[key] = SAnimatedImage::CreateLoadedImageFromFile(ConvertUnicodeToUTF8((SkinRoot / SU_IMAGE_DIR / filename).wstring()), x, y, w, h, c, time);
 }
 
 SImage* SkinHolder::GetSkinImage(const string &key)

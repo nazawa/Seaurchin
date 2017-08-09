@@ -36,6 +36,7 @@ void PreInitialize(HINSTANCE hInstance)
     setting->Load(SU_SETTING_FILE);
 
     InitializeDebugFeature();
+    SetUseCharCodeFormat(DX_CHARCODEFORMAT_UTF16LE);
     ChangeWindowMode(TRUE);
     SetMainWindowText(SU_APP_NAME " " SU_APP_VERSION);
     SetAlwaysRunFlag(TRUE);

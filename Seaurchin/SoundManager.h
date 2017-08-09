@@ -31,7 +31,7 @@ public:
     void StopSound() override;
     void SetVolume(float vol) override;
 
-    static SoundSample *CreateFromFile(const std::string &fileNameA, int maxChannels = 16);
+    static SoundSample *CreateFromFile(const std::wstring &fileNameW, int maxChannels = 16);
     void SetLoop(bool looping);
 };
 
@@ -49,7 +49,7 @@ public:
     void StopSound() override;
     void SetVolume(float vol) override;
 
-    static SoundStream *CreateFromFile(const std::string &fileNameA);
+    static SoundStream *CreateFromFile(const std::wstring &fileNameW);
     double GetPlayingPosition();
     void SetPlayingPosition(double pos);
 };

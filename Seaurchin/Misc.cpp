@@ -3,7 +3,7 @@
 
 using namespace std;
 
-string ConvertUTF8ToShiftJis(string utf8str)
+string ConvertUTF8ToShiftJis(const string &utf8str)
 {
     int len = MultiByteToWideChar(CP_UTF8, 0, utf8str.c_str(), -1, nullptr, 0);
     wchar_t *buffer = new wchar_t[len];
@@ -17,7 +17,7 @@ string ConvertUTF8ToShiftJis(string utf8str)
     return ret;
 }
 
-string ConvertShiftJisToUTF8(string sjisstr)
+string ConvertShiftJisToUTF8(const string &sjisstr)
 {
     int len = MultiByteToWideChar(CP_ACP, 0, sjisstr.c_str(), -1, nullptr, 0);
     wchar_t *buffer = new wchar_t[len];
@@ -31,7 +31,7 @@ string ConvertShiftJisToUTF8(string sjisstr)
     return ret;
 }
 
-wstring ConvertUTF8ToUnicode(string utf8str)
+wstring ConvertUTF8ToUnicode(const string &utf8str)
 {
     int len = MultiByteToWideChar(CP_UTF8, 0, utf8str.c_str(), -1, nullptr, 0);
     wchar_t *buffer = new wchar_t[len];
@@ -41,7 +41,17 @@ wstring ConvertUTF8ToUnicode(string utf8str)
     return ret;
 }
 
-void ScriptSceneWarnOutOf(string type, asIScriptContext *ctx)
+string ConvertUnicodeToUTF8(const wstring &utf16str)
+{
+    int len = WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<const wchar_t*>(utf16str.c_str()), -1, nullptr, 0, nullptr, nullptr);
+    char *buffer = new char[len];
+    WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<const wchar_t*>(utf16str.c_str()), -1, buffer, len, nullptr, nullptr);
+    string ret = buffer;
+    delete[] buffer;
+    return ret;
+}
+
+void ScriptSceneWarnOutOf(const string &type, asIScriptContext *ctx)
 {
     const char *secn;
     int col, row;

@@ -20,7 +20,7 @@ private:
     std::vector<std::shared_ptr<Scene>> Scenes;
     std::vector<std::shared_ptr<Scene>> ScenesPending;
     std::shared_ptr<ControlState> SharedControlState;
-    std::vector<std::string> SkinNames;
+    std::vector<std::wstring> SkinNames;
     std::unique_ptr<SkinHolder> Skin;
     std::unique_ptr<EffectBuilder> SuEffect;
     std::shared_ptr<std::mt19937> Random;
@@ -53,7 +53,7 @@ public:
 
     std::tuple<bool, LRESULT> CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void ExecuteSkin();
-    bool ExecuteSkin(const std::string &file);
+    bool ExecuteSkin(const std::wstring &file);
     void ExecuteSystemMenu();
     void ReloadMusic();
     void Fire(const std::string &message);

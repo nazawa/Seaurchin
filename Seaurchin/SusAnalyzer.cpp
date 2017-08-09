@@ -99,7 +99,7 @@ void SusAnalyzer::Reset()
 
 //一応UTF-8として処理することにしますがどうせ変わらないだろうなぁ
 //あと列挙済みファイルを流し込む前提でエラーチェックしない
-void SusAnalyzer::LoadFromFile(const string &fileName, bool analyzeOnlyMetaData)
+void SusAnalyzer::LoadFromFile(const wstring &fileName, bool analyzeOnlyMetaData)
 {
     ifstream file;
     string rawline;

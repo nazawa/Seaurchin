@@ -169,7 +169,7 @@ public:
     ~SusAnalyzer();
 
     void Reset();
-    void LoadFromFile(const std::string &fileName, bool analyzeOnlyMetaData = false);
+    void LoadFromFile(const std::wstring &fileName, bool analyzeOnlyMetaData = false);
     void RenderScoreData(std::vector<std::shared_ptr<SusDrawableNoteData>> &data);
     float GetBeatsAt(uint32_t measure);
     double GetBpmAt(uint32_t measure, uint32_t tick);

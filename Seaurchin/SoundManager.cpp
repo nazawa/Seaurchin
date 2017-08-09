@@ -37,9 +37,22 @@ void SoundSample::SetVolume(float vol)
     BASS_SampleSetInfo(hSample, &si);
 }
 
-SoundSample *SoundSample::CreateFromFile(const string & fileNameA, int maxChannels)
+SoundSample *SoundSample::CreateFromFile(const wstring &fileNameW, int maxChannels)
 {
-    auto handle = BASS_SampleLoad(FALSE, fileNameA.c_str(), 0, 0, maxChannels, BASS_SAMPLE_OVER_POS);
+    std::ifstream file(fileNameW, ios::in);
+    file.seekg(0, ios::end);
+    auto ep = file.tellg();
+    file.clear();
+    file.seekg(0, ios::beg);
+    auto size = ep - file.tellg();
+
+    char *data = new char[size];
+    file.read(data, size);
+    file.close();
+
+    auto handle = BASS_SampleLoad(TRUE, data, 0, size, maxChannels, BASS_SAMPLE_OVER_POS);
+    delete[] data;
+
     SoundSample *result = new SoundSample(handle);
     return result;
 }
@@ -84,9 +97,22 @@ void SoundStream::SetVolume(float vol)
     BASS_ChannelSetAttribute(hStream, BASS_ATTRIB_VOL, clamp(vol, 0.0f, 1.0f));
 }
 
-SoundStream *SoundStream::CreateFromFile(const string & fileNameA)
+SoundStream *SoundStream::CreateFromFile(const wstring & fileNameW)
 {
-    auto handle = BASS_StreamCreateFile(FALSE, fileNameA.c_str(), 0, 0, 0);
+    std::ifstream file(fileNameW, ios::in);
+    file.seekg(0, ios::end);
+    auto ep = file.tellg();
+    file.clear();
+    file.seekg(0, ios::beg);
+    auto size = ep - file.tellg();
+
+    char *data = new char[size];
+    file.read(data, size);
+    file.close();
+
+    auto handle = BASS_StreamCreateFile(TRUE, data, 0, size, 0);
+    delete[] data;
+
     SoundStream *result = new SoundStream(handle);
     return result;
 }
@@ -100,7 +126,7 @@ double SoundStream::GetPlayingPosition()
 void SoundStream::SetPlayingPosition(double pos)
 {
     auto bp = BASS_ChannelSeconds2Bytes(hStream, pos);
-    BASS_ChannelSetPosition(hStream, bp , BASS_POS_BYTE);
+    BASS_ChannelSetPosition(hStream, bp, BASS_POS_BYTE);
 }
 
 // SoundMixerStream ------------------------

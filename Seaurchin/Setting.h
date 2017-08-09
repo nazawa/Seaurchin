@@ -5,17 +5,17 @@
 
 class Setting final {
 private:
-    static std::string RootDirectory;
-    std::string file;
+    static std::wstring RootDirectory;
+    std::wstring file;
     boost::property_tree::ptree SettingTree;
 
 public:
     Setting();
     Setting(HMODULE hModule);
-    void Load(std::string filename);
+    void Load(const std::wstring &filename);
     inline void Reload() { Load(file); }
     void Save() const;
-    static const std::string GetRootDirectory();
+    static const std::wstring GetRootDirectory();
 
     template<typename T>
     T ReadValue(const std::string &group, const std::string &key, T defValue)

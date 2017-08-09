@@ -25,10 +25,10 @@ public:
     inline asIScriptModule* GetExistModule(std::string name) { return engine->GetModule(name.c_str()); }
     
     //ファイル読み込み
-    void LoadFile(std::string filename);
+    void LoadFile(const std::wstring &filename);
     
     //外から使わないで
-    bool IncludeFile(std::string include, std::string from);
+    bool IncludeFile(std::wstring include, std::wstring from);
     
     //ビルドする
     bool FinishBuildModule();

@@ -18,12 +18,12 @@
 #define SU_SOUND_DIR "Sounds"
 #define SU_SCRIPT_DIR "Scripts"
 
-#define SU_SKIN_MAIN_FILE "Skin.as"
-#define SU_SKIN_TITLE_FILE "Title.as"
-#define SU_SKIN_SELECT_FILE "Select.as"
-#define SU_SKIN_PLAY_FILE "Play.as"
-#define SU_SKIN_RESULT_FILE "Result.as"
-#define SU_SYSTEM_MENU_FILE "System.as"
+#define SU_SKIN_MAIN_FILE L"Skin.as"
+#define SU_SKIN_TITLE_FILE L"Title.as"
+#define SU_SKIN_SELECT_FILE L"Select.as"
+#define SU_SKIN_PLAY_FILE L"Play.as"
+#define SU_SKIN_RESULT_FILE L"Result.as"
+#define SU_SYSTEM_MENU_FILE L"System.as"
 
 #define SU_FONT_SYSTEM "ÇlÇr ÉSÉVÉbÉN"
 

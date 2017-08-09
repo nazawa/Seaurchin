@@ -54,10 +54,11 @@ To* CastReferenceType(From *from)
 }
 
 
-std::string ConvertUTF8ToShiftJis(std::string utf8str);
-std::string ConvertShiftJisToUTF8(std::string sjisstr);
-std::wstring ConvertUTF8ToUnicode(std::string utf8str);
-void ScriptSceneWarnOutOf(std::string type, asIScriptContext *ctx);
+std::string ConvertUTF8ToShiftJis(const std::string &utf8str);
+std::string ConvertShiftJisToUTF8(const std::string &sjisstr);
+std::wstring ConvertUTF8ToUnicode(const std::string &utf8str);
+std::string ConvertUnicodeToUTF8(const std::wstring &utf16str);
+void ScriptSceneWarnOutOf(const std::string &type, asIScriptContext *ctx);
 double ToDouble(const char *str);
 int32_t ConvertInteger(const std::string &input);
 uint32_t ConvertHexatridecimal(const std::string &input);

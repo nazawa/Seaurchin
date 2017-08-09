@@ -51,7 +51,7 @@ void ExecutionManager::Initialize()
     std::ifstream slfile;
     string procline;
     path slpath = SharedSetting->GetRootDirectory() / SU_DATA_DIR / SU_SCRIPT_DIR / "SettingList.txt";
-    slfile.open(slpath.string(), ios::in);
+    slfile.open(slpath.wstring(), ios::in);
     while (getline(slfile, procline))
         if (procline[0] != '#') SettingManager->AddSettingByString(procline);
     slfile.close();
@@ -110,7 +110,7 @@ void ExecutionManager::EnumerateSkins()
     for (const auto& fdata : make_iterator_range(directory_iterator(sepath), {})) {
         if (!is_directory(fdata)) continue;
         if (!CheckSkinStructure(fdata.path())) continue;
-        SkinNames.push_back(fdata.path().filename().string());
+        SkinNames.push_back(fdata.path().filename().wstring());
     }
     ostringstream ss;
     ss << "Found " << SkinNames.size() << " Skins" << endl;
@@ -132,9 +132,9 @@ bool ExecutionManager::CheckSkinStructure(boost::filesystem::path name)
 
 void ExecutionManager::ExecuteSkin()
 {
-    auto sn = SharedSetting->ReadValue<string>(SU_SETTING_GENERAL, SU_SETTING_SKIN, "Default");
+    auto sn = SharedSetting->ReadValue<wstring>(SU_SETTING_GENERAL, SU_SETTING_SKIN, L"Default");
     if (find(SkinNames.begin(), SkinNames.end(), sn) == SkinNames.end()) {
-        WriteDebugConsole(("Can't Find Skin " + sn + "!\n").c_str());
+        WriteDebugConsoleU(ConvertUnicodeToUTF8(L"Can't Find Skin " + sn + L"!\n"));
         return;
     }
     Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, ScriptInterface, Sound));
@@ -142,7 +142,7 @@ void ExecutionManager::ExecuteSkin()
     ExecuteSkin(SU_SKIN_TITLE_FILE);
 }
 
-bool ExecutionManager::ExecuteSkin(const string &file)
+bool ExecutionManager::ExecuteSkin(const wstring &file)
 {
     auto obj = Skin->ExecuteSkinScript(file);
     if (!obj) {
@@ -171,7 +171,7 @@ void ExecutionManager::ExecuteSystemMenu()
     }
 
     ScriptInterface->StartBuildModule("SystemMenu", [](auto inc, auto from, auto sb) { return true; });
-    ScriptInterface->LoadFile(sysmf.string().c_str());
+    ScriptInterface->LoadFile(sysmf.wstring());
     if (!ScriptInterface->FinishBuildModule()) {
         WriteDebugConsole("Can't Comple System Menu!\n");
         return;

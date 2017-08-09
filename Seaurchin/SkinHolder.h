@@ -11,7 +11,7 @@ class SkinHolder final {
 private:
     std::shared_ptr<AngelScript> ScriptInterface;
     std::shared_ptr<SoundManager> SoundInterface;
-    std::string SkinName;
+    std::wstring SkinName;
     boost::filesystem::path SkinRoot;
     std::unordered_map<std::string, SImage*> Images;
     std::unordered_map<std::string, SFont*> Fonts;
@@ -22,13 +22,13 @@ private:
     bool IncludeScript(std::string include, std::string from, CScriptBuilder *builder);
 
 public:
-    SkinHolder(std::string name, std::shared_ptr<AngelScript> script, std::shared_ptr<SoundManager> sound);
+    SkinHolder(const std::wstring &name, std::shared_ptr<AngelScript> script, std::shared_ptr<SoundManager> sound);
     ~SkinHolder();
     void AddRef();
     void Release();
 
     void Initialize();
-    asIScriptObject* ExecuteSkinScript(std::string file);
+    asIScriptObject* ExecuteSkinScript(const std::wstring &file);
     void LoadSkinImage(const std::string &key, const std::string &filename);
     void LoadSkinFont(const std::string &key, const std::string &filename);
     void LoadSkinSound(const std::string &key, const std::string &filename);
