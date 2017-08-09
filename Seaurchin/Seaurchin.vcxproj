@@ -169,7 +169,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptarray\scriptarray.cpp" />
-    <ClCompile Include="..\..\..\AngelScript\add_on\scriptbuilder\scriptbuilder.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptdictionary\scriptdictionary.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptmath\scriptmath.cpp" />
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptmath\scriptmathcomplex.cpp" />
@@ -213,7 +212,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptarray\scriptarray.h" />
-    <ClInclude Include="..\..\..\AngelScript\add_on\scriptbuilder\scriptbuilder.h" />
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptdictionary\scriptdictionary.h" />
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptmath\scriptmath.h" />
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptmath\scriptmathcomplex.h" />

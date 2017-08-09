@@ -91,7 +91,7 @@ void ScenePlayer::LoadWorker()
     auto mm = manager->GetMusicsManager();
     auto scorefile = mm->GetSelectedScorePath();
 
-    analyzer->LoadFromFile(scorefile);
+    analyzer->LoadFromFile(scorefile.wstring());
     analyzer->RenderScoreData(data);
     for (auto &note : data) {
         if (note->Type.test((size_t)SusNoteType::Slide) || note->Type.test((size_t)SusNoteType::AirAction)) CalculateCurves(note);
@@ -99,8 +99,8 @@ void ScenePlayer::LoadWorker()
     processor->Reset();
     State = PlayingState::BgmNotLoaded;
 
-    auto file = boost::filesystem::path(scorefile).parent_path() / ConvertUTF8ToShiftJis(analyzer->SharedMetaData.UWaveFileName);
-    bgmStream = SoundStream::CreateFromFile(file.string().c_str());
+    auto file = boost::filesystem::path(scorefile).parent_path() / ConvertUTF8ToUnicode(analyzer->SharedMetaData.UWaveFileName);
+    bgmStream = SoundStream::CreateFromFile(file.wstring().c_str());
     State = PlayingState::ReadyToStart;
 
     // 前カウントの計算

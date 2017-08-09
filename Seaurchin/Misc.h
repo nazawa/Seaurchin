@@ -54,8 +54,8 @@ To* CastReferenceType(From *from)
 }
 
 
-std::string ConvertUTF8ToShiftJis(const std::string &utf8str);
-std::string ConvertShiftJisToUTF8(const std::string &sjisstr);
+//std::string ConvertUTF8ToShiftJis(const std::string &utf8str);
+//std::string ConvertShiftJisToUTF8(const std::string &sjisstr);
 std::wstring ConvertUTF8ToUnicode(const std::string &utf8str);
 std::string ConvertUnicodeToUTF8(const std::wstring &utf16str);
 void ScriptSceneWarnOutOf(const std::string &type, asIScriptContext *ctx);

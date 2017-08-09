@@ -40,8 +40,9 @@ bool EffectBuilder::ParseSource(const string &source)
     using namespace boost::spirit;
     using namespace sefx;
 
-    auto srcbegin = source.begin();
-    auto srcend = source.end();
+    auto src = source;
+    auto srcbegin = src.begin();
+    auto srcend = src.end();
     string str; 
     vector<EffectTuple> effects;
     try

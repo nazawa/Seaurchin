@@ -39,20 +39,7 @@ void SoundSample::SetVolume(float vol)
 
 SoundSample *SoundSample::CreateFromFile(const wstring &fileNameW, int maxChannels)
 {
-    std::ifstream file(fileNameW, ios::in);
-    file.seekg(0, ios::end);
-    auto ep = file.tellg();
-    file.clear();
-    file.seekg(0, ios::beg);
-    auto size = ep - file.tellg();
-
-    char *data = new char[size];
-    file.read(data, size);
-    file.close();
-
-    auto handle = BASS_SampleLoad(TRUE, data, 0, size, maxChannels, BASS_SAMPLE_OVER_POS);
-    delete[] data;
-
+    auto handle = BASS_SampleLoad(FALSE, fileNameW.c_str(), 0, 0, maxChannels, BASS_SAMPLE_OVER_POS | BASS_UNICODE);
     SoundSample *result = new SoundSample(handle);
     return result;
 }
@@ -99,20 +86,7 @@ void SoundStream::SetVolume(float vol)
 
 SoundStream *SoundStream::CreateFromFile(const wstring & fileNameW)
 {
-    std::ifstream file(fileNameW, ios::in);
-    file.seekg(0, ios::end);
-    auto ep = file.tellg();
-    file.clear();
-    file.seekg(0, ios::beg);
-    auto size = ep - file.tellg();
-
-    char *data = new char[size];
-    file.read(data, size);
-    file.close();
-
-    auto handle = BASS_StreamCreateFile(TRUE, data, 0, size, 0);
-    delete[] data;
-
+    auto handle = BASS_StreamCreateFile(FALSE, fileNameW.c_str(), 0, 0, BASS_UNICODE);
     SoundStream *result = new SoundStream(handle);
     return result;
 }

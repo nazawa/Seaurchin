@@ -1,13 +1,13 @@
 #pragma once
 
-typedef std::function<bool(std::string, std::string, CScriptBuilder*)> IncludeCallback;
+typedef std::function<bool(std::wstring, std::wstring, CWScriptBuilder*)> IncludeCallback;
 
 class AngelScript
 {
 private:
     asIScriptEngine *engine;
     asIScriptContext *sharedContext;
-    CScriptBuilder builder;
+    CWScriptBuilder builder;
     IncludeCallback includeFunc;
 
     void ScriptMessageCallback(const asSMessageInfo *message);

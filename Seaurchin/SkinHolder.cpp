@@ -5,7 +5,7 @@
 using namespace std;
 using namespace boost::filesystem;
 
-bool SkinHolder::IncludeScript(std::string include, std::string from, CScriptBuilder * builder)
+bool SkinHolder::IncludeScript(std::wstring include, std::wstring from, CWScriptBuilder * builder)
 {
     return false;
 }
@@ -34,13 +34,13 @@ void SkinHolder::Release()
 void SkinHolder::Initialize()
 {
     ScriptInterface->StartBuildModule("SkinLoader",
-        [this](string inc, string from, CScriptBuilder *b)
+        [this](wstring inc, wstring from, CWScriptBuilder *b)
     {
         if (!exists(SkinRoot / SU_SCRIPT_DIR / inc)) return false;
-        b->AddSectionFromFile((SkinRoot / SU_SCRIPT_DIR / inc).string().c_str());
+        b->AddSectionFromFile((SkinRoot / SU_SCRIPT_DIR / inc).wstring().c_str());
         return true;
     });
-    ScriptInterface->LoadFile((SkinRoot / SU_SKIN_MAIN_FILE).string().c_str());
+    ScriptInterface->LoadFile((SkinRoot / SU_SKIN_MAIN_FILE).wstring().c_str());
     ScriptInterface->FinishBuildModule();
 
     auto mod = ScriptInterface->GetLastModule();
@@ -76,13 +76,13 @@ asIScriptObject* SkinHolder::ExecuteSkinScript(const wstring &file)
     if (!mod)
     {
         ScriptInterface->StartBuildModule(modulename.c_str(),
-            [this](string inc, string from, CScriptBuilder *b)
+            [this](wstring inc, wstring from, CWScriptBuilder *b)
         {
             if (!exists(SkinRoot / SU_SCRIPT_DIR / inc)) return false;
-            b->AddSectionFromFile((SkinRoot / SU_SCRIPT_DIR / inc).string().c_str());
+            b->AddSectionFromFile((SkinRoot / SU_SCRIPT_DIR / inc).wstring().c_str());
             return true;
         });
-        ScriptInterface->LoadFile((SkinRoot / SU_SCRIPT_DIR / file).string().c_str());
+        ScriptInterface->LoadFile((SkinRoot / SU_SCRIPT_DIR / file).wstring().c_str());
         if (!ScriptInterface->FinishBuildModule()) {
             ScriptInterface->GetLastModule()->Discard();
             return nullptr;
@@ -118,22 +118,22 @@ asIScriptObject* SkinHolder::ExecuteSkinScript(const wstring &file)
 
 void SkinHolder::LoadSkinImage(const string &key, const string &filename)
 {
-    Images[key] = SImage::CreateLoadedImageFromFile(ConvertUnicodeToUTF8((SkinRoot / SU_IMAGE_DIR / filename).wstring()), false);
+    Images[key] = SImage::CreateLoadedImageFromFile(ConvertUnicodeToUTF8((SkinRoot / SU_IMAGE_DIR / ConvertUTF8ToUnicode(filename)).wstring()), false);
 }
 
 void SkinHolder::LoadSkinFont(const string &key, const string &filename)
 {
-    Fonts[key] = SFont::CreateLoadedFontFromFile(ConvertUnicodeToUTF8((SkinRoot / SU_FONT_DIR / filename).wstring()));
+    Fonts[key] = SFont::CreateLoadedFontFromFile(ConvertUnicodeToUTF8((SkinRoot / SU_FONT_DIR / ConvertUTF8ToUnicode(filename)).wstring()));
 }
 
 void SkinHolder::LoadSkinSound(const std::string & key, const std::string & filename)
 {
-	Sounds[key] = SSound::CreateSoundFromFile(SoundInterface.get(), ConvertUnicodeToUTF8((SkinRoot / SU_SOUND_DIR / filename).wstring()), 8);
+	Sounds[key] = SSound::CreateSoundFromFile(SoundInterface.get(), ConvertUnicodeToUTF8((SkinRoot / SU_SOUND_DIR / ConvertUTF8ToUnicode(filename)).wstring()), 8);
 }
 
 void SkinHolder::LoadSkinAnime(const std::string & key, const std::string & filename, int x, int y, int w, int h, int c, double time)
 {
-    AnimatedImages[key] = SAnimatedImage::CreateLoadedImageFromFile(ConvertUnicodeToUTF8((SkinRoot / SU_IMAGE_DIR / filename).wstring()), x, y, w, h, c, time);
+    AnimatedImages[key] = SAnimatedImage::CreateLoadedImageFromFile(ConvertUnicodeToUTF8((SkinRoot / SU_IMAGE_DIR / ConvertUTF8ToUnicode(filename)).wstring()), x, y, w, h, c, time);
 }
 
 SImage* SkinHolder::GetSkinImage(const string &key)

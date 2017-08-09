@@ -156,9 +156,9 @@ protected:
 
 	struct ci_less
 	{
-		bool operator()(const std::string &a, const std::string &b) const
+		bool operator()(const std::wstring &a, const std::wstring &b) const
 		{
-			return _strcmpi(a.c_str(), b.c_str()) < 0;
+			return wcscmp(a.c_str(), b.c_str()) < 0;
 		}
 	};
 	std::set<std::wstring, ci_less> includedScripts;

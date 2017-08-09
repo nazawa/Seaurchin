@@ -2,7 +2,6 @@
 
 #include "Setting.h"
 #include "AngelScriptManager.h"
-#include "DxLibResource.h"
 #include "Scene.h"
 #include "ScriptScene.h"
 #include "EffectBuilder.h"

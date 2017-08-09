@@ -132,12 +132,12 @@ bool ExecutionManager::CheckSkinStructure(boost::filesystem::path name)
 
 void ExecutionManager::ExecuteSkin()
 {
-    auto sn = SharedSetting->ReadValue<wstring>(SU_SETTING_GENERAL, SU_SETTING_SKIN, L"Default");
-    if (find(SkinNames.begin(), SkinNames.end(), sn) == SkinNames.end()) {
-        WriteDebugConsoleU(ConvertUnicodeToUTF8(L"Can't Find Skin " + sn + L"!\n"));
+    auto sn = SharedSetting->ReadValue<string>(SU_SETTING_GENERAL, SU_SETTING_SKIN, "Default");
+    if (find(SkinNames.begin(), SkinNames.end(), ConvertUTF8ToUnicode(sn)) == SkinNames.end()) {
+        WriteDebugConsoleU("Can't Find Skin " + sn + "!\n");
         return;
     }
-    Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, ScriptInterface, Sound));
+    Skin = unique_ptr<SkinHolder>(new SkinHolder(ConvertUTF8ToUnicode(sn), ScriptInterface, Sound));
     Skin->Initialize();
     ExecuteSkin(ConvertUnicodeToUTF8(SU_SKIN_TITLE_FILE));
 }

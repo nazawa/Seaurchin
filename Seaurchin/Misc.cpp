@@ -3,6 +3,7 @@
 
 using namespace std;
 
+/*
 string ConvertUTF8ToShiftJis(const string &utf8str)
 {
     int len = MultiByteToWideChar(CP_UTF8, 0, utf8str.c_str(), -1, nullptr, 0);
@@ -30,6 +31,7 @@ string ConvertShiftJisToUTF8(const string &sjisstr)
     delete[] ubuffer;
     return ret;
 }
+*/
 
 wstring ConvertUTF8ToUnicode(const string &utf8str)
 {

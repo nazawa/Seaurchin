@@ -38,7 +38,7 @@ void PreInitialize(HINSTANCE hInstance)
     InitializeDebugFeature();
     SetUseCharCodeFormat(DX_CHARCODEFORMAT_UTF16LE);
     ChangeWindowMode(TRUE);
-    SetMainWindowText(SU_APP_NAME " " SU_APP_VERSION);
+    SetMainWindowText(reinterpret_cast<const char*>(ConvertUTF8ToUnicode(SU_APP_NAME " " SU_APP_VERSION).c_str()));
     SetAlwaysRunFlag(TRUE);
     auto vs = setting->ReadValue<bool>("Graphic", "WaitVSync", false);
     SetWaitVSyncFlag(vs ? TRUE : FALSE);

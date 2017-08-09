@@ -20,7 +20,7 @@ void SceneDebug::Tick(double delta)
 void SceneDebug::Draw()
 {
     clsDx();
-    printfDx("%2.1f fps\n", fps);
+    printfDx(reinterpret_cast<const char*>(L"%2.1f fps\n"), fps);
 }
 
 bool SceneDebug::IsDead()

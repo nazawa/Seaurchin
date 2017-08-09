@@ -3,7 +3,7 @@
 
 using namespace std;
 
-static int ScriptIncludeCallback(const char *include, const char *from, CScriptBuilder *builder, void *userParam);
+static int ScriptIncludeCallback(const wchar_t *include, const wchar_t *from, CWScriptBuilder *builder, void *userParam);
 
 AngelScript::AngelScript()
 {
@@ -90,7 +90,7 @@ void AngelScript::ScriptMessageCallback(const asSMessageInfo * message)
     WriteDebugConsole(ss.str().c_str());
 }
 
-int ScriptIncludeCallback(const char *include, const char *from, CScriptBuilder *builder, void *userParam)
+int ScriptIncludeCallback(const wchar_t *include, const wchar_t *from, CWScriptBuilder *builder, void *userParam)
 {
     auto as = reinterpret_cast<AngelScript*>(userParam);
     return as->IncludeFile(include, from) ? 1 : -1;

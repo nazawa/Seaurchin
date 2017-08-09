@@ -54,9 +54,6 @@
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring_utils.cpp">
       <Filter>AngelScript</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\AngelScript\add_on\scriptbuilder\scriptbuilder.cpp">
-      <Filter>AngelScript</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\AngelScript\add_on\scriptmath\scriptmath.cpp">
       <Filter>AngelScript</Filter>
     </ClCompile>
@@ -177,9 +174,6 @@
       <Filter>DxLib</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptstdstring\scriptstdstring.h">
-      <Filter>AngelScript</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\AngelScript\add_on\scriptbuilder\scriptbuilder.h">
       <Filter>AngelScript</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptmath\scriptmath.h">

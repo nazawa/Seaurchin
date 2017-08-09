@@ -19,7 +19,7 @@ private:
     std::unordered_map<std::string, SAnimatedImage*> AnimatedImages;
     //std::unordered_map<std::string, shared_ptr<Image>> Images;
 
-    bool IncludeScript(std::string include, std::string from, CScriptBuilder *builder);
+    bool IncludeScript(std::wstring include, std::wstring from, CWScriptBuilder *builder);
 
 public:
     SkinHolder(const std::wstring &name, std::shared_ptr<AngelScript> script, std::shared_ptr<SoundManager> sound);

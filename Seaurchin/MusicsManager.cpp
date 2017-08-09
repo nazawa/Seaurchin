@@ -188,8 +188,8 @@ string MusicSelectionCursor::GetMusicJacketFileName(int32_t relativeIndex)
     auto current = Manager->Categories[CategoryIndex];
     if (!music) return "";
     if (music->JacketPath == "") return "";
-    auto result = (Setting::GetRootDirectory() / SU_MUSIC_DIR / ConvertUTF8ToShiftJis(current->GetName()) / music->JacketPath).string();
-    return ConvertShiftJisToUTF8(result);
+    auto result = (Setting::GetRootDirectory() / SU_MUSIC_DIR / ConvertUTF8ToUnicode(current->GetName()) / music->JacketPath).wstring();
+    return ConvertUnicodeToUTF8(result);
 }
 
 int MusicSelectionCursor::GetDifficulty(int32_t relativeIndex)
