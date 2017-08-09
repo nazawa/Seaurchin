@@ -17,7 +17,7 @@ EffectBuilder::~EffectBuilder()
     for (auto& p : Effects) delete p.second;
 }
 
-void EffectBuilder::LoadFromFile(std::string fileName)
+void EffectBuilder::LoadFromFile(const wstring &fileName)
 {
     string source, line;
     ifstream file;
@@ -34,7 +34,7 @@ void EffectBuilder::LoadFromFile(std::string fileName)
     if (!ParseSource(source)) return;
 }
 
-bool EffectBuilder::ParseSource(std::string source)
+bool EffectBuilder::ParseSource(const string &source)
 {
     using boost::optional;
     using namespace boost::spirit;

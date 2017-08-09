@@ -99,9 +99,6 @@
     <ClCompile Include="ScriptResource.cpp">
       <Filter>インターフェース\AngelScript</Filter>
     </ClCompile>
-    <ClCompile Include="Font.cpp">
-      <Filter>インターフェース\C++</Filter>
-    </ClCompile>
     <ClCompile Include="Interfaces.cpp">
       <Filter>インターフェース\AngelScript</Filter>
     </ClCompile>
@@ -110,9 +107,6 @@
     </ClCompile>
     <ClCompile Include="AngelScriptManager.cpp">
       <Filter>インターフェース\AngelScript</Filter>
-    </ClCompile>
-    <ClCompile Include="DxLibResource.cpp">
-      <Filter>インターフェース\C++</Filter>
     </ClCompile>
     <ClCompile Include="SkinHolder.cpp">
       <Filter>インターフェース\AngelScript</Filter>

@@ -19,7 +19,7 @@ struct MusicMetaInfo final {
     std::string SongId;
     std::string Name;
     std::string Artist;
-    std::string JacketPath;
+    boost::filesystem::path JacketPath;
     std::vector<std::shared_ptr<MusicScoreInfo>> Scores;
 };
 
@@ -73,7 +73,7 @@ public:
     void Initialize();
     void Reload(bool recreateCache);
     bool IsReloading();
-    std::string GetSelectedScorePath();
+    boost::filesystem::path GetSelectedScorePath();
 
     MusicSelectionCursor *CreateMusicSelectionCursor();
     const std::vector<std::shared_ptr<CategoryInfo>> &GetCategories() { return Categories; }

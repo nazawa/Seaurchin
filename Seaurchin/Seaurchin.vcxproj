@@ -179,13 +179,11 @@
     <ClCompile Include="AngelScriptManager.cpp" />
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Debug.cpp" />
-    <ClCompile Include="DxLibResource.cpp" />
     <ClCompile Include="Easing.cpp" />
     <ClCompile Include="EffectBuilder.cpp" />
     <ClCompile Include="EffectData.cpp" />
     <ClCompile Include="EffectFunction.cpp" />
     <ClCompile Include="ExecutionManager.cpp" />
-    <ClCompile Include="Font.cpp" />
     <ClCompile Include="Interfaces.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Misc.cpp" />

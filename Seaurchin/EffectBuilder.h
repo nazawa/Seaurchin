@@ -21,7 +21,7 @@ public:
     EffectBuilder(std::shared_ptr<std::mt19937> rnd);
     ~EffectBuilder();
 
-    void LoadFromFile(std::string fileName);
-    bool ParseSource(std::string source);
+    void LoadFromFile(const std::wstring &fileName);
+    bool ParseSource(const std::string &source);
 };
 

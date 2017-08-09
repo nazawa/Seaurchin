@@ -42,14 +42,14 @@ bool MusicsManager::IsReloading()
     return state;
 }
 
-std::string MusicsManager::GetSelectedScorePath()
+path MusicsManager::GetSelectedScorePath()
 {
     int ci = Manager->GetData<int>("Selected:Category");
     int mi = Manager->GetData<int>("Selected:Music");
     int vi = Manager->GetData<int>("Selected:Variant");
-    path result = Setting::GetRootDirectory() / SU_MUSIC_DIR / ConvertUTF8ToShiftJis(Categories[ci]->GetName());
+    path result = Setting::GetRootDirectory() / SU_MUSIC_DIR / ConvertUTF8ToUnicode(Categories[ci]->GetName());
     result /= Categories[ci]->Musics[mi]->Scores[vi]->Path;
-    return result.string();
+    return result;
 }
 
 void MusicsManager::CreateMusicCache()
@@ -69,7 +69,7 @@ void MusicsManager::CreateMusicCache()
                 if (is_directory(file)) continue;
                 if (file.path().extension() != ".sus") continue;     //‚±‚ê‘å•¶Žš‚Ç‚¤‚·‚ñ‚Ì
                 Analyzer->Reset();
-                Analyzer->LoadFromFile(file.path().string(), true);
+                Analyzer->LoadFromFile(file.path().wstring(), true);
                 auto music = find_if(category->Musics.begin(), category->Musics.end(), [&](std::shared_ptr<MusicMetaInfo> info) {
                     return info->SongId == Analyzer->SharedMetaData.USongId;
                 });
@@ -78,11 +78,11 @@ void MusicsManager::CreateMusicCache()
                     (*music)->SongId = Analyzer->SharedMetaData.USongId;
                     (*music)->Name = Analyzer->SharedMetaData.UTitle;
                     (*music)->Artist = Analyzer->SharedMetaData.UArtist;
-                    (*music)->JacketPath = (mdir.path().filename() / ConvertUTF8ToShiftJis(Analyzer->SharedMetaData.UJacketFileName)).string();
+                    (*music)->JacketPath = mdir.path().filename() / ConvertUTF8ToUnicode(Analyzer->SharedMetaData.UJacketFileName);
                 }
                 auto score = make_shared<MusicScoreInfo>();
                 score->Path = mdir.path().filename() / file.path().filename();
-                score->WavePath = ConvertUTF8ToShiftJis(Analyzer->SharedMetaData.UWaveFileName);
+                score->WavePath = ConvertUTF8ToUnicode(Analyzer->SharedMetaData.UWaveFileName);
                 score->Designer = Analyzer->SharedMetaData.UDesigner;
                 score->Difficulty = Analyzer->SharedMetaData.DifficultyType;
                 score->DifficultyName = Analyzer->SharedMetaData.UExtraDifficulty;
@@ -110,7 +110,7 @@ MusicSelectionCursor *MusicsManager::CreateMusicSelectionCursor()
 CategoryInfo::CategoryInfo(boost::filesystem::path path)
 {
     Path = path;
-    Name = ConvertShiftJisToUTF8(path.filename().string());
+    Name = ConvertUnicodeToUTF8(path.filename().wstring());
 }
 
 CategoryInfo::~CategoryInfo()
