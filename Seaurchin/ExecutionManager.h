@@ -53,7 +53,7 @@ public:
 
     std::tuple<bool, LRESULT> CustomWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void ExecuteSkin();
-    bool ExecuteSkin(const std::wstring &file);
+    bool ExecuteSkin(const std::string &file);
     void ExecuteSystemMenu();
     void ReloadMusic();
     void Fire(const std::string &message);

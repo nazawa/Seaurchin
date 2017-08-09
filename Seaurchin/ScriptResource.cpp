@@ -61,7 +61,7 @@ SImage * SImage::CreateBlankImage()
 SImage * SImage::CreateLoadedImageFromFile(const string &file, bool async)
 {
     if (async) SetUseASyncLoadFlag(TRUE);
-    auto result = new SImage(LoadGraph(ConvertUTF8ToShiftJis(file).c_str()));
+    auto result = new SImage(LoadGraph(reinterpret_cast<const char*>(ConvertUTF8ToUnicode(file).c_str())));
     if (async) SetUseASyncLoadFlag(FALSE);
 	result->AddRef();
 	return result;
@@ -128,7 +128,7 @@ SAnimatedImage * SAnimatedImage::CreateLoadedImageFromFile(const std::string & f
 {
     auto result = new SAnimatedImage(w, h, count, time);
     result->Images.resize(count);
-    LoadDivGraph(ConvertUTF8ToShiftJis(file).c_str(), count, xc, yc, w, h, result->Images.data());
+    LoadDivGraph(reinterpret_cast<const char*>(ConvertUTF8ToUnicode(file).c_str()), count, xc, yc, w, h, result->Images.data());
     result->AddRef();
     return result;
 }
@@ -195,7 +195,7 @@ SFont * SFont::CreateBlankFont()
 SFont * SFont::CreateLoadedFontFromFile(const string & file)
 {
 	auto result = new SFont();
-	ifstream font(ConvertUTF8ToShiftJis(file), ios::in | ios::binary);
+	ifstream font(ConvertUTF8ToUnicode(file), ios::in | ios::binary);
 
 	FontDataHeader header;
 	font.read((char*)&header, sizeof(FontDataHeader));
@@ -289,7 +289,7 @@ SSound * SSound::CreateSound(SoundManager *smanager)
 
 SSound * SSound::CreateSoundFromFile(SoundManager *smanager, const std::string & file, int simul)
 {
-	auto hs = SoundSample::CreateFromFile(ConvertUTF8ToShiftJis(file).c_str(), simul);
+	auto hs = SoundSample::CreateFromFile(ConvertUTF8ToUnicode(file), simul);
     auto result = new SSound(hs);
     result->AddRef();
     return result;

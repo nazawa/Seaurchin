@@ -20,7 +20,7 @@ public:
     inline asIScriptContext* GetContext() { return sharedContext; }
 
     //新しくModuleする
-    void StartBuildModule(std::string name, IncludeCallback callback);
+    void StartBuildModule(const std::string &name, IncludeCallback callback);
 
     inline asIScriptModule* GetExistModule(std::string name) { return engine->GetModule(name.c_str()); }
     
@@ -28,7 +28,7 @@ public:
     void LoadFile(const std::wstring &filename);
     
     //外から使わないで
-    bool IncludeFile(std::wstring include, std::wstring from);
+    bool IncludeFile(const std::wstring &include, const std::wstring &from);
     
     //ビルドする
     bool FinishBuildModule();

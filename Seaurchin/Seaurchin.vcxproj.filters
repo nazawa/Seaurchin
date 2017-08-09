@@ -153,6 +153,9 @@
     <ClCompile Include="ScenePlayer.Draw.cpp">
       <Filter>プレーヤー</Filter>
     </ClCompile>
+    <ClCompile Include="wscriptbuilder.cpp">
+      <Filter>インターフェース\AngelScript</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -283,6 +286,9 @@
     </ClInclude>
     <ClInclude Include="Controller.h">
       <Filter>コントローラー</Filter>
+    </ClInclude>
+    <ClInclude Include="wscriptbuilder.h">
+      <Filter>インターフェース\AngelScript</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

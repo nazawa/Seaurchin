@@ -139,12 +139,12 @@ void ExecutionManager::ExecuteSkin()
     }
     Skin = unique_ptr<SkinHolder>(new SkinHolder(sn, ScriptInterface, Sound));
     Skin->Initialize();
-    ExecuteSkin(SU_SKIN_TITLE_FILE);
+    ExecuteSkin(ConvertUnicodeToUTF8(SU_SKIN_TITLE_FILE));
 }
 
-bool ExecutionManager::ExecuteSkin(const wstring &file)
+bool ExecutionManager::ExecuteSkin(const string &file)
 {
-    auto obj = Skin->ExecuteSkinScript(file);
+    auto obj = Skin->ExecuteSkinScript(ConvertUTF8ToUnicode(file));
     if (!obj) {
         WriteDebugConsole("Can't Compile The Script!\n");
         return false;

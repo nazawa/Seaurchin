@@ -1,6 +1,8 @@
 #include "AngelScriptManager.h"
 #include "Debug.h"
 
+using namespace std;
+
 static int ScriptIncludeCallback(const char *include, const char *from, CScriptBuilder *builder, void *userParam);
 
 AngelScript::AngelScript()
@@ -26,18 +28,18 @@ AngelScript::~AngelScript()
     engine->ShutDownAndRelease();
 }
 
-void AngelScript::StartBuildModule(std::string name, IncludeCallback callback)
+void AngelScript::StartBuildModule(const string &name, IncludeCallback callback)
 {
     includeFunc = callback;
     builder.StartNewModule(engine, name.c_str());
 }
 
-void AngelScript::LoadFile(std::string filename)
+void AngelScript::LoadFile(const wstring &filename)
 {
     builder.AddSectionFromFile(filename.c_str());
 }
 
-bool AngelScript::IncludeFile(std::string include, std::string from)
+bool AngelScript::IncludeFile(const wstring &include, const wstring &from)
 {
     return includeFunc(include, from, &builder);
 }

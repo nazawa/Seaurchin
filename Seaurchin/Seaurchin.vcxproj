@@ -209,6 +209,7 @@
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="ScriptFunction.cpp" />
     <ClCompile Include="SusAnalyzer.cpp" />
+    <ClCompile Include="wscriptbuilder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\AngelScript\add_on\scriptarray\scriptarray.h" />
@@ -254,6 +255,7 @@
     <ClInclude Include="ScriptFunction.h" />
     <ClInclude Include="ScriptSpriteMisc.h" />
     <ClInclude Include="SusAnalyzer.h" />
+    <ClInclude Include="wscriptbuilder.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Seaurchin.rc" />

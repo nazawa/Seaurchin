@@ -1,6 +1,5 @@
 #pragma once
 
-#include "DxLibResource.h"
 #include "ScriptResource.h"
 #include "SoundManager.h"
 

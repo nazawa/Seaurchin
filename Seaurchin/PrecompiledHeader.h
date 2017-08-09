@@ -58,12 +58,12 @@
 //#include <EffekseerForDXLib.h>
 
 #include <angelscript.h>
-#include <scriptbuilder\scriptbuilder.h>
 #include <scriptarray\scriptarray.h>
 #include <scriptmath\scriptmath.h>
 #include <scriptmath\scriptmathcomplex.h>
 #include <scriptstdstring\scriptstdstring.h>
 #include <scriptdictionary\scriptdictionary.h>
+#include "wscriptbuilder.h"
 //#include "as_smart_ptr_wrapper.h"
 
 #include <WacomMultiTouch.h>
