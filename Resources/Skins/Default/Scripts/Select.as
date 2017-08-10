@@ -109,15 +109,21 @@ class Title : CoroutineScene {
   void KeyInput() {
     while(true) {
       if (IsKeyTriggered(Key::INPUT_RETURN)) {
-        if (cursor.Enter() == 2) {
+        if (cursor.Enter() == CursorState::Confirmed) {
           if (Execute("Play.as")) Disappear();
         } else {
-          isCategory = false;
+          isCategory = cursor.GetState() == CursorState::Category;
           InitCursor();
         }
       } else if (IsKeyTriggered(Key::INPUT_ESCAPE)) {
-        isCategory = cursor.Exit();
-        InitCursor();
+        cursor.Exit();
+        auto state = cursor.GetState();
+        if (state == CursorState::OutOfFunction) {
+          if (Execute("Title.as")) Disappear();
+        } else {
+          isCategory = cursor.GetState() == CursorState::Category;
+          InitCursor();
+        }
       } else if (IsKeyTriggered(Key::INPUT_RIGHT)) { 
         cursor.Next();
         UpdateCursor(+1);
