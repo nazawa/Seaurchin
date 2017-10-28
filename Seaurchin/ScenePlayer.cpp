@@ -125,7 +125,7 @@ void ScenePlayer::CalculateCurves(std::shared_ptr<SusDrawableNoteData> note)
 
     controlPoints.push_back(make_tuple(0, (lastStep->StartLane + lastStep->Length / 2.0) / 16.0));
     for (auto &slideElement : note->ExtraData) {
-        if (slideElement->Type.test((size_t)SusNoteType::ExTap)) continue;
+        if (slideElement->Type.test((size_t)SusNoteType::Injection)) continue;
         if (slideElement->Type.test((size_t)SusNoteType::Control)) {
             auto cpi = make_tuple(slideElement->StartTime - lastStep->StartTime, (slideElement->StartLane + slideElement->Length / 2.0) / 16.0);
             controlPoints.push_back(cpi);

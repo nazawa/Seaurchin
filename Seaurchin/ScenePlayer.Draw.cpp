@@ -220,7 +220,7 @@ void ScenePlayer::UpdateSlideEffect()
 
         for (auto &slideElement : note->ExtraData) {
             if (slideElement->Type.test((size_t)SusNoteType::Control)) continue;
-            if (slideElement->Type.test((size_t)SusNoteType::ExTap)) continue;
+            if (slideElement->Type.test((size_t)SusNoteType::Injection)) continue;
             if (CurrentTime >= slideElement->StartTime) {
                 last = slideElement;
                 continue;
@@ -325,7 +325,7 @@ void ScenePlayer::DrawHoldNotes(shared_ptr<SusDrawableNoteData> note)
     DrawTap(slane, length, relpos, imageHold->GetHandle());
 
     for (auto &ex : note->ExtraData) {
-        if (ex->Type.test((size_t)SusNoteType::ExTap)) continue;
+        if (ex->Type.test((size_t)SusNoteType::Injection)) continue;
         double relendpos = 1.0 - ex->ModifiedPosition / SeenDuration;
         DrawTap(slane, length, relendpos, imageHold->GetHandle());
     }
@@ -342,7 +342,7 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
 
     for (auto &slideElement : note->ExtraData) {
         if (slideElement->Type.test((size_t)SusNoteType::Control)) continue;
-        if (slideElement->Type.test((size_t)SusNoteType::ExTap)) continue;
+        if (slideElement->Type.test((size_t)SusNoteType::Injection)) continue;
         double currentStepRelativeY = 1.0 - slideElement->ModifiedPosition / SeenDuration;
         auto &segmentPositions = curveData[slideElement];
 
@@ -381,7 +381,7 @@ void ScenePlayer::DrawSlideNotes(shared_ptr<SusDrawableNoteData> note)
         }
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-        if (!slideElement->Type.test((size_t)SusNoteType::Tap))
+        if (!slideElement->Type.test((size_t)SusNoteType::Invisible))
             DrawTap(slideElement->StartLane, slideElement->Length, currentStepRelativeY, imageSlide->GetHandle());
 
         lastStep = slideElement;
@@ -408,7 +408,7 @@ void ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNoteData> note)
 
     for (auto &slideElement : note->ExtraData) {
         if (slideElement->Type.test((size_t)SusNoteType::Control)) continue;
-        if (slideElement->Type.test((size_t)SusNoteType::ExTap)) continue;
+        if (slideElement->Type.test((size_t)SusNoteType::Injection)) continue;
         double currentStepRelativeY = 1.0 - slideElement->ModifiedPosition / SeenDuration;
         auto &segmentPositions = curveData[slideElement];
 
@@ -461,7 +461,7 @@ void ScenePlayer::DrawAirActionNotes(shared_ptr<SusDrawableNoteData> note)
             lastTimeInBlock = currentTimeInBlock;
         }
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-        if (!slideElement->Type.test((size_t)SusNoteType::Tap)) {
+        if (!slideElement->Type.test((size_t)SusNoteType::Invisible)) {
             double atLeft = (slideElement->StartLane) / 16.0;
             double atRight = (slideElement->StartLane + slideElement->Length) / 16.0;
             double left = lerp(atLeft, SU_LANE_X_MIN, SU_LANE_X_MAX) + 5;
