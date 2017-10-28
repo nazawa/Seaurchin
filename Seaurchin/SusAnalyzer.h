@@ -25,8 +25,8 @@ enum class SusNoteType : uint16_t {
     Left,
     Right,
 
-    Unused1 = 17,
-    Unused2,
+    Injection = 17,
+    Invisible,
     Unused3,
 };
 

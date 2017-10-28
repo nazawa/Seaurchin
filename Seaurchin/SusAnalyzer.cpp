@@ -176,9 +176,17 @@ void SusAnalyzer::ProcessCommand(const xp::smatch &result, bool onlyMeta)
         case hashstr("SUBARTIST"):  //BMS互換
             SharedMetaData.UDesigner = ConvertRawString(result[2]);
             break;
-        case hashstr("PLAYLEVEL"):
-            SharedMetaData.Level = ConvertInteger(result[2]);
+        case hashstr("PLAYLEVEL"): {
+            string lstr = result[2];
+            auto pluspos = lstr.find("+");
+            if (pluspos != string::npos) {
+                SharedMetaData.UExtraDifficulty = u8"+";
+                SharedMetaData.Level = ConvertInteger(lstr.substr(0, pluspos));
+            } else {
+                SharedMetaData.Level = ConvertInteger(lstr);
+            }
             break;
+        }
         case hashstr("DIFFICULTY"): {
             if (xp::regex_match(result[2], AllNumeric)) {
                 //通常記法
@@ -574,37 +582,16 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
                 if (curPos.Measure == time.Measure && curPos.Tick < time.Tick) continue;
                 switch (ltype) {
                     case SusNoteType::Hold: {
-                        if (curNo.Type.test((size_t)SusNoteType::Control))
-                            if (ErrorCallback) ErrorCallback(0, "Error", "HoldでControlは指定できません。");
+                        if (curNo.Type.test((size_t)SusNoteType::Control) && curNo.Type.test((size_t)SusNoteType::Tap))
+                            if (ErrorCallback) ErrorCallback(0, "Error", "HoldでControl/Invisibleは指定できません。");
                         if (curNo.NotePosition.StartLane != info.NotePosition.StartLane || curNo.NotePosition.Length != info.NotePosition.Length)
                             if (ErrorCallback) ErrorCallback(0, "Error", "Holdの長さ/位置が始点と一致していません。");
-                        if (curNo.Type.test((size_t)SusNoteType::Start)) break;
-                        auto nextNote = make_shared<SusDrawableNoteData>();
-                        nextNote->StartTime = GetAbsoluteTime(curPos.Measure, curPos.Tick);
-                        nextNote->StartLane = curNo.NotePosition.StartLane;
-                        nextNote->Length = curNo.NotePosition.Length;
-                        nextNote->Type = curNo.Type;
-                        nextNote->Timeline = curNo.Timeline;
-                        nextNote->StartTimeEx = get<1>(nextNote->Timeline->GetRawDrawStateAt(nextNote->StartTime));
-                        auto injc = (double)(GetRelativeTicks(curPos.Measure, curPos.Tick) - GetRelativeTicks(time.Measure, time.Tick)) / TicksPerBeat * LongInjectionPerBeat;
-                        // 1 のときはピッタシ終わってるので無視
-                        for (int i = 1; i < injc; i++) {
-                            double insertAt = time.Tick + (TicksPerBeat / LongInjectionPerBeat * i);
-                            auto injection = make_shared<SusDrawableNoteData>();
-                            injection->Type.set((size_t)SusNoteType::ExTap);
-                            injection->StartTime = GetAbsoluteTime(time.Measure, insertAt);
-                            noteData->ExtraData.push_back(injection);
-                        }
-                        noteData->ExtraData.push_back(nextNote);
-                        if (curNo.Type.test((size_t)SusNoteType::End)) {
-                            noteData->Duration = nextNote->StartTime - noteData->StartTime;
-                            completed = true;
-                        }
-                        break;
                     }
+                                            /* ホールドだけ追加チェックしてフォールスルー */
                     case SusNoteType::Slide:
                     case SusNoteType::AirAction: {
                         if (curNo.Type.test((size_t)SusNoteType::Start)) break;
+
                         auto nextNote = make_shared<SusDrawableNoteData>();
                         nextNote->StartTime = GetAbsoluteTime(curPos.Measure, curPos.Tick);
                         nextNote->StartLane = curNo.NotePosition.StartLane;
@@ -612,21 +599,27 @@ void SusAnalyzer::RenderScoreData(vector<shared_ptr<SusDrawableNoteData>> &data)
                         nextNote->Type = curNo.Type;
                         nextNote->Timeline = curNo.Timeline;
                         nextNote->StartTimeEx = get<1>(nextNote->Timeline->GetRawDrawStateAt(nextNote->StartTime));
-                        auto lsrt = get<0>(lastStep);
-                        auto injc = (double)(GetRelativeTicks(curPos.Measure, curPos.Tick) - GetRelativeTicks(lsrt.Measure, lsrt.Tick)) / TicksPerBeat * LongInjectionPerBeat;
-                        for (int i = 1; i < injc; i++) {
-                            double insertAt = lsrt.Tick + (TicksPerBeat / LongInjectionPerBeat * i);
-                            auto injection = make_shared<SusDrawableNoteData>();
-                            injection->Type.set((size_t)SusNoteType::ExTap);
-                            injection->StartTime = GetAbsoluteTime(lsrt.Measure, insertAt);
-                            noteData->ExtraData.push_back(injection);
+
+                        if ((curNo.Type.test((size_t)SusNoteType::Step) && !curNo.Type.test((size_t)SusNoteType::Tap)) || curNo.Type.test((size_t)SusNoteType::End)) {
+                            auto lsrt = get<0>(lastStep);
+                            auto injc = (double)(GetRelativeTicks(curPos.Measure, curPos.Tick) - GetRelativeTicks(lsrt.Measure, lsrt.Tick)) / TicksPerBeat * LongInjectionPerBeat;
+                            for (int i = 1; i < injc; i++) {
+                                double insertAt = lsrt.Tick + (TicksPerBeat / LongInjectionPerBeat * i);
+                                auto injection = make_shared<SusDrawableNoteData>();
+                                injection->Type.set((size_t)SusNoteType::ExTap);
+                                injection->StartTime = GetAbsoluteTime(lsrt.Measure, insertAt);
+                                noteData->ExtraData.push_back(injection);
+                            }
                         }
-                        noteData->ExtraData.push_back(nextNote);
+
+                        if (nextNote->Type.test((size_t)SusNoteType::Step) && !curNo.Type.test((size_t)SusNoteType::Tap)) lastStep = it;
+
                         if (curNo.Type.test((size_t)SusNoteType::End)) {
                             noteData->Duration = nextNote->StartTime - noteData->StartTime;
                             completed = true;
                         }
-                        if (!nextNote->Type.test((size_t)SusNoteType::Control))lastStep = it;
+
+                        noteData->ExtraData.push_back(nextNote);
                         break;
                     }
                 }
