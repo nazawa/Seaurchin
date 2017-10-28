@@ -22,7 +22,7 @@
     <ProjectGuid>{2727EAE0-2357-4072-9DB1-CA954983DDA2}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Seaurchin</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
